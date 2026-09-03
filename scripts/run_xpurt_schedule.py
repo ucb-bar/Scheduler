@@ -134,6 +134,7 @@ def schedule_iree_networks(
     prune_periodic: bool | None = None,
     restrict_makespan_to_nonperiodic: bool | None = None,
     max_periodic_iters: int = 4,
+    board_calibration: dict | None = None,
 ) -> tuple[Workload, np.ndarray, np.ndarray]:
     """
     Main function to schedule networks from a hierarchical network dependencies JSON file.
@@ -282,6 +283,7 @@ def schedule_iree_networks(
             rng=rng,
             p_core_speedup=effective_p_core_speedup,
             topo_tag_override=tt_override,
+            board_calibration=board_calibration,
         )
 
     def _build_workload():
@@ -690,7 +692,37 @@ if __name__ == "__main__":
         default=None,
         help="Override P-core speedup factor. If omitted, uses JSON config (hardware/scheduler p_core_speedup) or 1.5.",
     )
+    parser.add_argument(
+        "--board-calibration",
+        nargs="?",
+        const=True,
+        default=None,
+        metavar="PATH",
+        help=(
+            "Scale each dispatch's isolated-profile time by the measured K1 board "
+            "actual/predicted ratio, so the schedule predicts real hardware (the "
+            "additive Gantt under-predicts by ~26-31%%; the gap is per-op exec "
+            "inflation, NOT contention). OFF by default. Bare flag uses "
+            "results/codesign_feedback/k1_board_calibration.json; pass a path to "
+            "override. Exact per-(net,dispatch) keys for the calibrated workload; "
+            "per-op fallback (extrapolated) otherwise."
+        ),
+    )
     args = parser.parse_args()
+
+    # Load the board-calibration table if requested (opt-in; no-op by default).
+    _calib = None
+    if args.board_calibration is not None:
+        import json as _json
+        _cpath = ("results/codesign_feedback/k1_board_calibration.json"
+                  if args.board_calibration is True else args.board_calibration)
+        _cabs = _cpath if os.path.isabs(_cpath) else os.path.join(_REPO_ROOT, _cpath)
+        if not os.path.exists(_cabs):
+            print(f"--board-calibration: no artifact at {_cabs}; running additive (no-op)")
+        else:
+            _calib = _json.load(open(_cabs))
+            print(f"--board-calibration: loaded {_cabs} "
+                  f"(aggregate x{_calib.get('aggregate_multiplier', 1.0):.3f})")
 
     seed = None if args.random_seed is not None and args.random_seed < 0 else args.random_seed
 
@@ -705,4 +737,5 @@ if __name__ == "__main__":
         prune_periodic=args.prune_periodic,
         restrict_makespan_to_nonperiodic=args.restrict_makespan_to_nonperiodic,
         max_periodic_iters=args.max_periodic_iters,
+        board_calibration=_calib,
     )

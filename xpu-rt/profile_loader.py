@@ -60,9 +60,14 @@ def load_profiled_times(csv_path: str) -> dict[int, dict]:
                 mean_time_ms = mean_time * 1000.0
             else:
                 mean_time_ms = mean_time
+            # Capture the op-kind (conv2d_s8, linear_f16, ...) when present, so a
+            # board calibration can key its per-op fallback multiplier on it for
+            # networks not covered by the exact per-dispatch table (e.g. yolo).
+            _op = (row.get("op") or "").strip()
             profiled[dispatch_id] = {
                 "time_ms": mean_time_ms,
                 "module_name": module_name,
+                **({"op": _op} if _op else {}),
             }
     return profiled
 
@@ -195,6 +200,31 @@ def _load_all_topo_profiles(
     return profiles
 
 
+def _board_calibration_mult(cal: dict | None, net_id: str, dispatch_id, op: str | None) -> float:
+    """Board-calibration multiplier for one dispatch.
+
+    Turns the isolated iree-benchmark profile time into a board-faithful one by
+    scaling with the measured actual/predicted ratio. Lookup order:
+      1. exact per-dispatch key "net/dispatch_id"  (EXACT, for the calibrated workload)
+      2. per-op-kind fallback                       (EXTRAPOLATED, e.g. yolo convs)
+      3. aggregate_multiplier                       (last resort)
+    Returns 1.0 when no calibration is installed, so the call is a no-op by default.
+    See results/codesign_feedback/k1_board_calibration.json and
+    dima-predicted-vs-actual-gap: the gap is per-op exec inflation, NOT contention.
+    """
+    if not cal:
+        return 1.0
+    pd = cal.get("per_dispatch_multiplier") or {}
+    key = f"{net_id}/{dispatch_id}"
+    if key in pd:
+        return float(pd[key])
+    if op:
+        po = cal.get("per_op_multiplier") or {}
+        if op in po:
+            return float(po[op])
+    return float(cal.get("aggregate_multiplier", 1.0))
+
+
 def load_profiled_processing_times(
     networks: dict,
     repo_base_path: str,
@@ -207,6 +237,7 @@ def load_profiled_processing_times(
     p_core_speedup: float,
     topo_tag_override=None,
     strict: bool = True,
+    board_calibration: dict | None = None,
 ) -> tuple[dict[str, list[float]], dict[int, dict], dict[int, dict], dict[str, dict[str, dict[int, dict]]]]:
     """
     Load profiled processing times for all networks and dispatches.
@@ -319,7 +350,30 @@ def load_profiled_processing_times(
                     t_ms = prof[dispatch_id]["time_ms"]
 
                 if t_ms is not None:
-                    base_t = float(t_ms)
+                    # Board calibration (opt-in): scale the isolated-profile time
+                    # by the measured board actual/predicted ratio. No-op (x1.0)
+                    # unless a calibration dict is passed. Only the real-measured
+                    # branch is scaled — never the 1e8/0.0 sentinels below.
+                    _op = (prof[dispatch_id].get("op")
+                           if (prof and isinstance(dispatch_id, int) and dispatch_id in prof)
+                           else None)
+                    base_t = float(t_ms) * _board_calibration_mult(
+                        board_calibration, net_id, dispatch_id, _op)
+                elif hw.lower().startswith("ime"):
+                    # An ime combination with no measured cost for this dispatch
+                    # means the op has no ime kernel (only matmul_s8 does today).
+                    # Exclude the cell with the scheduler's INFEASIBLE_COST
+                    # sentinel (1e8) so the op is NEVER placed on the NPU — a
+                    # 0.0 here would make a non-ime op look free on cluster 0.
+                    base_t = 1e8
+                elif prof is None:
+                    # No profile CSV at all for this (hw, topo) — e.g. a
+                    # single-core-only net facing a multi-hart shard combo it
+                    # was never profiled on. It physically cannot run there, so
+                    # exclude the cell (INFEASIBLE 1e8) rather than count it as
+                    # free (0.0). A genuinely-unprofiled net is still caught by
+                    # the `missing` fatal above (it has no base-width profile).
+                    base_t = 1e8
                 else:
                     if strict:
                         # Per-dispatch misses are typically zero-cost
