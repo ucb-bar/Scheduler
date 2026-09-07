@@ -198,6 +198,7 @@ def schedule_iree_networks(
     seed_solver: str | None = None,
     cpsat_time_limit: float | None = None,
     board_calibration: dict | None = None,
+    no_milp_native_warm_start: bool = False,
 ) -> tuple[Workload, np.ndarray, np.ndarray]:
     """
     Main function to schedule networks from a hierarchical network dependencies JSON file.
@@ -234,8 +235,9 @@ def schedule_iree_networks(
                               fragments by interleaving periodic
                               instances (e.g. dronet 50ms).
     """
-    _SOLVERS = ("milp", "greedy", "greedy_periodic", "greedy_reserved",
-                "decomposed", "heft", "heft_edf", "pso", "sa", "cpsat", "auto")
+    _SOLVERS = ("milp", "milp_native", "greedy", "greedy_periodic",
+                "greedy_reserved", "decomposed", "heft", "heft_edf", "pso",
+                "sa", "cpsat", "auto")
     if solver not in _SOLVERS:
         raise ValueError(f"solver must be one of {_SOLVERS}, got {solver!r}")
     solver_used = solver
@@ -430,7 +432,15 @@ def schedule_iree_networks(
                         if info.get("period") is not None}
 
     def _is_periodic_op(workload, op) -> bool:
-        # job_names is indexed by JOB id, not by operation index.
+        # `job_names` is indexed by job_id, not by operation index. Indexing
+        # it with the op index (as this did) made the "non-periodic only"
+        # makespan silently equal the all-operations makespan, because every
+        # op past the job count read as "" and so counted as non-periodic.
+        # The refinement loop below then sized each periodic network from a
+        # makespan that its own instances had inflated — a feedback loop that
+        # grew instance counts every pass until it hit --max-periodic-iters
+        # (e.g. 34 -> 50 -> 70 -> 90 ms on the QRB5165 3-way workload)
+        # instead of converging.
         job_id = getattr(op, "job_id", None)
         if job_id is None or job_id >= len(workload.job_names):
             return False
@@ -568,9 +578,7 @@ def schedule_iree_networks(
         # See greedy_scheduler for the per-pass algorithm; only the picker
         # discipline differs between them.
         # Loop strategy:
-        #   - low-seed: force num_instances=1 per periodic network that
-        #     does not ask for a count itself (one that does is pinned to
-        #     what it asked for and skips the loop), when
+        #   - low-seed: force num_instances=1 per periodic network when
         #     restrict_makespan_to_nonperiodic is set (otherwise the
         #     workload_factory horizon S_np/(1-F_p) inflates the seed
         #     and the joint schedule converges to a bad equilibrium —
@@ -590,6 +598,15 @@ def schedule_iree_networks(
         # yolov8n, and `decomposed` is the only one that does so on the
         # FireSim dronet@50ms + yolov8. Trying all of them and scoring the
         # results removes that per-workload guess.
+        #
+        # `greedy_reserved` earns nothing on the 48 specs that build from the
+        # rose-infra data root: it is the unique best candidate on 0 of them,
+        # and dropping it from this list changes `auto`'s answer on 0 of them.
+        # It stays because the workload its case rests on — the QRB5165 3-way,
+        # where it matches the MILP optimum — is one of the specs that root
+        # cannot build, and a pass costs about a second. See §4.6 of
+        # docs/scheduler_solver_study.md, which names the measurement that
+        # would justify removing it.
         if solver == "auto":
             candidate_solvers = ["greedy_reserved", "greedy_periodic",
                                  "greedy", "decomposed", "heft", "heft_edf"]
@@ -957,29 +974,29 @@ def schedule_iree_networks(
         )
     # Calculate makespan (non-periodic operations only, matching the solver objective)
     machine_combinations = combined_workload.get_machine_combinations()
-    completion_times = []
+    all_completion = []
+    nonperiodic_completion = []
     for i in range(len(combined_workload.operations)):
         op = combined_workload.operations[i]
         combo_idx = int(np.argmax(alpha[i]))
         dur = op.get_duration_for_combination(combo_idx, machine_combinations, combined_workload.machines)
+        finish = float(t[i]) + float(dur)
+        all_completion.append(finish)
         if not _is_periodic_op(combined_workload, op):
-            completion_times.append(float(t[i]) + float(dur))
-    makespan = max(completion_times) if completion_times else 0.0
+            nonperiodic_completion.append(finish)
 
-    all_ops_makespan = 0.0
-    for i in range(len(combined_workload.operations)):
-        op = combined_workload.operations[i]
-        combo_idx = int(np.argmax(alpha[i]))
-        dur = op.get_duration_for_combination(combo_idx, machine_combinations, combined_workload.machines)
-        all_ops_makespan = max(all_ops_makespan, float(t[i]) + float(dur))
+    makespan_all = max(all_completion) if all_completion else 0.0
+    if effective_restrict_makespan_to_nonperiodic and nonperiodic_completion:
+        makespan = max(nonperiodic_completion)
+        label = "Makespan (non-periodic)"
+    else:
+        makespan = makespan_all
+        label = "Makespan (all operations)"
 
     print(f"\nScheduling completed!")
-    if completion_times:
-        print(f"Makespan (non-periodic): {makespan:.2f} ms "
-              f"(all operations: {all_ops_makespan:.2f} ms)")
-    else:
-        print(f"Makespan (all operations): {all_ops_makespan:.2f} ms "
-              f"(no non-periodic work in this workload)")
+    print(f"{label}: {makespan:.2f} ms")
+    if label.startswith("Makespan (non-periodic)"):
+        print(f"Makespan (all operations): {makespan_all:.2f} ms")
 
     # Build combination labels for display
     def _combo_label(combo: list[str]) -> str:
@@ -1061,7 +1078,7 @@ def schedule_iree_networks(
     elif solver == "greedy_reserved":
         solver_tag = "_greedy_reserved"
         title_solver = "Greedy-reserved "
-    elif solver in ("heft", "heft_edf", "pso", "sa", "cpsat"):
+    elif solver in ("heft", "heft_edf", "pso", "sa", "cpsat", "milp_native"):
         solver_tag = f"_{solver}"
         title_solver = f"{solver.upper()} "
     elif solver == "auto":
@@ -1261,9 +1278,9 @@ if __name__ == "__main__":
         "--solver",
         type=str,
         default="milp",
-        choices=["milp", "greedy", "greedy_periodic", "greedy_reserved",
-                 "decomposed", "heft", "heft_edf", "pso", "sa", "cpsat",
-                 "auto"],
+        choices=["milp", "milp_native", "greedy", "greedy_periodic",
+                 "greedy_reserved", "decomposed", "heft", "heft_edf", "pso",
+                 "sa", "cpsat", "auto"],
         help="Scheduling algorithm. 'milp' (default) is the global cvxpy/mosek "
              "solver. 'greedy' is a list-scheduling heuristic with iterative "
              "periodic-instance refinement — fast, no external solver needed, "
@@ -1350,6 +1367,14 @@ if __name__ == "__main__":
         help="(milp only) Maximum optimization time in seconds. Omitted uses "
              "scheduler.time_limit from the workload; zero disables the limit. "
              "CP-SAT has its own --cpsat-time-limit.",
+    )
+    parser.add_argument(
+        "--no-milp-native-warm-start",
+        action="store_true",
+        help="(milp_native only) solve cold instead of warm-starting from "
+             "HEFT. Cold is about 2x worse at the same budget and does not "
+             "beat the seed it would otherwise have been given; this exists "
+             "to measure the difference, not as a recommended setting.",
     )
     parser.add_argument(
         "--cpsat-time-limit",
@@ -1543,4 +1568,5 @@ if __name__ == "__main__":
         search_budget=args.search_budget,
         seed_solver=args.seed_solver,
         cpsat_time_limit=args.cpsat_time_limit,
+        no_milp_native_warm_start=args.no_milp_native_warm_start,
     )
