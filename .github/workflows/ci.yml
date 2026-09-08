@@ -1,0 +1,59 @@
+name: ci
+
+# WHY THIS EXISTS. There was no CI of any kind -- no workflow, no pre-commit -- and
+# the de facto gate was a block of commands in docs/merging_to_dev.md that a human
+# remembered to run. Both suites are fast (about 6 s and 1 s here), so there is no
+# cost argument for leaving them un-run.
+#
+# WHAT IT DELIBERATELY DOES NOT DO:
+#   * no MOSEK. The wheel installs from pip but every solve fails without a licence,
+#     and cvxpy-present-plus-licence-absent turns two skips into two failures. The
+#     real results do not need it (docs/solvers.md: MOSEK is a bounded upper bound at
+#     this size and does not converge on multi-network workloads), so CI proves the
+#     claim a reader can reproduce without a licence.
+#   * no board, no cross toolchain. Everything that needs the physical K1 or the
+#     SpaceMiT GCC is skipped by the suites themselves and stays that way here.
+#     `examples/run_all.py` runs only its CHEAP set by default (SLOW ones need
+#     --all) for the same reason.
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  suites:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: install
+        run: |
+          python -m pip install --upgrade pip
+          # --no-deps for the two local packages: ModelBlaster declares torch and
+          # ultralytics, which its tests here do not need and which cost minutes and
+          # gigabytes to fetch. The tests that DO need them skip on their absence.
+          pip install --no-deps -e . -e ModelBlaster
+          pip install numpy scipy matplotlib pandas ortools pyyaml pillow requests pytest
+          # highspy 1.15 ships a HiGHS whose C++ ABI clashes with ortools' bundled
+          # libortools: importing cvxpy/mosek first then ortools dies with an
+          # undefined symbol out of HiGHS. Pin the version that coexists.
+          pip install 'highspy==1.14.0' cvxpy
+
+      - name: xpu-rt suite
+        run: python -m pytest -q
+
+      - name: modelblaster suite
+        working-directory: ModelBlaster
+        run: python -m pytest tests pipeline/tests -q
+
+      - name: examples do not rot
+        run: python examples/run_all.py --quiet

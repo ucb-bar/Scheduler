@@ -49,6 +49,16 @@ import job_names
 
 _US_PER_MS = 1000
 
+# profile_loader marks a cell the hardware cannot run -- an op with no IME kernel, a
+# net with no profile at that shard width -- by COSTING it 1e8 ms rather than by
+# listing it in `infeasible_combinations`. CP-SAT only excludes the latter, so it read
+# "impossible" as merely "expensive" and, under a time limit, placed it: the sensor
+# workload's shard candidate came back with a makespan of 500,000,069 us -- five
+# sentinels laid end to end -- and 186 deadline misses, reported as a solved schedule.
+# A schedule containing a sentinel is not a schedule, so treat the cost as the
+# exclusion it was meant to be.
+_INFEASIBLE_COST_MS = 1e8
+
 
 def _lazy_cp_model():
     try:
@@ -117,14 +127,26 @@ def cpsat_schedule(
     for op in ops:
         per_combo: List[int] = []
         feasible_durs: List[int] = []
+        sentinel_ks: List[int] = []
         for k in range(n_combos):
             if k in op.infeasible_combinations:
                 per_combo.append(_to_int_us(1e9))
             else:
-                d = _to_int_us(float(op.get_duration_for_combination(
-                    k, combos, machines)))
-                per_combo.append(d)
-                feasible_durs.append(d)
+                d_ms = float(op.get_duration_for_combination(k, combos, machines))
+                d = _to_int_us(d_ms)
+                if d_ms >= _INFEASIBLE_COST_MS:
+                    # An exclusion expressed as a cost. Record it as an exclusion.
+                    sentinel_ks.append(k)
+                    per_combo.append(_to_int_us(1e9))
+                else:
+                    per_combo.append(d)
+                    feasible_durs.append(d)
+        if sentinel_ks:
+            try:
+                op.infeasible_combinations = set(op.infeasible_combinations) | set(
+                    sentinel_ks)
+            except Exception:
+                pass
         durations_int.append(per_combo)
         horizon += (max(feasible_durs) if feasible_durs else _to_int_us(1e6)) + 1
 

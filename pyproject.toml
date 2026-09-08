@@ -46,3 +46,11 @@ solvers = ["cvxpy", "ortools", "mosek"]
 # zephyr-chipyard-sw/, hw/chipyard/, etc. looking for packages.
 [tool.setuptools]
 py-modules = []
+
+[tool.pytest.ini_options]
+# `--import-mode=importlib` for the same reason ModelBlaster's pyproject gives: a
+# stale __pycache__ from a sibling checkout otherwise aborts collection, which is
+# how a documented test command came to fail for everyone but the person whose
+# cache happened to be warm.
+addopts = "--import-mode=importlib"
+testpaths = ["xpu-rt/tests", "tests"]

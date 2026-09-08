@@ -60,6 +60,25 @@ def _zero_costed_metadata() -> dict:
         return {}
 
 
+# A placement this long is profile_loader's "the hardware cannot run this" sentinel
+# (1e8 ms), not a duration. Emitting it produces a schedule whose makespan is a
+# fiction -- and one was emitted: a CP-SAT shard solve returned 500,000,069 us.
+_SENTINEL_DURATION_MS = 1e8 * 0.999
+
+
+def _sentinel_placements(dispatches: dict) -> list[str]:
+    """Placements whose duration is the infeasibility sentinel rather than a cost."""
+    out = []
+    for name, d in (dispatches or {}).items():
+        try:
+            if float(d.get("duration", 0.0)) >= _SENTINEL_DURATION_MS:
+                out.append(f"{name} on {d.get('hardware_target')} "
+                           f"({float(d['duration']):.3g} ms)")
+        except (TypeError, ValueError):
+            continue
+    return out
+
+
 def _solve_provenance_metadata(pdb_hash: str | None) -> dict:
     """The solve-provenance block, or `{}` when this process recorded none."""
     try:
@@ -354,6 +373,20 @@ def output_scheduled_json(
         granularity_advice = [advice.as_dict() for advice in analyze_granularity(records)]
     except Exception as e:
         print(f"warning: granularity advisor failed, omitting from output ({e})")
+
+    _sent = _sentinel_placements(combined_dispatches)
+    if _sent and os.environ.get("XPURT_ALLOW_SENTINEL_PLACEMENTS", "0") not in (
+            "1", "true", "True"):
+        raise ValueError(
+            "postprocessing: refusing to write a schedule that places "
+            f"{len(_sent)} dispatch(es) on a cell the profile marked as UNRUNNABLE "
+            "(the 1e8 ms sentinel). That is not an expensive schedule, it is an "
+            "infeasible one wearing a makespan.\n  "
+            + "\n  ".join(_sent[:20])
+            + ("\n  ... and %d more" % (len(_sent) - 20) if len(_sent) > 20 else "")
+            + "\n  Fix the missing profile (this net has no measurement at that "
+              "width/backend), or set XPURT_ALLOW_SENTINEL_PLACEMENTS=1 to keep the "
+              "fiction on purpose.")
 
     # Create output JSON structure
     output_data = {
