@@ -389,6 +389,11 @@ def main():
                          "(default: all). Restricting to a subset is honest scenario-scoping, e.g. "
                          "'--levers ime' asks 'with sharding off the table, does the loop autonomously "
                          "accept the matrix engine?' — the accept/reject is still measured, not forced.")
+    ap.add_argument("--replay", action="store_true",
+                    help="deterministic offline replay: pin XPURT_CPSAT_WORKERS=1 and "
+                         "refuse anything that would touch the board, so two runs of "
+                         "the same inputs produce byte-identical schedules. This is the "
+                         "mode someone without our hardware can check.")
     ap.add_argument("--accept-rule", choices=["objective", "legacy"], default="objective",
                     help="objective (default): candidate_objective.accept(), the project's "
                          "nine-term lexicographic rule. legacy: the old two-term "
@@ -431,6 +436,17 @@ def main():
     def log(s):
         print(s)
         lines.append(s)
+
+    if args.replay:
+        # WHY PIN IT. scheduler_cpsat sets num_search_workers=1 and random_seed=42
+        # precisely so a cold rerun matches bit-exactly, and says in as many words
+        # that more workers under a time limit are NOT deterministic -- the docs then
+        # mandate XPURT_CPSAT_WORKERS=0 for the published numbers, which is the fast
+        # setting, not the reproducible one. A replay wants the reproducible one, and
+        # it should say so rather than inherit whatever the shell had.
+        os.environ["XPURT_CPSAT_WORKERS"] = "1"
+        log("replay: XPURT_CPSAT_WORKERS=1 (deterministic; the published numbers use "
+            "0/6, which is faster and not reproducible)")
 
     log(f"== co-design loop: {wl_stem} ==")
     if active_levers != list(LEVERS):

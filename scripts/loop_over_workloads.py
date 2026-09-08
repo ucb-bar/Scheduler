@@ -151,7 +151,13 @@ def main() -> int:
     os.makedirs(out_root, exist_ok=True)
 
     if a.summarize_only:
+        # THE DENOMINATOR IS THE WORKLOAD LIST, NOT THE REPORT LIST. Walking only the
+        # loop_report.json files that exist drops every workload that failed before
+        # writing one -- which is precisely the case a fraction needs to keep. Doing
+        # that turned 22/25 into "24/24, 100%" on the first try here.
         recs = []
+        intended = {os.path.splitext(os.path.basename(w))[0]: w for w in workloads}
+        seen = set()
         for rp in sorted(glob.glob(os.path.join(out_root, "*", "*",
                                                 "loop_report.json"))):
             rep = json.load(open(rp))
@@ -178,8 +184,17 @@ def main() -> int:
                 "detail": f"{rep.get('objective')} {base} -> {final}; "
                           f"makespan {bmk} -> {fmk}",
             })
-        workloads = [r["workload"] for r in recs]
-        print(f"re-derived {len(recs)} run(s) from {os.path.relpath(out_root, REPO)}")
+            seen.add(os.path.basename(os.path.dirname(os.path.dirname(rp))))
+        for stem, w in intended.items():
+            if stem not in seen:
+                recs.append({"workload": w, "report": None, "levers_applied": [],
+                             "status": "failed_or_no_report",
+                             "detail": "no loop_report.json under "
+                                       f"{os.path.relpath(out_root, REPO)}/{stem}; "
+                                       "the run did not get far enough to write one"})
+        print(f"re-derived {len(recs)} run(s) from {os.path.relpath(out_root, REPO)} "
+              f"({len(seen)} with reports, "
+              f"{len(recs) - len(seen)} intended but missing)")
     else:
       recs = []
       for i, w in enumerate(workloads, 1):
@@ -196,7 +211,8 @@ def main() -> int:
     n = len(recs)
     imp = [r for r in recs if r["status"] == "improved"]
     nolever = [r for r in recs if r["status"] == "no_lever_helped"]
-    bad = [r for r in recs if r["status"] in ("failed", "timeout", "no_report")]
+    bad = [r for r in recs if r["status"] in ("failed", "timeout", "no_report",
+                                              "failed_or_no_report")]
     summary = {
         "schema": "loop_sweep/v1",
         "n_workloads": n,

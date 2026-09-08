@@ -1,0 +1,554 @@
+{
+ "schema": "loop_sweep/v1",
+ "n_workloads": 25,
+ "n_improved": 24,
+ "improved_fraction": 0.96,
+ "n_no_lever_helped": 0,
+ "n_failed_or_timeout": 1,
+ "solver": "greedy",
+ "objective": "auto",
+ "board_calibration": null,
+ "improved_means": "a lever was applied AND the declared objective or the makespan strictly improved, judged by the loop's candidate_objective rule",
+ "runs": [
+  {
+   "workload": "_4w_networks_k1_sensor_sharded_rich_shard_ime_s4.0",
+   "report": "results/loop_sweep/_4w_networks_k1_sensor_sharded_rich_shard_ime_s4.0/_4w_networks_k1_sensor_sharded_rich_shard_ime_s4.0/loop_report.json",
+   "levers_applied": [
+    "ime"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 51.611,
+   "final": 46.569,
+   "baseline_makespan_ms": 51.6,
+   "final_makespan_ms": 46.6,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    2,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 51.611 -> 46.569; makespan 51.6 -> 46.6"
+  },
+  {
+   "workload": "_4w_networks_k1_sensor_sharded_rich_shard_ime_s5.0",
+   "report": "results/loop_sweep/_4w_networks_k1_sensor_sharded_rich_shard_ime_s5.0/_4w_networks_k1_sensor_sharded_rich_shard_ime_s5.0/loop_report.json",
+   "levers_applied": [
+    "ime"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 46.611,
+   "final": 38.764,
+   "baseline_makespan_ms": 46.6,
+   "final_makespan_ms": 38.8,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    2,
+    1,
+    3,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 46.611 -> 38.764; makespan 46.6 -> 38.8"
+  },
+  {
+   "workload": "_4w_networks_k1_sensor_tight_vision_head",
+   "report": "results/loop_sweep/_4w_networks_k1_sensor_tight_vision_head/_4w_networks_k1_sensor_tight_vision_head/loop_report.json",
+   "levers_applied": [
+    "ime"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 46.611,
+   "final": 38.764,
+   "baseline_makespan_ms": 46.6,
+   "final_makespan_ms": 38.8,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    2,
+    1,
+    1,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 46.611 -> 38.764; makespan 46.6 -> 38.8"
+  },
+  {
+   "workload": "_evo_og",
+   "report": "results/loop_sweep/_evo_og/_evo_og/loop_report.json",
+   "levers_applied": [
+    "unfuse",
+    "ime"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 898.097,
+   "final": 847.89,
+   "baseline_makespan_ms": 898.1,
+   "final_makespan_ms": 847.9,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    0,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 898.097 -> 847.89; makespan 898.1 -> 847.9"
+  },
+  {
+   "workload": "_evo_sen_og",
+   "report": "results/loop_sweep/_evo_sen_og/_evo_sen_og/loop_report.json",
+   "levers_applied": [
+    "ime"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 51.611,
+   "final": 46.569,
+   "baseline_makespan_ms": 51.6,
+   "final_makespan_ms": 46.6,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    2,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 51.611 -> 46.569; makespan 51.6 -> 46.6"
+  },
+  {
+   "workload": "_flight_deployed_2frame",
+   "report": "results/loop_sweep/_flight_deployed_2frame/_flight_deployed_2frame/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 56.6,
+   "final": 42.412,
+   "baseline_makespan_ms": 56.6,
+   "final_makespan_ms": 42.4,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    2,
+    0,
+    2,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 56.6 -> 42.412; makespan 56.6 -> 42.4"
+  },
+  {
+   "workload": "_flight_deployed_matched_board",
+   "report": "results/loop_sweep/_flight_deployed_matched_board/_flight_deployed_matched_board/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 126.6,
+   "final": 112.458,
+   "baseline_makespan_ms": 126.6,
+   "final_makespan_ms": 112.5,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    5,
+    0,
+    4,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 126.6 -> 112.458; makespan 126.6 -> 112.5"
+  },
+  {
+   "workload": "networks_k1_deployed_rich_vithead",
+   "report": "results/loop_sweep/networks_k1_deployed_rich_vithead/networks_k1_deployed_rich_vithead/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 122.6,
+   "final": 110.083,
+   "baseline_makespan_ms": 122.6,
+   "final_makespan_ms": 110.1,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    5,
+    0,
+    8,
+    5
+   ],
+   "status": "improved",
+   "detail": "makespan 122.6 -> 110.083; makespan 122.6 -> 110.1"
+  },
+  {
+   "workload": "networks_k1_deployed_rich_vithead_noime",
+   "report": "results/loop_sweep/networks_k1_deployed_rich_vithead_noime/networks_k1_deployed_rich_vithead_noime/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 122.6,
+   "final": 110.083,
+   "baseline_makespan_ms": 122.6,
+   "final_makespan_ms": 110.1,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    5,
+    0,
+    8,
+    5
+   ],
+   "status": "improved",
+   "detail": "makespan 122.6 -> 110.083; makespan 122.6 -> 110.1"
+  },
+  {
+   "workload": "networks_k1_ffn_ime",
+   "report": "results/loop_sweep/networks_k1_ffn_ime/networks_k1_ffn_ime/loop_report.json",
+   "levers_applied": [
+    "ime",
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 150.083,
+   "final": 150.083,
+   "baseline_makespan_ms": 150.1,
+   "final_makespan_ms": 150.1,
+   "objective_or_makespan_moved": false,
+   "board_arc": [
+    0,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 150.083 -> 150.083; makespan 150.1 -> 150.1"
+  },
+  {
+   "workload": "networks_k1_flight_deployed",
+   "report": "results/loop_sweep/networks_k1_flight_deployed/networks_k1_flight_deployed/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 122.6,
+   "final": 110.083,
+   "baseline_makespan_ms": 122.6,
+   "final_makespan_ms": 110.1,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    5,
+    0,
+    7,
+    5
+   ],
+   "status": "improved",
+   "detail": "makespan 122.6 -> 110.083; makespan 122.6 -> 110.1"
+  },
+  {
+   "workload": "networks_k1_flight_deployed_noshard",
+   "report": "results/loop_sweep/networks_k1_flight_deployed_noshard/networks_k1_flight_deployed_noshard/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 122.6,
+   "final": 110.083,
+   "baseline_makespan_ms": 122.6,
+   "final_makespan_ms": 110.1,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    5,
+    0,
+    7,
+    5
+   ],
+   "status": "improved",
+   "detail": "makespan 122.6 -> 110.083; makespan 122.6 -> 110.1"
+  },
+  {
+   "workload": "networks_k1_flight_deployed_singletons",
+   "report": "results/loop_sweep/networks_k1_flight_deployed_singletons/networks_k1_flight_deployed_singletons/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 122.6,
+   "final": 110.083,
+   "baseline_makespan_ms": 122.6,
+   "final_makespan_ms": 110.1,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    5,
+    0,
+    7,
+    5
+   ],
+   "status": "improved",
+   "detail": "makespan 122.6 -> 110.083; makespan 122.6 -> 110.1"
+  },
+  {
+   "workload": "networks_k1_mb",
+   "report": "results/loop_sweep/networks_k1_mb/networks_k1_mb/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 8.001,
+   "final": 4.867,
+   "baseline_makespan_ms": 8.0,
+   "final_makespan_ms": 4.9,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    0,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 8.001 -> 4.867; makespan 8.0 -> 4.9"
+  },
+  {
+   "workload": "networks_k1_mb_3model_12hz",
+   "report": "results/loop_sweep/networks_k1_mb_3model_12hz/networks_k1_mb_3model_12hz/loop_report.json",
+   "levers_applied": [
+    "ime"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 1069.319,
+   "final": 1068.508,
+   "baseline_makespan_ms": 1069.3,
+   "final_makespan_ms": 1068.5,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    12,
+    12,
+    12,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 1069.319 -> 1068.508; makespan 1069.3 -> 1068.5"
+  },
+  {
+   "workload": "networks_k1_mb_3model_4hz",
+   "report": "results/loop_sweep/networks_k1_mb_3model_4hz/networks_k1_mb_3model_4hz/loop_report.json",
+   "levers_applied": [
+    "ime"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 902.652,
+   "final": 901.841,
+   "baseline_makespan_ms": 902.7,
+   "final_makespan_ms": 901.8,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    0,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 902.652 -> 901.841; makespan 902.7 -> 901.8"
+  },
+  {
+   "workload": "networks_k1_mb_3model_4hz_yolo_ctrl",
+   "report": "results/loop_sweep/networks_k1_mb_3model_4hz_yolo_ctrl/networks_k1_mb_3model_4hz_yolo_ctrl/loop_report.json",
+   "levers_applied": [
+    "unfuse",
+    "ime"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 898.097,
+   "final": 847.89,
+   "baseline_makespan_ms": 898.1,
+   "final_makespan_ms": 847.9,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    0,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 898.097 -> 847.89; makespan 898.1 -> 847.9"
+  },
+  {
+   "workload": "networks_k1_mb_B1",
+   "report": "results/loop_sweep/networks_k1_mb_B1/networks_k1_mb_B1/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 310.083,
+   "final": 310.083,
+   "baseline_makespan_ms": 310.1,
+   "final_makespan_ms": 310.1,
+   "objective_or_makespan_moved": false,
+   "board_arc": [
+    0,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 310.083 -> 310.083; makespan 310.1 -> 310.1"
+  },
+  {
+   "workload": "networks_k1_multicore_shard",
+   "report": "results/loop_sweep/networks_k1_multicore_shard/networks_k1_multicore_shard/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 107.901,
+   "final": 104.791,
+   "baseline_makespan_ms": 107.9,
+   "final_makespan_ms": 104.8,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    0,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 107.901 -> 104.791; makespan 107.9 -> 104.8"
+  },
+  {
+   "workload": "networks_k1_sensor_sharded_rich",
+   "report": "results/loop_sweep/networks_k1_sensor_sharded_rich/networks_k1_sensor_sharded_rich/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 126.611,
+   "final": 107.85,
+   "baseline_makespan_ms": 126.6,
+   "final_makespan_ms": 107.9,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    0,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 126.611 -> 107.85; makespan 126.6 -> 107.9"
+  },
+  {
+   "workload": "networks_k1_tri_exact_100ms",
+   "report": "results/loop_sweep/networks_k1_tri_exact_100ms/networks_k1_tri_exact_100ms/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "worst-response",
+   "baseline": 8.001,
+   "final": 4.891,
+   "baseline_makespan_ms": 83.4,
+   "final_makespan_ms": 83.4,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    0,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "worst-response 8.001 -> 4.891; makespan 83.4 -> 83.4"
+  },
+  {
+   "workload": "networks_k1_tri_exact_100ms_feedback",
+   "report": "results/loop_sweep/networks_k1_tri_exact_100ms_feedback/networks_k1_tri_exact_100ms_feedback/loop_report.json",
+   "levers_applied": [
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "worst-response",
+   "baseline": 8.001,
+   "final": 4.891,
+   "baseline_makespan_ms": 83.4,
+   "final_makespan_ms": 83.4,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    0,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "worst-response 8.001 -> 4.891; makespan 83.4 -> 83.4"
+  },
+  {
+   "workload": "networks_k1_tri_small",
+   "report": "results/loop_sweep/networks_k1_tri_small/networks_k1_tri_small/loop_report.json",
+   "levers_applied": [
+    "ime",
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 26.611,
+   "final": 20.083,
+   "baseline_makespan_ms": 26.6,
+   "final_makespan_ms": 20.1,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    0,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 26.611 -> 20.083; makespan 26.6 -> 20.1"
+  },
+  {
+   "workload": "networks_k1_tri_small_feedback",
+   "report": "results/loop_sweep/networks_k1_tri_small_feedback/networks_k1_tri_small_feedback/loop_report.json",
+   "levers_applied": [
+    "ime",
+    "shard"
+   ],
+   "accept_rule": "candidate_objective.accept (nine lexicographic terms)",
+   "objective": "makespan",
+   "baseline": 26.611,
+   "final": 20.083,
+   "baseline_makespan_ms": 26.6,
+   "final_makespan_ms": 20.1,
+   "objective_or_makespan_moved": true,
+   "board_arc": [
+    0,
+    0,
+    0,
+    null
+   ],
+   "status": "improved",
+   "detail": "makespan 26.611 -> 20.083; makespan 26.6 -> 20.1"
+  },
+  {
+   "workload": "data/toplevel/networks_k1_mlp_dronet.json",
+   "report": null,
+   "levers_applied": [],
+   "status": "failed_or_no_report",
+   "detail": "no loop_report.json under results/loop_sweep/networks_k1_mlp_dronet; the run did not get far enough to write one"
+  }
+ ]
+}
