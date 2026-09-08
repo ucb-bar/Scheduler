@@ -1517,11 +1517,29 @@ if __name__ == "__main__":
                   if args.board_calibration is True else args.board_calibration)
         _cabs = _cpath if os.path.isabs(_cpath) else os.path.join(_REPO_ROOT, _cpath)
         if not os.path.exists(_cabs):
-            print(f"--board-calibration: no artifact at {_cabs}; running additive (no-op)")
-        else:
-            _calib = _json.load(open(_cabs))
-            print(f"--board-calibration: loaded {_cabs} "
-                  f"(aggregate x{_calib.get('aggregate_multiplier', 1.0):.3f})")
+            # WHY THIS EXITS. This used to print and continue with _calib=None -- exactly the
+            # "silently running additive" the comment above claims to prevent -- so a solve
+            # launched from the wrong cwd (the default path is repo-relative) produced an
+            # UNCALIBRATED schedule filed under a calibrated name, with nothing in the file
+            # to say so. A missing calibration is a broken request, not a default.
+            print(f"--board-calibration: no artifact at {_cabs}. Refusing to run additive "
+                  f"under a calibrated request -- pass the right path, or drop the flag to "
+                  f"ask for the additive view on purpose.", file=sys.stderr)
+            raise SystemExit(2)
+        _calib = _json.load(open(_cabs))
+        print(f"--board-calibration: loaded {_cabs} "
+              f"(aggregate x{_calib.get('aggregate_multiplier', 1.0):.3f})")
+    try:
+        import solve_provenance
+        solve_provenance.record(
+            solver=args.solver, scheduler=getattr(args, "scheduler", None),
+            time_limit=getattr(args, "time_limit", None),
+            random_seed=getattr(args, "random_seed", None),
+            max_periodic_iters=getattr(args, "max_periodic_iters", None),
+            board_calibration=_calib,
+            calibration_path=(_cabs if args.board_calibration is not None else None))
+    except Exception as _e:  # provenance is additive; never block a solve on it
+        print(f"(warning) solve provenance not recorded: {_e}")
 
     # Contention is additive and off unless asked for: installing None here
     # leaves the schedulers on the plain solo profile.

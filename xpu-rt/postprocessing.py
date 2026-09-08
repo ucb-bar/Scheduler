@@ -49,6 +49,26 @@ def automerge_enabled() -> bool:
     return os.environ.get("XPURT_AUTOMERGE", "0") in ("1", "true", "True")
 
 
+def _zero_costed_metadata() -> dict:
+    """`{"zero_costed_dispatches": [...]}` when the last profile load costed any
+    dispatch 0.0 for want of a row; `{}` otherwise."""
+    try:
+        import profile_loader
+        z = list(getattr(profile_loader, "LAST_ZERO_COSTED", []) or [])
+        return {"zero_costed_dispatches": z} if z else {}
+    except Exception:
+        return {}
+
+
+def _solve_provenance_metadata(pdb_hash: str | None) -> dict:
+    """The solve-provenance block, or `{}` when this process recorded none."""
+    try:
+        import solve_provenance
+        return solve_provenance.as_metadata(pdb_hash)
+    except Exception:
+        return {}
+
+
 def output_scheduled_json(
     combined_workload: Workload,
     t: np.ndarray,
@@ -376,6 +396,16 @@ def output_scheduled_json(
             # PDB; the runtime ran bit-exact kernels against it).
             **({"pdb_hash": pdb_hash} if pdb_hash else {}),
             **({"pdb_files": pdb_files} if pdb_files else {}),
+            # solve_hash / solve_env: what this solve was solved AGAINST, beyond the
+            # profile CSVs -- the calibration table's content hash, the solver and
+            # scheduler, and the env switches that change the result. pdb_hash cannot
+            # tell an additive solve from a calibrated re-solve of the same spec (same
+            # CSVs), which is the one comparison the board-feedback story needs.
+            **_solve_provenance_metadata(pdb_hash),
+            # Which dispatches were costed 0.0 for want of a profile row. A schedule
+            # that contains unmeasured-as-free work should say so in the file, not only
+            # in a log line that scrolls away.
+            **_zero_costed_metadata(),
             # Exact CP-SAT runs attach their sequential optimality proof to the
             # workload. Persist it with the schedule so a figure cannot claim
             # "best baseline" without carrying the certificate that supports

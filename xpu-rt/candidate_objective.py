@@ -267,6 +267,26 @@ def _terms(tol: Tolerances):
     ]
 
 
+def terms_dict(c: CandidateOutcome, tol: Tolerances = DEFAULT_TOLERANCES) -> dict:
+    """The nine ranked terms of one outcome, in priority order, as plain numbers.
+
+    A verdict string says which term decided; this says what every term was, so a recorded
+    accept/reject can be re-checked later without re-solving. Consumers that only had
+    `str(outcome)` before (compare_candidates.py, the co-design loop's ledger) get the same
+    numbers `compare()` actually ranks, rather than a repr.
+    """
+    d = {"label": c.label,
+         "ineligible": str(c.ineligible) if c.ineligible else None}
+    for i, (name, get, lower_better, _tol) in enumerate(_terms(tol), start=1):
+        try:
+            v = float(get(c))
+        except TypeError:  # a term this outcome does not carry (no heavy model, say)
+            v = None
+        d[f"{i:02d}_{name.replace(' ', '_').replace('-', '_')}"] = v
+    d["total_instances"] = c.total_instances()
+    return d
+
+
 def compare(a: CandidateOutcome, b: CandidateOutcome,
             tol: Tolerances = DEFAULT_TOLERANCES) -> Tuple[int, str]:
     """Lexicographic order. Returns (-1 if a better, 1 if b better, 0 tie), why.

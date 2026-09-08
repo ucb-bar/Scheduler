@@ -102,12 +102,26 @@ def main() -> int:
     cand_s = json.load(open(a.candidate_schedule))
 
     # The check that the candidate was solved against different costs at all.
-    bh = (base_s.get("metadata") or {}).get("pdb_hash")
-    ch = (cand_s.get("metadata") or {}).get("pdb_hash")
+    # solve_hash is preferred where present: pdb_hash fingerprints only the profile CSVs,
+    # so an additive solve and a --board-calibration re-solve of the same spec share it and
+    # this check used to refuse the board-feedback comparison -- the one the headline
+    # result rests on. solve_hash folds in the calibration table, solver and env, so those
+    # two are distinguishable; identical solve_hash still means genuinely nothing differed.
+    bm = (base_s.get("metadata") or {})
+    cm = (cand_s.get("metadata") or {})
+    bh, ch = bm.get("solve_hash"), cm.get("solve_hash")
+    hash_kind = "solve_hash"
+    if not (bh and ch):
+        bh, ch = bm.get("pdb_hash"), cm.get("pdb_hash")
+        hash_kind = "pdb_hash"
     if bh and ch and bh == ch:
-        print("REFUSING: both schedules carry the same pdb_hash, so they were "
-              "solved against the SAME measured costs. Whatever the verdict "
-              "would be, it is not about the rewrite.", file=sys.stderr)
+        print(f"REFUSING: both schedules carry the same {hash_kind}, so they were "
+              "solved against the SAME measured costs and switches. Whatever the "
+              "verdict would be, it is not about the rewrite.", file=sys.stderr)
+        if hash_kind == "pdb_hash":
+            print("  (neither schedule carries solve_hash: re-solve with a build that "
+                  "records solve provenance if these differ only by --board-calibration)",
+                  file=sys.stderr)
         return 2
 
     # The check that they scheduled the same amount of work.
@@ -145,12 +159,15 @@ def main() -> int:
         json.dump({"baseline": a.baseline_schedule,
                    "candidate": a.candidate_schedule,
                    "accepted": bool(ok), "why": why,
-                   "baseline_pdb_hash": bh, "candidate_pdb_hash": ch,
+                   "hash_kind": hash_kind,
+                   "baseline_hash": bh, "candidate_hash": ch,
+                   "baseline_pdb_hash": bm.get("pdb_hash"),
+                   "candidate_pdb_hash": cm.get("pdb_hash"),
+                   "baseline_solve_hash": bm.get("solve_hash"),
+                   "candidate_solve_hash": cm.get("solve_hash"),
                    "baseline_instances": bi, "candidate_instances": ci,
-                   "baseline_terms": base.as_dict() if hasattr(base, "as_dict")
-                   else str(base),
-                   "candidate_terms": cand.as_dict() if hasattr(cand, "as_dict")
-                   else str(cand)},
+                   "baseline_terms": objective.terms_dict(base),
+                   "candidate_terms": objective.terms_dict(cand)},
                   open(a.json, "w"), indent=1, default=str)
         print(f"  wrote {a.json}")
     return 0 if ok else 1

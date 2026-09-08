@@ -3,10 +3,18 @@
 
 ONE command. Starts from a workload spec at a clean baseline (no levers), then each
 round proposes every not-yet-applied lever as a candidate, SOLVES each candidate with
-the real profiled scheduler, and ACCEPTS the candidate with the largest MEASURED
-makespan reduction that adds ZERO deadline misses. Iterates until no lever helps
-(converged). The loop's intelligence is the advisor/cost-model; this driver applies,
-measures, and accepts — honestly (a lever that does not help is rejected and reported).
+the real profiled scheduler, and ACCEPTS on the project's own acceptance rule —
+`candidate_objective.accept()`, nine lexicographic terms with hard deadline misses
+FIRST and makespan SEVENTH, each with its own noise tolerance. Among the candidates
+that rule accepts, the declared objective picks which one to take. Iterates until no
+lever is accepted (converged). The loop's intelligence is the advisor/cost-model; this
+driver applies, measures, and accepts — honestly (a lever that does not help is
+rejected, with the deciding term recorded).
+
+The old rule (`misses_not_worse AND objective_delta > 0.05 ms`) survives behind
+`--accept-rule legacy` only to reproduce pre-hardening runs. It disagreed with the real
+one: results/codesign_loop/_ime_yolo_c0only/loop_report.json records an ACCEPT of the
+ime lever with 93 deadline misses on both sides, won on makespan — term 7 of 9.
 
 Levers:
   * ime   — expose the K1 IME matrix engine as a per-dispatch alternative. For every
@@ -47,6 +55,66 @@ try:
     import exact_cycle  # objective-aware acceptance for exact_cycle workloads
 except Exception:
     exact_cycle = None
+try:
+    import candidate_objective as objective
+    import schedule_scoring
+    import workload_spec
+except Exception:  # pragma: no cover - the legacy rule still works without them
+    objective = schedule_scoring = workload_spec = None
+
+
+def critical_and_heavy(spec: dict, critical_arg=None, heavy_arg=None):
+    """Which nets carry the hard-deadline term, and which one is the heavy perception net.
+
+    Default: EVERY deadline-bearing net is critical. That keeps term 1 exactly as strict as
+    this loop's previous instance-miss guard while adding the eight terms the guard ignored,
+    so switching to the real rule can only ever reject more, never less. The heavy net
+    defaults to the longest-cadence one -- the perception head, whose max latency and
+    throughput are terms 5 and 6."""
+    nets = spec.get("networks") or {}
+    if critical_arg:
+        crit = tuple(m.strip() for m in str(critical_arg).split(",") if m.strip())
+    else:
+        crit = tuple(n for n, v in nets.items()
+                     if float(v.get("window_duration") or 0) > 0)
+    heavy = heavy_arg
+    if heavy is None and nets:
+        heavy = max(nets, key=lambda n: float(nets[n].get("period") or 0))
+    return crit, heavy
+
+
+def outcome_of(label, sched_path, spec, critical, heavy):
+    """A CandidateOutcome for one solved schedule, built exactly as compare_candidates.py
+    builds it -- the project's stated acceptance inputs, not a single scalar."""
+    if schedule_scoring is None:
+        return None
+    sched = json.load(open(sched_path))
+    windows, known = workload_spec.windows_and_names(spec)
+    periods = workload_spec.periods_ms(spec)
+    _, out, _ = schedule_scoring.score(label, sched, windows, critical, heavy,
+                                       known, periods)
+    return out
+
+
+def objective_verdict(cand_out, base_out, cand_sched_path, base_sched_path, spec):
+    """(ok, why) from `candidate_objective.accept()` -- nine lexicographic terms, hard
+    deadline misses FIRST and makespan SEVENTH, each with its own noise tolerance.
+
+    THE GAP THIS CLOSES. This driver used to accept on two terms of its own,
+    `misses_not_worse AND objective_delta > 0.05ms`, which is not the project's rule and
+    disagrees with it: results/codesign_loop/_ime_yolo_c0only/loop_report.json records an
+    ACCEPT of the ime lever with 93 deadline misses on both sides, won on makespan -- the
+    term the real rule ranks seventh. A tie is a rejection, and unequal instance counts are
+    refused rather than judged, because two different amounts of work are not two graphs."""
+    if objective is None or cand_out is None or base_out is None:
+        return None, "objective rule unavailable"
+    known = set((spec.get("networks") or {}).keys())
+    bi = schedule_scoring.instances_per_model(json.load(open(base_sched_path)), known)
+    ci = schedule_scoring.instances_per_model(json.load(open(cand_sched_path)), known)
+    if bi != ci:
+        return False, (f"refused -- instance counts differ ({bi} vs {ci}); that is two "
+                       f"amounts of work, not two graphs")
+    return objective.accept(cand_out, base_out)
 
 
 def objective_of(spec: dict) -> str:
@@ -222,17 +290,31 @@ def baseline(spec: dict) -> dict:
 
 def apply_ime(spec: dict, log) -> dict:
     spec = copy.deepcopy(spec)
-    built = []
+    built, failed, have_existing = [], [], False
     for key, info in spec.get("networks", {}).items():
         net, variant = _net_variant(info.get("dispatch_deps_path", ""), key)
         if not _is_conv_net(net, variant):
             continue
         if os.path.exists(_rvv_profile(net, variant, hw="ime_x60")):
+            have_existing = True
             continue  # already has an ime profile (matmul nets, or a prior build) — do not clobber
         r = _run([PY, "scripts/make_ime_profile.py", "--net", net, "--variant", variant])
         if r.returncode == 0:
             built.append(f"{net}.{variant}")
+        else:
+            failed.append(f"{net}.{variant}: {(r.stderr or r.stdout or '').strip()[-160:]}")
     log(f"      ime: built ime_x60 profiles for {built or '(none new; existing reused)'}")
+    if failed:
+        # WHY THIS IS LOUD. This used to swallow the failure, append nothing, and STILL set
+        # enable_impls=True -- so on a checkout without scripts/make_ime_profile.py or
+        # xpu-rt/data/ the "ime" lever was a no-op that the ledger recorded as applied, and
+        # a rejected lever and an unapplied one are not the same finding.
+        for f in failed:
+            log(f"      ime: BUILD FAILED {f}")
+        if not built and not have_existing:
+            raise SystemExit(
+                "ime lever cannot be applied: no ime_x60 profile exists and every build "
+                "failed (see above). Refusing to report an unapplied lever as applied.")
     spec.setdefault("scheduler", {})["enable_impls"] = True
     return spec
 
@@ -307,6 +389,17 @@ def main():
                          "(default: all). Restricting to a subset is honest scenario-scoping, e.g. "
                          "'--levers ime' asks 'with sharding off the table, does the loop autonomously "
                          "accept the matrix engine?' — the accept/reject is still measured, not forced.")
+    ap.add_argument("--accept-rule", choices=["objective", "legacy"], default="objective",
+                    help="objective (default): candidate_objective.accept(), the project's "
+                         "nine-term lexicographic rule. legacy: the old two-term "
+                         "misses-not-worse AND delta>EPS rule (kept only to reproduce "
+                         "pre-hardening runs).")
+    ap.add_argument("--critical-models", default=None,
+                    help="comma-separated nets carrying the hard-deadline term "
+                         "(default: every deadline-bearing net)")
+    ap.add_argument("--heavy-model", default=None,
+                    help="the heavy perception net for terms 5-6 "
+                         "(default: the longest-cadence net)")
     ap.add_argument("--objective", choices=["auto", "makespan", "lateness", "misses"], default="auto",
                     help="acceptance metric. 'auto' = the spec's declared objective (worst-response for "
                          "exact-cycle specs, else makespan). 'lateness' = total instance lateness "
@@ -385,14 +478,23 @@ def main():
 
     base_score = score(sched, working, mk)
     base_gmiss = guard_miss(sched, working, miss)
+    critical, heavy = critical_and_heavy(working, args.critical_models, args.heavy_model)
+    use_objective = (args.accept_rule == "objective") and objective is not None
+    if args.accept_rule == "objective" and objective is None:
+        log("WARNING: candidate_objective unavailable; falling back to the legacy two-term rule")
+    base_out = outcome_of("baseline", sched, working, critical, heavy) if use_objective else None
     log(f"round 0 · baseline: {metric_name} {base_score:.3f} "
         f"(makespan {mk:.1f} ms), {base_gmiss} instance-miss")
+    if use_objective:
+        log(f"accept rule: candidate_objective.accept() · critical={list(critical)} "
+            f"heavy={heavy}")
 
     applied, rounds = [], []
     traj = [{"round": 0, "lever": "baseline", "score_ms": round(base_score, 3),
              "makespan_ms": round(mk, 1), "misses": base_gmiss}]
     cur_mk, cur_score, cur_miss, cur_spec = mk, base_score, base_gmiss, working
     cur_sched, cur_spec_path = sched, base_path
+    cur_out = base_out
 
     for rnd in range(1, args.max_rounds + 1):
         cands = []
@@ -409,16 +511,28 @@ def main():
             csc = score(csched, cspec, cmk)
             cgmiss = guard_miss(csched, cspec, cmiss)
             delta = cur_score - csc
-            ok = (cgmiss <= cur_miss) and (delta > EPS)
             pct = (-delta / cur_score * 100) if cur_score else 0.0
+            if use_objective:
+                cout = outcome_of(lever, csched, cspec, critical, heavy)
+                ok, why = objective_verdict(cout, cur_out, csched, cur_sched, cspec)
+                if ok is None:  # objective rule could not be evaluated -- do not guess
+                    ok, why = False, "refused -- objective rule unavailable for this candidate"
+            else:
+                cout = None
+                ok = (cgmiss <= cur_miss) and (delta > EPS)
+                why = (f"legacy rule: misses {cur_miss}->{cgmiss}, "
+                       f"{metric_name} delta {delta:+.3f} vs EPS {EPS}")
             log(f"round {rnd} · try {lever}: {metric_name} {cur_score:.3f} -> {csc:.3f} "
                 f"({pct:+.1f}%), {cgmiss} instance-miss -> {'ACCEPTABLE' if ok else 'reject'}")
+            log(f"round {rnd} · try {lever}: {why}")
             cands.append(dict(lever=lever, mk=cmk, score=csc, miss=cgmiss, sched=csched,
-                              spec=cspec, spec_path=cpath, ok=ok))
+                              spec=cspec, spec_path=cpath, ok=ok, why=why, out=cout))
 
         winners = [c for c in cands if c["ok"]]
         if not winners:
-            log(f"round {rnd}: no lever improves {metric_name} with 0 added misses — CONVERGED")
+            log(f"round {rnd}: no lever is accepted by the "
+                f"{'nine-term objective' if use_objective else 'legacy two-term'} rule "
+                f"— CONVERGED")
             break
         # lexicographic: minimize the objective first, break ties by makespan (among lever sets
         # that meet deadlines equally, prefer the one that also finishes soonest). On this workload
@@ -437,10 +551,18 @@ def main():
         rounds.append(dict(round=rnd, lever=best["lever"], metric=metric_name,
                            score_before_ms=round(cur_score, 3), score_after_ms=round(best["score"], 3),
                            makespan_before_ms=round(cur_mk, 1), makespan_after_ms=round(best["mk"], 1),
-                           pct=round(-pct, 1), accepted=True, deadline_miss=best["miss"]))
+                           pct=round(-pct, 1), accepted=True, deadline_miss=best["miss"],
+                           accept_rule=args.accept_rule, why=best.get("why"),
+                           rejected=[dict(lever=c["lever"], why=c.get("why"),
+                                          score_ms=round(c["score"], 3), misses=c["miss"])
+                                     for c in cands if not c["ok"]],
+                           terms=(objective.terms_dict(best["out"])
+                                  if best.get("out") is not None else None)))
         applied.append(best["lever"])
         cur_mk, cur_score, cur_miss, cur_spec = best["mk"], best["score"], best["miss"], best["spec"]
         cur_sched, cur_spec_path = best["sched"], best["spec_path"]
+        if best.get("out") is not None:
+            cur_out = best["out"]
         traj.append({"round": rnd, "lever": f"+{best['lever']}", "score_ms": round(cur_score, 3),
                      "makespan_ms": round(cur_mk, 1), "misses": cur_miss})
 
@@ -569,6 +691,13 @@ def main():
 
     denom = base_score if base_score else 1.0
     report = dict(workload=wl_stem, objective=metric_name,
+                  accept_rule=("candidate_objective.accept (nine lexicographic terms)"
+                               if use_objective else f"legacy two-term (EPS={EPS} ms)"),
+                  critical_models=list(critical), heavy_model=heavy,
+                  baseline_terms=(objective.terms_dict(base_out)
+                                  if use_objective and base_out is not None else None),
+                  final_terms=(objective.terms_dict(cur_out)
+                               if use_objective and cur_out is not None else None),
                   baseline_score_ms=round(base_score, 3), final_score_ms=round(cur_score, 3),
                   total_reduction_pct=round((base_score - cur_score) / denom * 100, 1),
                   baseline_makespan_ms=round(mk, 1), final_makespan_ms=round(cur_mk, 1),

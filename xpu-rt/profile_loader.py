@@ -99,6 +99,26 @@ def hash_for_paths(csv_paths: list[str]) -> str:
     return digest
 
 
+# Ops the codegen genuinely drops from the kernel dispatch table, so a profile
+# legitimately has no row for them and the runtime walker skips them too
+# (dispatch_id < 0 short-circuit in generate_xpurt_main.py). Anything NOT here
+# that lands in the zero-cost branch means the CSV is short, not that the op is free.
+# Populated by the last load: the dispatches that got a 0.0 for want of a profile row.
+LAST_ZERO_COSTED: list[str] = []
+
+ZERO_COST_OPS = (
+    "view", "reshape", "squeeze", "unsqueeze", "expand", "permute", "transpose",
+    "chunk", "split_op", "slice", "cat", "concat", "identity", "flatten",
+    "contiguous", "to_copy", "clone", "getitem", "dequantize_noop",
+)
+
+
+def _is_zero_cost_op(op: str | None, dispatch_name: str | None = None) -> bool:
+    """True when a zero cost for this dispatch is structural rather than missing data."""
+    hay = f"{op or ''} {dispatch_name or ''}".lower()
+    return any(tok in hay for tok in ZERO_COST_OPS)
+
+
 def load_profiled_times(csv_path: str, n_cores: int | None = None) -> dict[int, dict]:
     """
     Load profiled runtimes from a CSV file.
@@ -753,6 +773,11 @@ def load_profiled_processing_times(
     # Aggregate missing-data findings before raising so the user sees
     # *every* gap at once, not just the first one — saves an iter cycle.
     missing: list[str] = []
+    # Per-dispatch rows absent from a profile that DOES exist (a short CSV, or an op the
+    # codegen drops). Deduplicated per dispatch: the same gap otherwise reports once per
+    # (hw, topo) combination and buries the count.
+    zero_costed: list[str] = []
+    _zero_costed_keys: set[str] = set()
     # Dispatches no backend in this hardware config can run at all.
     unrunnable: list[str] = []
 
@@ -905,14 +930,20 @@ def load_profiled_processing_times(
                         if isinstance(cand_id, int) and cand_id in prof:
                             t_ms = float(prof[cand_id]["time_ms"]) * float(tile_fraction)
 
+                # _op must be re-derived per (dispatch, combination): it used to be
+                # assigned only inside the `t_ms is not None` branch, so the zero-cost
+                # branch below read the PREVIOUS dispatch's op and mislabelled every
+                # diagnostic it printed (yolo's chunk2_c1 dispatches were reported as
+                # conv2d_batchnorm2d_silu_s8 -- a real conv, which is what a reader
+                # would act on).
+                _op = (prof[dispatch_id].get("op")
+                       if (prof and isinstance(dispatch_id, int) and dispatch_id in prof)
+                       else None)
                 if t_ms is not None:
                     # Board calibration (opt-in): scale the isolated-profile time by
                     # the measured board actual/predicted ratio. No-op (x1.0) unless a
                     # calibration dict is passed. Only the real-measured branch is
                     # scaled — never the 1e8/0.0 sentinels below.
-                    _op = (prof[dispatch_id].get("op")
-                           if (prof and isinstance(dispatch_id, int) and dispatch_id in prof)
-                           else None)
                     base_t = float(t_ms) * _board_calibration_mult(
                         board_calibration, net_id, dispatch_id, _op)
                 elif hw.lower().startswith("ime"):
@@ -943,7 +974,30 @@ def load_profiled_processing_times(
                         # are still fatal — that's the synthetic-random
                         # failure mode this strict mode is here to
                         # catch.
+                        #
+                        # BUT a zero here is only legitimate for an op the
+                        # codegen really does drop (view, reshape, chunk...).
+                        # For anything else it is a SHORT CSV -- a profile that
+                        # exists but lacks rows -- and costing those dispatches
+                        # zero is how a schedule gets built against work that
+                        # was never measured. docs/the_loop.md lists this as a
+                        # guard rail that does not exist; it does now. Recorded
+                        # here, adjudicated after the loop (see zero_costed).
                         base_t = 0.0
+                        if not _is_zero_cost_op(_op, dispatch_name):
+                            # NOTE ON THE OP NAME. A dispatch with no profile row has no
+                            # op in the profile either, so this cannot say what it is --
+                            # only that a present CSV lacks a row for it. On yolo these
+                            # are chunk2_c1 ops the codegen legitimately drops; a short
+                            # CSV looks identical from here. Hence: reported always,
+                            # fatal only on request.
+                            key = f"{net_id}/{dispatch_name}(id={dispatch_id})"
+                            if key not in _zero_costed_keys:
+                                _zero_costed_keys.add(key)
+                                zero_costed.append(
+                                    f"  - {key} costed 0.0 (first seen on {hw}/{topo}): "
+                                    f"no row in an otherwise-present profile; op not "
+                                    f"knowable from the profile")
                     else:
                         base_t = _synthetic_time(rng, combo, p_core_speedup)
                 combo_times.append(base_t)
@@ -1019,6 +1073,27 @@ def load_profiled_processing_times(
             "     into the synthetic fallback explicitly.\n"
             f"Missing entries ({len(missing)}):\n" + "\n".join(missing)
         )
+
+    if zero_costed:
+        # Recorded on the module so the emitting side can persist it with the schedule:
+        # "which dispatches were free because nobody measured them" is a property of the
+        # schedule, not a line in a log that scrolls away.
+        global LAST_ZERO_COSTED
+        LAST_ZERO_COSTED = list(zero_costed)
+        msg = (f"{len(zero_costed)} dispatch(es) were costed 0.0 because a profile that "
+               f"EXISTS has no row for them. Either they are ops the codegen drops (the "
+               f"yolo chunk2_c1 case) or the CSV is short and unmeasured work is being "
+               f"scheduled as instantaneous.\n"
+               + "\n".join(zero_costed[:40])
+               + ("\n  ... and %d more" % (len(zero_costed) - 40)
+                  if len(zero_costed) > 40 else ""))
+        if os.environ.get("XPURT_STRICT_ZERO_COST", "0") in ("1", "true", "True"):
+            raise ValueError(
+                "profile_loader: " + msg
+                + "\n  Fix the profile (re-run the sweep), add the op kind to "
+                  "profile_loader.ZERO_COST_OPS, or unset XPURT_STRICT_ZERO_COST.")
+        print("  (warning) " + msg)
+        print("  (warning) set XPURT_STRICT_ZERO_COST=1 to make this fatal")
 
     if strict and unrunnable:
         raise ValueError(
