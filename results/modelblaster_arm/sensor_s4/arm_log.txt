@@ -1,0 +1,24 @@
+== ModelBlaster arm ==  4 IR(s): mlp_control, yolov8_nano_64x96, fused_full, ffn_block
+advice: --models derived from the IRs -> mlp_control:mlp_control.int8,yolov8_nano_64x96:yolov8_nano_64x96.int8,fused_full:fused_full.int8,ffn_block:ffn_block.int8
+advice: 176 records -> {'shard': 1, 'split': 1, 'unchanged': 174}
+fuse/mlp_control: bridge -> no hint (bridge declined or failed: no fusion advice for mlp_control; nothing to do)
+fuse/yolov8_nano_64x96: bridge -> no hint (bridge declined or failed: no fusion advice for yolov8_nano_64x96; nothing to do)
+fuse/fused_full: bridge -> no hint (bridge declined or failed: no fusion advice for fused_full; nothing to do)
+fuse/ffn_block: bridge -> no hint (bridge declined or failed: no fusion advice for ffn_block; nothing to do)
+unfuse/mlp_control: bridge -> no hint (bridge declined or failed: no unfuse advice for mlp_control; nothing to do)
+unfuse/yolov8_nano_64x96: bridge -> no hint (bridge declined or failed: no unfuse advice for yolov8_nano_64x96; nothing to do)
+unfuse/fused_full: bridge -> no hint (bridge declined or failed: no unfuse advice for fused_full; nothing to do)
+unfuse/ffn_block: bridge -> no hint (bridge declined or failed: no unfuse advice for ffn_block; nothing to do)
+split/mlp_control: bridge -> no hint (bridge declined or failed: no split advice for mlp_control; nothing to do)
+split/yolov8_nano_64x96: bridge -> no hint (bridge declined or failed: no split advice for yolov8_nano_64x96; nothing to do)
+split/fused_full: bridge -> no hint (bridge declined or failed: no split advice for fused_full; nothing to do)
+split/ffn_block: applied but graph unchanged — no-op
+shard/mlp_control: bridge -> no hint (bridge declined or failed: no shard advice for mlp_control in /scratch/agustin/xpurt-dev-sync/result)
+shard/yolov8_nano_64x96: bridge -> no hint (bridge declined or failed: no shard advice for yolov8_nano_64x96 in /scratch/agustin/xpurt-dev-sync/)
+shard/fused_full: bridge -> no hint (bridge declined or failed: no shard advice for fused_full in /scratch/agustin/xpurt-dev-sync/results)
+shard/ffn_block: applier refused (applier refused or failed: usage: apply_shard_hint.py [-h] --ir IR --hint HINT --network NETWORK
+   )
+choose_implementation/mlp_control: bridge -> no hint (bridge declined or failed: no choose_implementation advice for mlp_control; nothing to do)
+choose_implementation/yolov8_nano_64x96: bridge -> no hint (bridge declined or failed: no choose_implementation advice for yolov8_nano_64x96; nothing to do)
+choose_implementation/fused_full: bridge -> no hint (bridge declined or failed: no choose_implementation advice for fused_full; nothing to do)
+choose_implementation/ffn_block: bridge -> no hint (bridge declined or failed: no choose_implementation advice for ffn_block; nothing to do)

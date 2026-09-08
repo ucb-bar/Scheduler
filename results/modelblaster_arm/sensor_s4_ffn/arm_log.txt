@@ -1,0 +1,8 @@
+== ModelBlaster arm ==  1 IR(s): ffn_block
+advice: --models derived from the IRs -> ffn_block:ffn_block.int8
+advice: 7 records -> {'shard': 1, 'split': 1, 'unchanged': 5}
+fuse/ffn_block: bridge -> no hint (bridge declined or failed: no fusion advice for ffn_block; nothing to do)
+unfuse/ffn_block: bridge -> no hint (bridge declined or failed: no unfuse advice for ffn_block; nothing to do)
+split/ffn_block: graph changed, tensor=fc1, host_verified=True -> eligible=True
+shard/ffn_block: annotation=[{'dispatch_id': 1, 'shard_factor': 8}] -> eligible=True (gate: reprofile)
+choose_implementation/ffn_block: bridge -> no hint (bridge declined or failed: no choose_implementation advice for ffn_block; nothing to do)

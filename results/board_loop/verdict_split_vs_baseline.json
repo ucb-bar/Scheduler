@@ -1,0 +1,55 @@
+{
+ "baseline": "schedules/scheduled_ffn_base2_greedy_profiled.json",
+ "candidate": "schedules/scheduled_ffn_split2_greedy_profiled.json",
+ "accepted": true,
+ "why": "accepted -- max deadline lateness: board-split-M2=14.74 beats board-baseline=22.65 (tolerance 0.5)",
+ "hash_kind": "solve_hash",
+ "baseline_hash": "e4e66898f05cd1ff83bdd17a52c49530010bdec7f9c29e64e22b2cab3350ff07",
+ "candidate_hash": "43548ff17e19c85ad9315eeaa1904030a4a5d7b15f197276a96d374ba5fb1e3b",
+ "baseline_pdb_hash": "263124b167998f4fb824653995035cf7915ae874330966996291a1da32671630",
+ "candidate_pdb_hash": "94cd5391abbaa9ae84023bda1d7055411939e13fa53db6d66fafffb3c8398383",
+ "baseline_solve_hash": "e4e66898f05cd1ff83bdd17a52c49530010bdec7f9c29e64e22b2cab3350ff07",
+ "candidate_solve_hash": "43548ff17e19c85ad9315eeaa1904030a4a5d7b15f197276a96d374ba5fb1e3b",
+ "baseline_instances": {
+  "attn_block": 1,
+  "ffn_block": 2,
+  "fused_full": 4,
+  "mlp_control": 5,
+  "yolov8_nano_64x96": 1
+ },
+ "candidate_instances": {
+  "attn_block": 1,
+  "ffn_block": 2,
+  "fused_full": 4,
+  "mlp_control": 5,
+  "yolov8_nano_64x96": 1
+ },
+ "baseline_terms": {
+  "label": "board-baseline",
+  "ineligible": null,
+  "01_hard_deadline_misses": 2.0,
+  "02_max_deadline_lateness": 22.65,
+  "03_frequency_compliance": 0.06624999999999996,
+  "04_p99_response_of_critical_tasks": 47.65,
+  "05_heavy_model_max_latency": 20.73,
+  "06_heavy_model_throughput": 48.24,
+  "07_makespan": 53.5526,
+  "08_utilization": 36.2,
+  "09_standalone_kernel_cycles": 98023.0,
+  "total_instances": 12
+ },
+ "candidate_terms": {
+  "label": "board-split-M2",
+  "ineligible": null,
+  "01_hard_deadline_misses": 1.0,
+  "02_max_deadline_lateness": 14.74,
+  "03_frequency_compliance": 0.0,
+  "04_p99_response_of_critical_tasks": 39.74,
+  "05_heavy_model_max_latency": 20.73,
+  "06_heavy_model_throughput": 48.24,
+  "07_makespan": 45.591699999999996,
+  "08_utilization": 41.95,
+  "09_standalone_kernel_cycles": 95845.0,
+  "total_instances": 12
+ }
+}

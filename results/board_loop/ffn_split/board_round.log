@@ -1,0 +1,19 @@
+== board round: ffn_block ==
+[baseline] tag=bA
+  staged IR /scratch2/agustin/XPU-RT/ModelBlaster/build/k1_xpurt/ffn_block/int8/graph.json as name=ffn_block_bA (5 ops)
+  board: run_model_k1.sh ffn_block_bA int8 rvv_x60 0  (MB_IR=ffn_block_bA.int8.graph.json)
+  measured 5 dispatch(es) -> gen/profile_mb/rvv_x60/spacemit_x60/ffn_block_bA/ffn_block_bA.int8/ffn_block_bA_spacemit_x60_rvv_x60_ffn_block_bA.int8/topo_0/results.csv
+  wrote gen_mb/vmfb/ffn_block_bA/spacemit_x60/rvv_x60/ffn_block_bA.int8/ffn_block_bA.int8_dispatch_graph.json
+  solved ffn_block_bA: makespan 53.55 ms, op-miss 6
+[candidate] tag=splitM2
+  staged IR results/modelblaster_arm/sensor_s4_ffn/ffn_block.split.graph.json as name=ffn_block_splitM2 (6 ops)
+  board: run_model_k1.sh ffn_block_splitM2 int8 rvv_x60 0  (MB_IR=ffn_block_splitM2.int8.graph.json)
+  measured 6 dispatch(es) -> gen/profile_mb/rvv_x60/spacemit_x60/ffn_block_splitM2/ffn_block_splitM2.int8/ffn_block_splitM2_spacemit_x60_rvv_x60_ffn_block_splitM2.int8/topo_0/results.csv
+  wrote gen_mb/vmfb/ffn_block_splitM2/spacemit_x60/rvv_x60/ffn_block_splitM2.int8/ffn_block_splitM2.int8_dispatch_graph.json
+  solved ffn_block_splitM2: makespan 45.37 ms, op-miss 5
+board-bA      misses=2    worst_late=22.650   p99=47.650    makespan=53.554    standalone=98025
+board-splitM2      misses=1    worst_late=14.540   p99=39.540    makespan=45.372    standalone=95352
+
+  VERDICT: ACCEPT
+  accepted -- max deadline lateness: board-splitM2=14.54 beats board-bA=22.65 (tolerance 0.5)
+  wrote /scratch/agustin/xpurt-dev-sync/results/board_loop/ffn_split/verdict.json

@@ -1,0 +1,127 @@
+{
+ "schema": "modelblaster_arm/v1",
+ "schedule": "schedules/scheduled__4w_networks_k1_sensor_sharded_rich_shard_ime_s4.0_greedy_profiled.json",
+ "mb_root": "/scratch/agustin/xpurt-dev-sync/ModelBlaster",
+ "require_verify": true,
+ "advice": {
+  "path": "/scratch/agustin/xpurt-dev-sync/results/modelblaster_arm/sensor_s4_ffn/compile_advice.json",
+  "kinds": {
+   "shard": 1,
+   "split": 1,
+   "unchanged": 5
+  },
+  "n": 7
+ },
+ "rows": [
+  {
+   "verb": "fuse",
+   "model": "ffn_block",
+   "contract": "modelblaster.fusion_hints/v1",
+   "advice": true,
+   "hint": null,
+   "applied": null,
+   "graph_changed": null,
+   "host_verified": null,
+   "eligible": false,
+   "stopped_at": "bridge",
+   "why": "bridge declined or failed: no fusion advice for ffn_block; nothing to do"
+  },
+  {
+   "verb": "unfuse",
+   "model": "ffn_block",
+   "contract": "modelblaster.unfuse_hints/v1",
+   "advice": true,
+   "hint": null,
+   "applied": null,
+   "graph_changed": null,
+   "host_verified": null,
+   "eligible": false,
+   "stopped_at": "bridge",
+   "why": "bridge declined or failed: no unfuse advice for ffn_block; nothing to do"
+  },
+  {
+   "verb": "split",
+   "model": "ffn_block",
+   "contract": "modelblaster.split_hints/v1",
+   "advice": true,
+   "hint": "results/modelblaster_arm/sensor_s4_ffn/ffn_block.split_hint.json",
+   "applied": true,
+   "graph_changed": true,
+   "host_verified": true,
+   "eligible": true,
+   "stopped_at": null,
+   "why": "bit-exact",
+   "verify_tensor": "fc1"
+  },
+  {
+   "verb": "shard",
+   "model": "ffn_block",
+   "contract": "modelblaster.shard_hints/v1",
+   "advice": true,
+   "hint": "results/modelblaster_arm/sensor_s4_ffn/ffn_block.shard_hint.json",
+   "applied": true,
+   "graph_changed": false,
+   "host_verified": null,
+   "eligible": true,
+   "stopped_at": null,
+   "why": "annotation-only rewrite recorded [{'dispatch_id': 1, 'shard_factor': 8}]; numerics cannot change, so the remaining gate is a BOARD REPROFILE at that width, not a numeric check",
+   "annotation": [
+    {
+     "dispatch_id": 1,
+     "shard_factor": 8
+    }
+   ],
+   "gate": "reprofile-required"
+  },
+  {
+   "verb": "choose_implementation",
+   "model": "ffn_block",
+   "contract": "modelblaster.kernel_choice/v1",
+   "advice": true,
+   "hint": null,
+   "applied": null,
+   "graph_changed": null,
+   "host_verified": null,
+   "eligible": false,
+   "stopped_at": "bridge",
+   "why": "bridge declined or failed: no choose_implementation advice for ffn_block; nothing to do"
+  }
+ ],
+ "eligible_rewrites": [
+  {
+   "verb": "split",
+   "model": "ffn_block",
+   "contract": "modelblaster.split_hints/v1",
+   "advice": true,
+   "hint": "results/modelblaster_arm/sensor_s4_ffn/ffn_block.split_hint.json",
+   "applied": true,
+   "graph_changed": true,
+   "host_verified": true,
+   "eligible": true,
+   "stopped_at": null,
+   "why": "bit-exact",
+   "verify_tensor": "fc1"
+  },
+  {
+   "verb": "shard",
+   "model": "ffn_block",
+   "contract": "modelblaster.shard_hints/v1",
+   "advice": true,
+   "hint": "results/modelblaster_arm/sensor_s4_ffn/ffn_block.shard_hint.json",
+   "applied": true,
+   "graph_changed": false,
+   "host_verified": null,
+   "eligible": true,
+   "stopped_at": null,
+   "why": "annotation-only rewrite recorded [{'dispatch_id': 1, 'shard_factor': 8}]; numerics cannot change, so the remaining gate is a BOARD REPROFILE at that width, not a numeric check",
+   "annotation": [
+    {
+     "dispatch_id": 1,
+     "shard_factor": 8
+    }
+   ],
+   "gate": "reprofile-required"
+  }
+ ],
+ "note": "A rewritten graph has no profile. Eligible means host-verified and graph-changed, NOT measured: rebuild + board reprofile come next, and scheduling a rewrite on costs derived from its parent measures the derivation rather than the rewrite."
+}

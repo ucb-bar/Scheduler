@@ -1,0 +1,22 @@
+{
+ "baseline_ir": "/scratch2/agustin/XPU-RT/ModelBlaster/build/k1_xpurt/ffn_block/int8/graph.json",
+ "rewritten_ir": "/scratch/agustin/xpurt-dev-sync/results/modelblaster_arm/sensor_s4_ffn/ffn_block.split.graph.json",
+ "backend": "scalar",
+ "tensor": "fc1",
+ "parts": [
+  "fc1.tile_0",
+  "fc1.tile_1"
+ ],
+ "n_elems": 131072,
+ "golden_max_abs_err": {
+  "baseline": 0.0,
+  "rewritten": 0.0
+ },
+ "max_abs_diff": 0,
+ "n_differing": 0,
+ "tiles_all_identical": false,
+ "rewrite_faithful": true,
+ "baseline_matches_golden": true,
+ "bit_exact": true,
+ "expectation": "bit-exact. An OC/N tile partitions outputs without reordering any accumulation, so a nonzero difference is a bug, not drift."
+}
