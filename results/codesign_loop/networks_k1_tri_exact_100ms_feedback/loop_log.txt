@@ -1,0 +1,17 @@
+== co-design loop: networks_k1_tri_exact_100ms_feedback ==
+round 0 · baseline: worst-response 8.001 ms (makespan 83.4 ms), 0 miss
+      ime: built ime_x60 profiles for (none new; existing reused)
+round 1 · try ime: worst-response 8.001 -> 8.001 ms (-0.0%), 0 miss -> reject
+round 1 · try shard: worst-response 8.001 -> 4.891 ms (-38.9%), 0 miss -> ACCEPTABLE
+      unfuse: adopted ModelBlaster unfused dispatch graph for (none — no fused net with an unfused build on disk)
+round 1 · try unfuse: worst-response 8.001 -> 8.001 ms (-0.0%), 0 miss -> reject
+round 1: ACCEPT +shard  worst-response 8.001 -> 4.891 ms (-38.9%)
+      ime: built ime_x60 profiles for (none new; existing reused)
+round 2 · try ime: worst-response 4.891 -> 4.891 ms (-0.0%), 0 miss -> reject
+      unfuse: adopted ModelBlaster unfused dispatch graph for (none — no fused net with an unfused build on disk)
+round 2 · try unfuse: worst-response 4.891 -> 4.891 ms (-0.0%), 0 miss -> reject
+round 2: no lever improves worst-response with 0 added misses — CONVERGED
+fuse: decision-aid unavailable.
+
+CONVERGED [worst-response]: 8.001 -> 4.891 ms (-38.9%), levers applied: ['shard']
+artifacts in /scratch/agustin/xpurt-dev-sync/results/codesign_loop/networks_k1_tri_exact_100ms_feedback

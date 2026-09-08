@@ -137,7 +137,11 @@ def gen_from_loop(solver="cpsat", board_solver="cpsat", objective="lateness"):
     stages = {s["stage"]: s for s in bf["stages"]}
     applied = report.get("levers_applied", [])
     hl = "+".join([l for l in ("shard", "ime") if l in applied]) or "none"
-    lev_txt = " + ".join(l.capitalize() for l in applied) if applied else "no levers"
+    # `capitalize()` alone renders the IME engine as "Ime" in a paper figure.
+    _NICE = {"ime": "IME", "shard": "Shard", "unfuse": "Unfuse", "fuse": "Fuse",
+             "split": "Split"}
+    lev_txt = (" + ".join(_NICE.get(l, l.capitalize()) for l in applied)
+               if applied else "no levers")
 
     def _abs(rel):
         return rel if os.path.isabs(rel) else f"{REPO}/{rel}"

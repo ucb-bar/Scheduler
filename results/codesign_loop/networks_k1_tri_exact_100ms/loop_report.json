@@ -1,0 +1,44 @@
+{
+ "workload": "networks_k1_tri_exact_100ms",
+ "objective": "worst-response",
+ "baseline_score_ms": 8.001,
+ "final_score_ms": 4.891,
+ "total_reduction_pct": 38.9,
+ "baseline_makespan_ms": 83.4,
+ "final_makespan_ms": 83.4,
+ "levers_applied": [
+  "shard"
+ ],
+ "rounds": [
+  {
+   "round": 1,
+   "lever": "shard",
+   "metric": "worst-response",
+   "score_before_ms": 8.001,
+   "score_after_ms": 4.891,
+   "makespan_before_ms": 83.4,
+   "makespan_after_ms": 83.4,
+   "pct": -38.9,
+   "accepted": true,
+   "deadline_miss": 0
+  }
+ ],
+ "trajectory": [
+  {
+   "round": 0,
+   "lever": "baseline",
+   "score_ms": 8.001,
+   "makespan_ms": 83.4,
+   "misses": 0
+  },
+  {
+   "round": 1,
+   "lever": "+shard",
+   "score_ms": 4.891,
+   "makespan_ms": 83.4,
+   "misses": 0
+  }
+ ],
+ "fusion": "fuse: decision-aid unavailable.",
+ "converged": true
+}
