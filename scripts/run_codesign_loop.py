@@ -489,7 +489,7 @@ def main():
         log(f"accept rule: candidate_objective.accept() · critical={list(critical)} "
             f"heavy={heavy}")
 
-    applied, rounds = [], []
+    applied, rounds, inapplicable = [], [], []
     traj = [{"round": 0, "lever": "baseline", "score_ms": round(base_score, 3),
              "makespan_ms": round(mk, 1), "misses": base_gmiss}]
     cur_mk, cur_score, cur_miss, cur_spec = mk, base_score, base_gmiss, working
@@ -502,6 +502,19 @@ def main():
             if lever in applied:
                 continue
             cspec = LEVERS[lever](cur_spec, log)
+            if cspec == cur_spec:
+                # A LEVER THAT CHANGED NOTHING IS NOT A CANDIDATE. This is not
+                # pedantry: on the sensor workload `unfuse` found no unfused build on
+                # disk, returned the spec untouched, and the re-solve of that identical
+                # spec came back with a different schedule (CP-SAT with >1 worker is not
+                # deterministic under a time limit). The loop then credited the lever
+                # with a p99 win of 38.86 -> 34.88 ms that came from solver noise, and
+                # recorded an unapplied lever as applied. Skipped, and said so.
+                log(f"round {rnd} · try {lever}: lever changed nothing on this spec "
+                    f"(inapplicable here) — not a candidate")
+                inapplicable.append(dict(round=rnd, lever=lever,
+                                         reason="lever left the spec unchanged"))
+                continue
             cpath = os.path.join(spec_dir, f"{wl_stem}_r{rnd}_{lever}.json")
             json.dump(cspec, open(cpath, "w"), indent=1)
             cmk, cmiss, csched, cerr = solve(cpath, solver=args.solver, time_limit=args.time_limit)
@@ -702,7 +715,8 @@ def main():
                   total_reduction_pct=round((base_score - cur_score) / denom * 100, 1),
                   baseline_makespan_ms=round(mk, 1), final_makespan_ms=round(cur_mk, 1),
                   levers_available=active_levers,
-                  levers_applied=applied, rounds=rounds, trajectory=traj,
+                  levers_applied=applied, levers_inapplicable=inapplicable,
+                  rounds=rounds, trajectory=traj,
                   fusion=fnote, converged=True, board_feedback=board)
     json.dump(report, open(os.path.join(out_dir, "loop_report.json"), "w"), indent=1)
 

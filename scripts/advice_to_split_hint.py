@@ -171,6 +171,17 @@ def main() -> int:
         op = by_id[did]
         kind = op["op"]
         axis = SPLITTABLE_AXIS.get(kind)
+        if kind == "linear_s8":
+            # WHICH AXIS IS EMITTABLE, not just which axis is splittable.
+            # generate_skeleton refuses an N-split of a linear whose M > 1: the output
+            # is [M, N] row-major, so an N-tile is a strided column slice and the
+            # contiguous pointer offset the tiles use would overlap and write past the
+            # parent buffer. It says so itself and tells you to split along M. An
+            # M-split is clean in the same layout: tile t owns output rows
+            # [t*M/n, (t+1)*M/n), a contiguous block, its input rows are contiguous too,
+            # and weight/bias are shared unsliced. So: M when there is an M to cut.
+            _m = int(op_shape(op).get("M", 1) or 1)
+            axis = "M" if _m > 1 else "N"
         if axis is None:
             print(f"REFUSED dispatch {did}: op kind {kind!r} is not "
                   f"split-capable (apply_split_hint accepts "
@@ -214,7 +225,13 @@ def main() -> int:
                   f"--max-splits={a.max_splits} allows only {n}. Pass "
                   f"--allow-below-target to emit it anyway.", file=sys.stderr)
             continue
-        split_ops.append({"op": did, "n_splits": n})
+        # `axis` is emitted only where it disambiguates. A conv hint carries no axis
+        # because OC is the applier's default and the only conv axis it implements;
+        # adding a redundant key would change every existing hint's bytes for nothing.
+        entry = {"op": did, "n_splits": n}
+        if kind == "linear_s8":
+            entry["axis"] = axis
+        split_ops.append(entry)
         notes.append({
             "dispatch_id": did, "op": kind, "axis": axis, f"{axis}": dim,
             "service_time_us": svc_us, "max_target_piece_us": target_us,
