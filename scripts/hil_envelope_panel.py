@@ -57,7 +57,7 @@ def draw_envelope(ax, csv_path=DEFAULT_CSV, compact=False, colorbar_ax=None, tit
     cmap = plt.cm.plasma; norm = Normalize(speeds[0] - 0.05, speeds[-1] + 0.05)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 
-    fs = 0.82 if compact else 1.0                                # global font scale for compact embed
+    fs = 1.65 if compact else 1.0                                # font scale; compact embed is downscaled ~4x in the composite, so author BIG
     # --- faint per-speed rate-response lines + per-cell scatter with Wilson CI ------------
     for jj, s in enumerate(speeds):
         col = cmap(norm(s)); dx = (jj - (ns - 1) / 2) * 0.15
@@ -100,10 +100,11 @@ def draw_envelope(ax, csv_path=DEFAULT_CSV, compact=False, colorbar_ax=None, tit
                 fontsize=9.5 * fs, weight="bold", color="#111", ha="center", va="center", zorder=9,
                 bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="#111", lw=1.0),
                 arrowprops=dict(arrowstyle="-|>", color="#111", lw=1.6, connectionstyle="arc3,rad=-0.2"))
-    # XPU-RT operates inside the feasible band
-    ax.annotate("XPU-RT holds 100 Hz\n(above the floor)", xy=(nr - 1, 0.06), xytext=(nr - 1.5, 0.72),
-                fontsize=9 * fs, weight="bold", color=C_XPU, ha="center", va="center", zorder=9,
-                arrowprops=dict(arrowstyle="-|>", color=C_XPU, lw=1.5))
+    # XPU-RT operates inside the feasible band (full-size only; omitted in the tiny embed to stay legible)
+    if not compact:
+        ax.annotate("XPU-RT holds 100 Hz\n(above the floor)", xy=(nr - 1, 0.06), xytext=(nr - 1.5, 0.72),
+                    fontsize=9 * fs, weight="bold", color=C_XPU, ha="center", va="center", zorder=9,
+                    arrowprops=dict(arrowstyle="-|>", color=C_XPU, lw=1.5))
     for x in xpos[:-1]:
         ax.axvline(x + 0.5, color="#ece9e3", lw=0.8, zorder=0.5)
     ax.grid(axis="y", ls=":", lw=0.6, color="#d4d1cb", zorder=0)
@@ -116,17 +117,14 @@ def draw_envelope(ax, csv_path=DEFAULT_CSV, compact=False, colorbar_ax=None, tit
     ax.tick_params(labelsize=12 * fs)
     for sp in ("top", "right"):
         ax.spines[sp].set_visible(False)
-    if title:
-        if compact:
-            ax.set_title("Flight envelope · a control-rate floor gates success",
-                         fontsize=12 * fs, weight="bold", loc="left")
-        else:
-            ax.set_title("Flight envelope — a control-rate floor gates success; above it, speed sets the limit\n"
-                         "120 flights · colour = cruise speed · Wilson 95% CI · black = pooled over speed (n=30/rate)",
-                         fontsize=12.5 * fs, weight="bold", loc="left")
-    # label the pooled trend inline near its first point (no legend box, keeps the panel clean)
-    ax.annotate("pooled", (xpos[0], pc[0]), textcoords="offset points", xytext=(9, 11),
-                fontsize=9 * fs, weight="bold", color=INK, va="center", ha="left")
+    if title and not compact:                                    # compact embed drops its own title — the caption covers it
+        ax.set_title("Flight envelope — a control-rate floor gates success; above it, speed sets the limit\n"
+                     "120 flights · colour = cruise speed · Wilson 95% CI · black = pooled over speed (n=30/rate)",
+                     fontsize=12.5 * fs, weight="bold", loc="left")
+    # label the pooled trend inline near its first point (full-size only)
+    if not compact:
+        ax.annotate("pooled", (xpos[0], pc[0]), textcoords="offset points", xytext=(9, 11),
+                    fontsize=9 * fs, weight="bold", color=INK, va="center", ha="left")
 
     if colorbar_ax is not None:
         cb = colorbar_ax.figure.colorbar(sm, cax=colorbar_ax)

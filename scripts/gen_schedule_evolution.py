@@ -2,17 +2,19 @@
 """Generate the schedule-evolution mega-plot sequence — the honest AOT → runtime-feedback → fix story.
 
 Workload: the contended sensor-fusion stack (mlp_control + fused_full + yolov8_nano_64x96 + ffn/attn),
-where the beats are all REAL (nothing faked; each panel is a fresh solve or a measured re-cost):
+where the beats are all REAL (nothing faked; each panel is a fresh solve or a calibrated re-cost):
 
-  1. og           — RVV, singletons (1 net per hart): baseline, misses control deadlines
+  1. og           — RVV singleton dispatches: baseline, misses instance deadlines
   2. + shard + IME — AOT levers (multi-hart widths + matrix-engine routing): meets every deadline ON THE GANTT
-  3. runtime feedback — the panel-2 schedule RE-COST on the measured board (+31% per-op inflation,
-                        scripts/recost_schedule_on_board.py): deadlines the Gantt promised are now MISSED
+  3. runtime feedback — the panel-2 schedule RE-COST with heterogeneous K1 calibration
+                        (measured per-dispatch/per-op entries and aggregate fallback;
+                        see scripts/recost_schedule_on_board.py): deadlines the Gantt promised are now MISSED
   4. re-schedule on board-calibrated costs — CP-SAT re-solves knowing the true costs: deadlines RECOVERED
 
-So the miss trajectory is 4 → 0 → 4 → 0: the AOT opts fix it on paper, the board breaks it, the feedback
-re-schedule fixes it for real. Emits the four panel schedules + panels.json under results/codesign_feedback/
-sensor_evo/, ready for scripts/compose_schedule_evolution.py.
+The AOT levers fix the modeled baseline, calibrated replay can expose misses, and the feedback
+re-schedule recovers them. Emits the four panel schedules + panels.json under results/codesign_feedback/
+sensor_evo/, ready for scripts/compose_schedule_evolution.py. The renderer is the source of truth for
+instance-level miss counts; the re-cost metrics sidecar counts late dispatches instead.
 
 NOTE: CP-SAT is non-deterministic (workers=0 → many workers; time-limited incumbents vary run to run), and
 different 0-miss predicted schedules re-cost to different board-miss counts. The panel schedules committed
@@ -72,7 +74,9 @@ def mk_miss(p):
     return m.get("makespan_ms", 0), m.get("deadline_miss_count", "?")
 
 
-if __name__ == "__main__":
+def gen_hardcoded():
+    """The ORIGINAL hand-scripted 4-step sequence (default). Kept verbatim so the committed
+    canonical figure inputs under results/codesign_feedback/sensor_evo/ remain reproducible."""
     og_spec = make_spec("og", "singletons", False)
     aot_spec = BASE                                     # shard + IME already enabled
 
@@ -83,10 +87,10 @@ if __name__ == "__main__":
 
     rel = lambda p: os.path.relpath(p, REPO)        # repo-relative → portable panels.json (render from repo root)
     panels = [
-        f"og · RVV, 1 net per hart (singletons)|none|{rel(p1)}",
-        f"+ shard + IME  (AOT: multi-hart widths + matrix-engine routing)|shard|{rel(p2)}",
-        f"runtime feedback — measured on the K1 board (+31%): control deadlines now missed|none|{rel(p3)}",
-        f"re-schedule on board-calibrated costs: all deadlines recovered|none|{rel(p4)}",
+        f"Baseline · RVV singletons|none|{rel(p1)}|AOT baseline",
+        f"AOT optimize — Shard + IME|shard+ime|{rel(p2)}|both scheduling levers enabled",
+        f"K1-calibrated replay|none|{rel(p3)}|same assignment, calibrated durations",
+        f"K1-calibrated re-solve|none|{rel(p4)}|new assignment, calibrated durations",
     ]
     json.dump(panels, open(f"{OUTDIR}/panels.json", "w"), indent=1)
     for tag, p in [("1 og", p1), ("2 aot", p2), ("3 feedback", p3), ("4 fix", p4)]:
@@ -95,3 +99,103 @@ if __name__ == "__main__":
     print(f"\nwrote {OUTDIR}/panels.json  ->  render with:")
     print(f"  {PY} scripts/compose_schedule_evolution.py --spec {BASE} \\\n"
           f"      --panels-json {OUTDIR}/panels.json")
+
+
+# ---- FULLY-AUTOMATIC MODE ---------------------------------------------------------------
+# The four panels become a BY-PRODUCT of scripts/run_codesign_loop.py's real automatic loop
+# (predicted lever search + board-feedback arm). Nothing about the sequence is hand-chosen:
+# panel 1 = the loop's baseline schedule, panel 2 = the AOT schedule the loop converged on
+# (whatever levers its MEASURED search accepted), panel 3 = the board re-cost of that schedule,
+# panel 4 = the board-calibrated re-solve the loop automatically triggered. Titles/highlights
+# are derived from the loop_report, so the figure literally reports the loop's decisions.
+AUTO_OUTDIR = os.environ.get("XPURT_EVO_AUTO_OUTDIR", f"{REPO}/results/codesign_feedback/sensor_evo_auto")
+LOOP_OUT = "results/codesign_loop"          # run_codesign_loop.py default --out-dir
+
+
+def gen_from_loop(solver="cpsat", board_solver="cpsat", objective="lateness"):
+    os.makedirs(AUTO_OUTDIR, exist_ok=True)
+    wl_stem = os.path.splitext(os.path.basename(BASE))[0]
+    # bounded CP-SAT workers (a heavy Isaac job may be co-resident); NEVER 0 here.
+    env = dict(os.environ)
+    env["XPURT_CPSAT_WORKERS"] = os.environ.get("XPURT_CPSAT_WORKERS", "6")
+    tl = os.environ.get("XPURT_EVO_TIME_LIMIT", "45")
+    # the board-calibrated re-solve is the hard solve (it must actually FIND the recovered
+    # 0-miss assignment, not just a feasible one) — give CP-SAT a generous budget so the
+    # recovery beat is robust to CP-SAT's multi-worker non-determinism (≈170 s to optimum here).
+    btl = os.environ.get("XPURT_EVO_BOARD_TIME_LIMIT", str(max(int(tl) * 2, 200)))
+    cmd = [PY, "scripts/run_codesign_loop.py", "--workload", BASE,
+           "--solver", solver, "--time-limit", tl, "--objective", objective,
+           "--board-calibration", CAL, "--board-solver", board_solver,
+           "--board-time-limit", btl]
+    print("running the automatic loop (predicted search + board arm):\n  " + " ".join(cmd))
+    subprocess.run(cmd, cwd=REPO, env=env, check=True)
+
+    report = json.load(open(f"{REPO}/{LOOP_OUT}/{wl_stem}/loop_report.json"))
+    bf = report.get("board_feedback", {})
+    if not bf.get("enabled"):
+        raise SystemExit(f"board-feedback arm did not run: {bf.get('reason', 'unknown')}")
+    stages = {s["stage"]: s for s in bf["stages"]}
+    applied = report.get("levers_applied", [])
+    hl = "+".join([l for l in ("shard", "ime") if l in applied]) or "none"
+    lev_txt = " + ".join(l.capitalize() for l in applied) if applied else "no levers"
+
+    def _abs(rel):
+        return rel if os.path.isabs(rel) else f"{REPO}/{rel}"
+
+    # copy the loop's canonical panel schedules into the auto figure's own dir (self-contained)
+    def _copy(stage_key, dst):
+        src = _abs(stages[stage_key]["sched"])
+        shutil.copy(src, f"{AUTO_OUTDIR}/{dst}.json")
+        ms = src.replace(".json", "_metrics.json")
+        if os.path.exists(ms):
+            shutil.copy(ms, f"{AUTO_OUTDIR}/{dst}_metrics.json")
+        return f"{AUTO_OUTDIR}/{dst}.json"
+
+    rel = lambda p: os.path.relpath(p, REPO)
+    p1 = _copy("baseline", "a1_baseline")
+    p2 = _copy("aot-optimized", "a2_aot")
+    p3 = _copy("board-recost", "a3_board_recost")
+    panels = [
+        f"Baseline · RVV singletons|none|{rel(p1)}|loop baseline (levers stripped)",
+        f"AOT optimize — {lev_txt}|{hl}|{rel(p2)}|levers from the loop's measured search",
+        f"K1-calibrated replay|none|{rel(p3)}|same assignment, board durations",
+    ]
+    tags = [("1 baseline", p1), ("2 aot", p2), ("3 board-recost", p3)]
+    if "board-resolve" in stages:
+        p4 = _copy("board-resolve", "a4_board_resolve")
+        panels.append(f"K1-calibrated re-solve|none|{rel(p4)}|re-optimized on board costs")
+        tags.append(("4 board-resolve", p4))
+
+    json.dump(panels, open(f"{AUTO_OUTDIR}/panels.json", "w"), indent=1)
+    print("\nautomatic loop trajectory (instance-miss, the figure's source-of-truth):")
+    for s in bf["stages"]:
+        print(f"  {s['stage']:16s} [{s['cost']:5s}]  {s['instance_misses']} miss")
+    print(f"\nwrote {AUTO_OUTDIR}/panels.json  ->  rendering schedule_evolution_auto ...")
+    out = f"{REPO}/results/codesign_feedback/schedule_evolution_auto"
+    subprocess.run([PY, "scripts/compose_schedule_evolution.py", "--spec", BASE,
+                    "--panels-json", f"{AUTO_OUTDIR}/panels.json", "--out", out],
+                   cwd=REPO, env=env, check=True)
+    print(f"\nrendered {out}.png / {out}.pdf")
+
+
+if __name__ == "__main__":
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--from-loop", action="store_true",
+                    help="FULLY-AUTOMATIC mode: run scripts/run_codesign_loop.py (with the board-feedback "
+                         "arm) and build the four panels from the loop's ACTUAL trajectory. Renders to "
+                         "results/codesign_feedback/schedule_evolution_auto (the committed "
+                         "schedule_evolution_mega is left untouched).")
+    ap.add_argument("--search-solver", choices=["greedy", "cpsat"], default="cpsat",
+                    help="--from-loop: scheduler for the loop's predicted lever search.")
+    ap.add_argument("--board-solver", choices=["greedy", "cpsat"], default="cpsat",
+                    help="--from-loop: scheduler for the board-calibrated re-solve.")
+    ap.add_argument("--objective", choices=["makespan", "lateness", "misses"], default="lateness",
+                    help="--from-loop: the loop's acceptance objective. Default 'lateness' is the "
+                         "deadline-correct one (credits levers that pull instances in ahead of "
+                         "deadline even off the makespan critical path).")
+    a = ap.parse_args()
+    if a.from_loop:
+        gen_from_loop(solver=a.search_solver, board_solver=a.board_solver, objective=a.objective)
+    else:
+        gen_hardcoded()

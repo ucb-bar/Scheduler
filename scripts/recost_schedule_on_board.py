@@ -12,13 +12,18 @@ This is the software twin of the board measurement (docs/board_calibration_codes
 board run. The multiplier lookup mirrors xpu-rt/profile_loader._board_calibration_mult exactly:
 per-dispatch "net/dispatch_id" (exact) → per-op (extrapolated) → aggregate.
 """
-import argparse, json, os, re
+import argparse, json, os, re, sys
 from collections import defaultdict
 
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(_REPO, "xpu-rt"))
 
-def _net_inst(job):
-    m = re.match(r"^(.*?)(\d*)$", job)
-    return (m.group(1), int(m.group(2) or 0)) if m else (job, 0)
+from job_names import split_job_name
+
+
+def _net_inst(job, known_networks):
+    """Split ``<network><instance>`` without truncating digit-suffixed names."""
+    return split_job_name(job, known_networks)
 
 
 def _op_of(module_name):
@@ -54,8 +59,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--schedule", required=True)
     ap.add_argument("--spec", required=True)
-    _repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    ap.add_argument("--calibration", default=os.path.join(_repo, "results/codesign_feedback/k1_board_calibration.json"))
+    ap.add_argument("--calibration", default=os.path.join(_REPO, "results/codesign_feedback/k1_board_calibration.json"))
     ap.add_argument("--out", required=True, help="output schedule .json (metrics go to <out>_metrics.json)")
     a = ap.parse_args()
 
@@ -63,6 +67,7 @@ def main():
     disp = sched["dispatches"]
     cal = json.load(open(a.calibration))
     nets = json.load(open(a.spec))["networks"]
+    known_networks = set(nets)
     period = {n: float(v.get("period", 0) or 0) for n, v in nets.items()}
     window = {n: float(v.get("window_duration", 0) or 0) for n, v in nets.items()}
 
@@ -70,10 +75,11 @@ def main():
     order = sorted(disp.values(), key=lambda d: float(d["start_time"]))
     hart_free = defaultdict(float)          # per-hart next-free time under board costs
     new_end = {}                            # dispatch id -> board end time
+    instance_finish = defaultdict(float)    # (network, instance) -> final board end time
     miss = 0
 
     for d in order:
-        net, inst = _net_inst(d["job_name"])
+        net, inst = _net_inst(d["job_name"], known_networks)
         m = mult(cal, net, d.get("module_name", ""), stats); applied.append(m)
         bdur = float(d["duration"]) * m
         harts = d["hardware_target"].split("+")
@@ -84,6 +90,7 @@ def main():
         for h in harts:
             hart_free[h] = end
         new_end[d["id"]] = end
+        instance_finish[(net, inst)] = max(instance_finish[(net, inst)], end)
         d["start_time"] = start; d["duration"] = bdur
         dl = inst * period.get(net, 0.0) + window.get(net, 0.0)
         late = window.get(net, 0.0) > 0 and end > dl + 1e-6
@@ -93,11 +100,24 @@ def main():
             miss += 1
 
     makespan = max(new_end.values(), default=0.0)
+    total_lateness = sum(float(d["deadline_overrun_us"]) / 1000.0
+                         for d in order if d["deadline_miss"])
+    metadata = sched.setdefault("metadata", {})
+    metadata.update({
+        "makespan": makespan,
+        "board_recost": True,
+        "deadline_miss_count": miss,
+        "total_lateness_ms": total_lateness,
+    })
+    yolo_responses = [finish - inst * period[net]
+                      for (net, inst), finish in instance_finish.items()
+                      if "yolo" in net.lower()]
+    if yolo_responses:
+        metadata["yolo_frame_latency_ms"] = max(yolo_responses)
+        metadata["yolo_frame_latency_statistic"] = "maximum release-to-output response"
     json.dump(sched, open(a.out, "w"), indent=1)
     metrics = {"makespan_ms": makespan, "deadline_miss_count": miss,
-               "total_lateness_ms": sum(max(0.0, new_end[d["id"]] -
-                   (_net_inst(d["job_name"])[1] * period.get(_net_inst(d["job_name"])[0], 0.0)
-                    + window.get(_net_inst(d["job_name"])[0], 0.0))) for d in order if d["deadline_miss"]),
+               "total_lateness_ms": total_lateness,
                "board_recost": True,
                "multiplier_source_counts": dict(stats),
                "multiplier_min": min(applied), "multiplier_max": max(applied),

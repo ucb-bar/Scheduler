@@ -41,7 +41,7 @@ fi
 if [ -f $R/sensor_evo/panels.json ]; then
   say "schedule_evolution_mega"
   $PY scripts/compose_schedule_evolution.py --spec $EVO --panels-json $R/sensor_evo/panels.json \
-    --title "Co-design schedule evolution — contended sensor-fusion workload: AOT opts meet the Gantt, runtime feedback exposes board deadline misses, re-scheduling recovers them" || true
+    --layout grid || true
 fi
 
 # 4. HIL command-rate PHASE DIAGRAM — needs the grid CSV (committed copy at $R/hil_ablation.csv; regen via
