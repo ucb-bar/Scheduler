@@ -96,9 +96,20 @@ def run_one(workload, args, out_root):
                               board.get("board_recost_instance_misses"),
                               board.get("board_resolve_instance_misses")]
                    if board.get("enabled") else None)
-        improved = bool(rec["levers_applied"]) and (
-            (base is not None and final is not None and final < base - 1e-9)
-            or (bmk is not None and fmk is not None and fmk < bmk - 1e-9))
+        # WHAT COUNTS AS IMPROVED, and why not "the objective went down".
+        # Under candidate_objective.accept() a tie is a REJECTION, so a lever that
+        # was applied is a lever that won strictly on some term. That term need not
+        # be the declared objective: the rule ranks p99 of critical tasks fourth and
+        # makespan seventh, so a real win can leave the makespan untouched --
+        # networks_k1_ffn_ime does exactly that (levers ime+shard applied, makespan
+        # 150.083 both sides). Judging on the objective alone called that a failure,
+        # which is the same mistake this whole change set is about: scoring on one
+        # term the rule ranks low.
+        by_rule = "candidate_objective" in str(rec.get("accept_rule") or "")
+        moved = ((base is not None and final is not None and final < base - 1e-9)
+                 or (bmk is not None and fmk is not None and fmk < bmk - 1e-9))
+        improved = bool(rec["levers_applied"]) and (by_rule or moved)
+        rec["objective_or_makespan_moved"] = bool(moved)
         rec["status"] = "improved" if improved else "no_lever_helped"
         rec["detail"] = (f"{rep.get('objective')} {base} -> {final}; "
                          f"makespan {bmk} -> {fmk}")
@@ -123,6 +134,9 @@ def main() -> int:
     ap.add_argument("--timeout", type=float, default=3600,
                     help="per-workload wall limit, seconds")
     ap.add_argument("--out-dir", default="results/loop_sweep")
+    ap.add_argument("--summarize-only", action="store_true",
+                    help="re-derive the summary from loop_report.json files already in "
+                         "--out-dir, without re-running anything")
     a = ap.parse_args()
 
     if a.list_k1:
@@ -136,17 +150,48 @@ def main() -> int:
     out_root = a.out_dir if os.path.isabs(a.out_dir) else os.path.join(REPO, a.out_dir)
     os.makedirs(out_root, exist_ok=True)
 
-    recs = []
-    for i, w in enumerate(workloads, 1):
-        print(f"[{i}/{len(workloads)}] {w}", flush=True)
-        try:
-            rec = run_one(w, a, out_root)
-        except subprocess.TimeoutExpired:
-            rec = {"workload": w, "status": "timeout", "levers_applied": [],
-                   "detail": f"exceeded --timeout {a.timeout}s"}
-        recs.append(rec)
-        print(f"    {rec['status']:>16}  levers={rec.get('levers_applied')}  "
-              f"{rec.get('detail','')[:120]}", flush=True)
+    if a.summarize_only:
+        recs = []
+        for rp in sorted(glob.glob(os.path.join(out_root, "*", "*",
+                                                "loop_report.json"))):
+            rep = json.load(open(rp))
+            base, final = rep.get("baseline_score_ms"), rep.get("final_score_ms")
+            bmk, fmk = rep.get("baseline_makespan_ms"), rep.get("final_makespan_ms")
+            board = rep.get("board_feedback") or {}
+            by_rule = "candidate_objective" in str(rep.get("accept_rule") or "")
+            moved = ((base is not None and final is not None and final < base - 1e-9)
+                     or (bmk is not None and fmk is not None and fmk < bmk - 1e-9))
+            levers = rep.get("levers_applied") or []
+            recs.append({
+                "workload": rep.get("workload"), "report": os.path.relpath(rp, REPO),
+                "levers_applied": levers, "accept_rule": rep.get("accept_rule"),
+                "objective": rep.get("objective"), "baseline": base, "final": final,
+                "baseline_makespan_ms": bmk, "final_makespan_ms": fmk,
+                "objective_or_makespan_moved": bool(moved),
+                "board_arc": [board.get("baseline_instance_misses"),
+                              board.get("aot_instance_misses"),
+                              board.get("board_recost_instance_misses"),
+                              board.get("board_resolve_instance_misses")]
+                if board.get("enabled") else None,
+                "status": ("improved" if levers and (by_rule or moved)
+                           else "no_lever_helped"),
+                "detail": f"{rep.get('objective')} {base} -> {final}; "
+                          f"makespan {bmk} -> {fmk}",
+            })
+        workloads = [r["workload"] for r in recs]
+        print(f"re-derived {len(recs)} run(s) from {os.path.relpath(out_root, REPO)}")
+    else:
+      recs = []
+      for i, w in enumerate(workloads, 1):
+          print(f"[{i}/{len(workloads)}] {w}", flush=True)
+          try:
+              rec = run_one(w, a, out_root)
+          except subprocess.TimeoutExpired:
+              rec = {"workload": w, "status": "timeout", "levers_applied": [],
+                     "detail": f"exceeded --timeout {a.timeout}s"}
+          recs.append(rec)
+          print(f"    {rec['status']:>16}  levers={rec.get('levers_applied')}  "
+                f"{rec.get('detail','')[:120]}", flush=True)
 
     n = len(recs)
     imp = [r for r in recs if r["status"] == "improved"]

@@ -34,8 +34,15 @@ same reason a road can keep a Roman route: every reader already speaks it.
 * **[`docs/Feature/the_loop.md`](docs/Feature/the_loop.md)** — the index: every arrow of the
   compiler↔scheduler cycle and which script owns it. If you have been away,
   read this one.
+* **[`docs/codesign_loop_reproduction.md`](docs/codesign_loop_reproduction.md)** — how to
+  RUN the loop: the four drivers (`run_codesign_loop.py`,
+  `run_modelblaster_arm.py`, `run_board_round.py`, `loop_over_workloads.py`),
+  which stages need the board, the environment recipe, and the traps. Start here
+  if you are looking for "the automated script".
 * **[`docs/environment.md`](docs/environment.md)** — recreating the
   environment. Two flows, two environments, and neither is merlin's `.venv`.
+  (The working uv recipe, including the `highspy` pin that keeps cvxpy and
+  ortools from colliding, is in `docs/codesign_loop_reproduction.md`.)
 * **[`docs/K1/k1_board.md`](docs/K1/k1_board.md)** — running on the K1: the
   commands, the timings, the two compiler traps, and what to do when it
   breaks.
