@@ -1,5 +1,28 @@
 # Board-calibrated co-design scheduling — findings & reproduction
 
+
+> **A NOTE ON `scratchpad/` PATHS IN THIS DOCUMENT.** Ten of the "Reproduce:" lines
+> below name scripts under `scratchpad/`. That directory was an ephemeral per-session
+> agent temp dir; the scripts were never committed and are **gone** — `git log --all --
+> scratchpad` is empty and nothing matching them exists on disk. Their OUTPUTS are
+> committed under `results/codesign_feedback/`, which is why the numbers here are still
+> checkable while the commands are not.
+>
+> What replaced them, and is committed:
+>
+> | lost script | live replacement |
+> |---|---|
+> | `scratchpad/auto_feedback_loop.py` *(LOST — see scripts/run_codesign_loop.py)* | `scripts/run_codesign_loop.py` (levers + board-feedback arm, one command) |
+> | `scratchpad/multilever_loop.py` *(LOST — see scripts/run_codesign_loop.py)* | same — it iterates every lever per round |
+> | `scratchpad/emit_calibration.py` *(LOST)* | no replacement yet; `results/codesign_feedback/k1_board_calibration.json` is its committed output |
+> | `scratchpad/disaggregate_gap.py` *(LOST)* | no replacement yet |
+> | the figure builders | `scripts/gen_schedule_evolution.py --from-loop`, `scripts/compose_schedule_evolution.py`, `scripts/emit_figure_numbers.py` |
+>
+> A rewrite that needs a board measurement now goes through
+> `scripts/run_modelblaster_arm.py` (advice → bridge → applier → graph gate → bit-exact
+> host verify) and then `scripts/run_board_round.py` (rebuild → reprofile on the K1 →
+> re-solve → nine-term verdict). Neither existed when this document was written.
+
 The scheduler's Gantt is a *prediction*. This work measures how far that prediction is from real
 SpaceMiT K1 silicon, folds the correction back into the cost model, and shows what it buys:
 a fairness win over ROS, a genuine schedule improvement, and a closed feedback loop.
@@ -59,7 +82,7 @@ board-honest costs (**CP-SAT + calibration**) meets every one: **3 → 0**. The 
 switching to the "optimal" solver on *additive* costs is *worse* than greedy — you must feed the
 solver real costs. Figs: `improvement_before_after`, `improvement_loop_s5`.
 
-Example menu across networks (`scratchpad/examples_figures.py`, `ex_contact_sheet`): the clean X→0
+Example menu across networks (`scratchpad/examples_figures.py` *(LOST)*, `ex_contact_sheet`): the clean X→0
 improvement is specific to the **sensor sharded family** (s3.0 2→0, s3.5 2→0, s4.0 3→0) — it has the
 f16+contention combo. int8-dominated sets (transformer, rich-fusion) don't inflate enough to break,
 even fly-faster-tightened (honest flat).
@@ -122,10 +145,10 @@ MOSEK is launched on both (per the ask) and reported honestly: the monolithic MI
 multi-network workload (`docs/solvers.md`), and the per-network decomposition converges only as a bounded
 upper bound — neither is a joint-optimal schedule, so CP-SAT is the real winner over greedy.
 
-**Reproduce:** `scratchpad/solver_arms_lean.sh` (all arms, `XPURT_CPSAT_WORKERS=0`) ·
+**Reproduce:** `scratchpad/solver_arms_lean.sh` *(LOST)* (all arms, `XPURT_CPSAT_WORKERS=0`) ·
 `scripts/compose_solver_win.py --greedy … --cpsat … --spec …` ·
 `scratchpad/{solver_comparison_table,warehouse_crash_speed,warehouse_solver_flight}.py` ·
-`scratchpad/isaac_sweep_driver.sh` (fresh Isaac flights).
+`scratchpad/isaac_sweep_driver.sh` *(LOST)* (fresh Isaac flights).
 
 ## 8. Coupled workloads, HIL sim fidelity, and the crate-tower crash (co-design realism)
 
@@ -134,7 +157,7 @@ control` chain (`data/toplevel/_flight_coupled.json` adds `yolov8_nano_64x96 -> 
 and sensor specs already carry `fused_full -> mlp_control`).
 
 **Honest finding — freshness is a workload property here, not a schedule lever.** Driving the repo's own
-`xpu-rt/freshness.evaluate_freshness` (via `scratchpad/fresh_eval.py`) on the produced schedules, greedy,
+`xpu-rt/freshness.evaluate_freshness` (via `scratchpad/fresh_eval.py` *(LOST)*) on the produced schedules, greedy,
 CP-SAT and ROS come out *identical* (e.g. s5.0 nav->ctrl 80%; coupled flight chain 33%). This is by design:
 freshness edges are evaluated post-hoc against **producer release times** (`SAMPLE_AT_RELEASE`), so the
 metric depends on the workload's periods/windows, not on where the solver places dispatches (confirmed in

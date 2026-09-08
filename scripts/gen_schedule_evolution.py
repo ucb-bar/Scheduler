@@ -157,7 +157,14 @@ def gen_from_loop(solver="cpsat", board_solver="cpsat", objective="lateness"):
     p3 = _copy("board-recost", "a3_board_recost")
     panels = [
         f"Baseline · RVV singletons|none|{rel(p1)}|loop baseline (levers stripped)",
-        f"AOT optimize — {lev_txt}|{hl}|{rel(p2)}|levers from the loop's measured search",
+        # "Auto-loop", not "AOT": in --from-loop mode these levers were CHOSEN by the
+        # loop's measured search, which is the whole claim of the figure. The shipped
+        # schedule_evolution_auto.png says "Auto-loop optimize — Shard" and no script
+        # on disk emitted that string -- panels.json had been hand-edited, so the one
+        # figure that demonstrates automation was the one figure with a hand-written
+        # panel title. It is emitted here now.
+        f"Auto-loop optimize — {lev_txt}|{hl}|{rel(p2)}|"
+        f"levers from the loop's measured search",
         f"K1-calibrated replay|none|{rel(p3)}|same assignment, board durations",
     ]
     tags = [("1 baseline", p1), ("2 aot", p2), ("3 board-recost", p3)]

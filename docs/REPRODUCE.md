@@ -78,7 +78,7 @@ It starts from a clean baseline, proposes each lever, **re-solves each candidate
 `objective_vs_round.png`. Verified end-to-end on this workload: `ime` reject (−0.0%), `shard` reject (−0.0%),
 **`unfuse` accept (898.1 → 866.4 ms, −3.5%, 0 miss) → converged** — the honest accept/reject the loop is for.
 The calibration-aware variant (CP-SAT + `--board-calibration` every round) is
-`scratchpad/auto_feedback_loop.py`. Graph-rewrite levers (fuse/unfuse/split) go through the bridges
+`scratchpad/auto_feedback_loop.py` *(LOST — never committed; use `scripts/run_codesign_loop.py`)*. Graph-rewrite levers (fuse/unfuse/split) go through the bridges
 `scripts/advice_to_*_hint.py` → `ModelBlaster/pipeline/apply_*_hint.py` → `generate_kernels.py` (driver-mediated).
 
 **(6) HIL-in-loop flight ablation** (Isaac): sweep drone speed × command frequency, log crash/success:
@@ -143,7 +143,7 @@ solver-win, and evolution plot are CPU-only from cached schedules). Per-figure c
 |---|---|
 | **Schedule a workload** | `scripts/run_xpurt_schedule.py` (entry; flags `--solver {milp,greedy}`, `--scheduler {cpsat,mosek,…}`, `--profiled`, `--board-calibration`, `--emit-feedback`) → `xpu-rt/scheduler_cpsat.py`, `xpu-rt/scheduler.py` (MOSEK MILP), `xpu-rt/greedy_scheduler.py` |
 | **Cost model / profiles** | `xpu-rt/profile_loader.py` (`load_profiled_processing_times`; the `--board-calibration` scaling at `base_t`); profile CSVs under `gen_mb/…/<target>/…` |
-| **The AOT feedback loop** | doc `docs/the_loop.md`; drivers `scripts/run_codesign_loop.py` (auto, levers shard/IME/unfuse), `scratchpad/auto_feedback_loop.py` (CP-SAT + board-cal every round) |
+| **The AOT feedback loop** | doc `docs/the_loop.md`; drivers `scripts/run_codesign_loop.py` (auto, levers shard/IME/unfuse), `scratchpad/auto_feedback_loop.py` *(LOST — never committed; use `scripts/run_codesign_loop.py`)* (CP-SAT + board-cal every round) |
 | **Feedback emission** | `xpu-rt/feedback.py` (`--emit-feedback` → `xpurt_feedback.json`), `xpu-rt/compile_advice.py` + `scripts/emit_compile_advice.py` (`compile_advice.json`, verbs split/fuse/unfuse/shard/choose_impl) |
 | **Feedback consume / corroborate** | `xpu-rt/feedback_join.py`, `xpu-rt/advice_join.py` (identity-safety) |
 | **Graph rewrite (ModelBlaster)** | bridges `scripts/advice_to_{fusion,split,unfuse,shard}_hint.py`, `advice_to_kernel_choice.py` → `ModelBlaster/pipeline/apply_*_hint.py` → `ModelBlaster/pipeline/generate_kernels.py` |
