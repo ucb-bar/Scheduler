@@ -56,6 +56,10 @@ try:
 except Exception:
     exact_cycle = None
 try:
+    import rewrite_arm
+except Exception:  # pragma: no cover - the scheduling-lever loop works without it
+    rewrite_arm = None
+try:
     import candidate_objective as objective
     import schedule_scoring
     import workload_spec
@@ -389,6 +393,32 @@ def main():
                          "(default: all). Restricting to a subset is honest scenario-scoping, e.g. "
                          "'--levers ime' asks 'with sharding off the table, does the loop autonomously "
                          "accept the matrix engine?' — the accept/reject is still measured, not forced.")
+    ap.add_argument("--rewrite-arm", action="store_true",
+                    help="ALSO propose ModelBlaster graph rewrites (fuse/unfuse/split/"
+                         "shard) as candidates each round: advice -> bridge -> applier "
+                         "-> graph gate -> bit-exact host verify -> MEASURE with "
+                         "--runner -> schedule -> the same nine-term verdict. Without "
+                         "it the loop searches scheduling levers only, which is what it "
+                         "did before: a rewrite could never compete with a lever inside "
+                         "one round.")
+    ap.add_argument("--ir", action="append", default=[], metavar="NET=PATH",
+                    help="ModelBlaster graph.json per net, for --rewrite-arm. "
+                         "weights.npz/io.npz beside it enable the bit-exact gate.")
+    ap.add_argument("--runner", choices=["board", "none"], default="board",
+                    help="how a rewritten graph gets its costs. board: rebuild and "
+                         "profile on the target. none: propose and gate rewrites but "
+                         "never schedule them, since costing a rewrite from its "
+                         "parent's profile measures the derivation, not the rewrite.")
+    ap.add_argument("--rewrite-verbs", default=",".join(
+        rewrite_arm.REWRITE_VERBS if rewrite_arm else ("fuse", "unfuse", "split",
+                                                       "shard")))
+    ap.add_argument("--target", default="spacemit_x60")
+    ap.add_argument("--hw", default="rvv_x60")
+    ap.add_argument("--accel-hw", default="ime_x60",
+                    help="the per-dispatch alternative the `ime` lever exposes; "
+                         "set empty to disable that lever on a backend without one")
+    ap.add_argument("--gen-root", default="gen_mb")
+    ap.add_argument("--profile-root", default="gen/profile_mb")
     ap.add_argument("--replay", action="store_true",
                     help="deterministic offline replay: pin XPURT_CPSAT_WORKERS=1 and "
                          "refuse anything that would touch the board, so two runs of "
@@ -494,6 +524,21 @@ def main():
 
     base_score = score(sched, working, mk)
     base_gmiss = guard_miss(sched, working, miss)
+    backend = None
+    irs = {}
+    if rewrite_arm is not None:
+        backend = rewrite_arm.Backend(
+            target=args.target, hw=args.hw,
+            accel_hw=(args.accel_hw or None), gen_root=args.gen_root,
+            profile_root=args.profile_root)
+    for spec_str in args.ir:
+        if "=" in spec_str:
+            k, v = spec_str.split("=", 1)
+            irs[k] = v if os.path.isabs(v) else os.path.join(REPO, v)
+    if args.rewrite_arm and (rewrite_arm is None or not irs):
+        log("WARNING: --rewrite-arm needs xpu-rt/rewrite_arm.py and at least one "
+            "--ir NET=PATH; searching scheduling levers only")
+
     critical, heavy = critical_and_heavy(working, args.critical_models, args.heavy_model)
     use_objective = (args.accept_rule == "objective") and objective is not None
     if args.accept_rule == "objective" and objective is None:
@@ -557,6 +602,76 @@ def main():
             cands.append(dict(lever=lever, mk=cmk, score=csc, miss=cgmiss, sched=csched,
                               spec=cspec, spec_path=cpath, ok=ok, why=why, out=cout))
 
+        # ---- GRAPH-REWRITE CANDIDATES ----------------------------------------
+        # The other half of the loop. A rewrite has to earn its place the same way a
+        # scheduling lever does: proposed by the advisor, gated for correctness,
+        # MEASURED, scheduled, and judged on the nine terms. Costing it from its
+        # parent's profile would measure the derivation instead, so a rewrite that
+        # cannot be measured is reported and skipped, never scored.
+        if args.rewrite_arm and rewrite_arm is not None and irs and cur_sched:
+            rw_dir = os.path.join(out_dir, "rewrites", f"round_{rnd}")
+            verbs = tuple(v.strip() for v in args.rewrite_verbs.split(",") if v.strip())
+            proposals = rewrite_arm.propose(cur_sched, irs, backend, rw_dir, log,
+                                            verbs=verbs)
+            for row in proposals:
+                tag = f"r{rnd}{row['verb']}"
+                label = f"{row['verb']}:{row['model']}"
+                if not row["eligible"]:
+                    log(f"round {rnd} · rewrite {label}: not eligible "
+                        f"({row['stopped_at']}) — {str(row['why'])[:120]}")
+                    inapplicable.append(dict(round=rnd, lever=label,
+                                             reason=row["why"], kind="rewrite"))
+                    continue
+                if args.runner == "none":
+                    log(f"round {rnd} · rewrite {label}: eligible, but --runner none "
+                        f"— not scheduled (a rewrite has no profile until it is "
+                        f"measured)")
+                    inapplicable.append(dict(round=rnd, lever=label, kind="rewrite",
+                                             reason="eligible but unmeasured "
+                                                    "(--runner none)"))
+                    continue
+                seed = os.path.dirname(row["ir"])
+                meas = rewrite_arm.measure_on_board(
+                    row["rewritten_ir"], row["model"], tag, seed, backend, log)
+                if meas is None:
+                    inapplicable.append(dict(round=rnd, lever=label, kind="rewrite",
+                                             reason="measurement failed"))
+                    continue
+                if not rewrite_arm.emit_graph(meas["staged_ir"], backend, log):
+                    inapplicable.append(dict(round=rnd, lever=label, kind="rewrite",
+                                             reason="emit_dispatch_graph failed"))
+                    continue
+                cpath = os.path.join(spec_dir, f"{wl_stem}_r{rnd}_{tag}.json")
+                json.dump(cur_spec, open(cpath + ".base", "w"), indent=1)
+                rewrite_arm.spec_with(cpath + ".base", row["model"], meas["model"],
+                                      backend, cpath)
+                cspec = json.load(open(cpath))
+                cmk, cmiss, csched, cerr = solve(cpath, solver=args.solver,
+                                                 time_limit=args.time_limit)
+                if cmk is None:
+                    log(f"round {rnd} · rewrite {label}: SOLVE FAILED "
+                        f"({(cerr or '')[:120]}) — reject")
+                    continue
+                csc = score(csched, cspec, cmk)
+                cgmiss = guard_miss(csched, cspec, cmiss)
+                if use_objective:
+                    cout = outcome_of(label, csched, cspec, critical, heavy)
+                    ok, why = objective_verdict(cout, cur_out, csched, cur_sched, cspec)
+                    if ok is None:
+                        ok, why = False, "refused -- objective rule unavailable"
+                else:
+                    cout = None
+                    ok = (cgmiss <= cur_miss) and ((cur_score - csc) > EPS)
+                    why = "legacy rule"
+                log(f"round {rnd} · rewrite {label}: {metric_name} {cur_score:.3f} -> "
+                    f"{csc:.3f}, {cgmiss} instance-miss (MEASURED on "
+                    f"{meas['runner']}) -> {'ACCEPTABLE' if ok else 'reject'}")
+                log(f"round {rnd} · rewrite {label}: {why}")
+                cands.append(dict(lever=label, mk=cmk, score=csc, miss=cgmiss,
+                                  sched=csched, spec=cspec, spec_path=cpath, ok=ok,
+                                  why=why, out=cout, kind="rewrite",
+                                  measurement=meas))
+
         winners = [c for c in cands if c["ok"]]
         if not winners:
             log(f"round {rnd}: no lever is accepted by the "
@@ -588,6 +703,15 @@ def main():
                            terms=(objective.terms_dict(best["out"])
                                   if best.get("out") is not None else None)))
         applied.append(best["lever"])
+        if best.get("kind") == "rewrite":
+            # ITERATION. The next round must propose from the graph we just accepted,
+            # not from the original -- otherwise a second rewrite is derived against an
+            # IR that no longer describes what is scheduled, and two rewrites can never
+            # compose (split then shard, say).
+            _m = best["lever"].split(":", 1)[1]
+            irs[_m] = best["measurement"]["staged_ir"]
+            log(f"      rewrite arm: {_m} now proposes from "
+                f"{os.path.relpath(irs[_m], REPO) if irs[_m].startswith(REPO) else irs[_m]}")
         cur_mk, cur_score, cur_miss, cur_spec = best["mk"], best["score"], best["miss"], best["spec"]
         cur_sched, cur_spec_path = best["sched"], best["spec_path"]
         if best.get("out") is not None:
@@ -731,6 +855,16 @@ def main():
                   total_reduction_pct=round((base_score - cur_score) / denom * 100, 1),
                   baseline_makespan_ms=round(mk, 1), final_makespan_ms=round(cur_mk, 1),
                   levers_available=active_levers,
+                  rewrite_arm=dict(
+                      enabled=bool(args.rewrite_arm and rewrite_arm is not None
+                                   and irs),
+                      runner=args.runner, verbs=args.rewrite_verbs,
+                      irs={k: os.path.relpath(v, REPO) if v.startswith(REPO) else v
+                           for k, v in irs.items()},
+                      backend=dict(target=args.target, hw=args.hw,
+                                   accel_hw=args.accel_hw, gen_root=args.gen_root,
+                                   profile_root=args.profile_root),
+                      accepted=[r for r in rounds if ":" in str(r.get("lever"))]),
                   levers_applied=applied, levers_inapplicable=inapplicable,
                   rounds=rounds, trajectory=traj,
                   fusion=fnote, converged=True, board_feedback=board)
