@@ -189,7 +189,13 @@ def solve(spec_path, solver="greedy", board_cal=None, time_limit=None):
         cmd += ["--solver", "greedy"]
         sfx = "greedy_profiled"
     if time_limit is not None:
+        # THE BUDGET TRAP. --time-limit is MILP-only; CP-SAT reads --cpsat-time-limit
+        # and otherwise runs at scheduler.cpsat_time_limit (300 s default). Passing only
+        # --time-limit to a cpsat arm therefore gives it 300 s while every other arm
+        # gets what was asked, which makes any budget-matched comparison a fiction.
         cmd += ["--time-limit", str(time_limit)]
+        if solver == "cpsat":
+            cmd += ["--cpsat-time-limit", str(float(time_limit))]
     if board_cal:
         cmd += ["--board-calibration"] + ([board_cal] if isinstance(board_cal, str) else [])
     r = _run(cmd)
