@@ -308,6 +308,30 @@ aggregate transfers (1.20 vs 1.26, median key ratio 0.96) and the per-dispatch t
 not, which is exactly the tier the solver leans on. Calibrate the schedule you are about
 to run.
 
+### And the same arc on the 5-net rung, where the loop does not win
+
+`w5_ffn_dronet_yolo` (five networks, `yolov8_nano_64x96` included, 5 board runs):
+
+| | AOT-cost search | measured-cost search |
+|---|---|---|
+| transformations | `ime` (`shard` refused: not buildable) | `ime` |
+| instance misses | 11 -> 11 | 11 -> 11 |
+| baseline lateness | 109.81 ms | **214.01 ms** |
+| residual lateness | 99.02 ms | **186.79 ms** (1.89x) |
+
+This is the honest negative, and it is worth as much as w2's clean win. Nothing clears a
+deadline on this rung. What the board adds is *why*: the isolated profile database
+understates the baseline by 1.95x and the residual by 1.89x, so an AOT-only loop would
+report itself much closer to feasible than it is.
+
+**The calibration is what makes this rung sayable at all.** `conv2d_batchnorm2d_silu_s8`
+is 94.2% of yolo's runtime and is **absent from the generic table's op tier**, so every
+earlier "outer loop" number here costed yolo's dominant op by the aggregate multiplier,
+1.2608. Measured on the board it is **1.4060**, and yolo's per-dispatch multipliers run
+from 0.99 to 12.31 (median 1.4143) — a distribution that one scalar was standing in for.
+For a cross-check in the other direction, `linear_f16` comes back at 2.1544 here against
+the generic table's 2.0496, on a network that table did measure.
+
 ### Two things it has to get right, and how you can tell it did
 
 * `entries_done`. A run whose `core_kind` does not match the backend tag completes
