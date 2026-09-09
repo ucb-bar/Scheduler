@@ -109,10 +109,16 @@ def read_trace(path):
             actual = ticks / K1_RDTIME_HZ * 1e3
             if pred <= 0 or actual <= 0:
                 continue
-            # The instance suffix is deliberately dropped: a multiplier is a property of
-            # the code and the core it ran on, not of which instance happened to run.
-            net = r["network"].rstrip("0123456789") or r["network"]
-            out.append((net, int(r["dispatch_id"]), r["op"], pred, actual))
+            # THE NETWORK COLUMN IS ALREADY THE NETWORK. The trace carries `instance`
+            # separately, so there is no suffix to strip -- and stripping one is
+            # actively wrong: `yolov8_nano_64x96` ends in a digit, so trimming trailing
+            # digits produced `yolov8_nano_64x`. That does not fail; it files every
+            # yolo multiplier under a name no consumer looks up, so the calibration
+            # silently covers four of five networks and reports the fifth as
+            # extrapolated while holding its measurements the whole time. A network
+            # name may end in a digit -- the same hazard `generate_xpurt_main.py` and
+            # `decision_loop.py` both carry warnings about.
+            out.append((r["network"], int(r["dispatch_id"]), r["op"], pred, actual))
     return out, None
 
 

@@ -297,11 +297,16 @@ def run_on_board(sched, nets, repeats, out_dir, cross, mb_py, log,
                 f"{missing} are missing -- see NEEDS_STAGED_IR for how to build it")
             return []
         staged.append(f"{n}:{d}")
-    models = ",".join(n for n in nets if n not in NEEDS_STAGED_IR)
+    # A STAGED NET STILL BELONGS IN --models. `--staged-ir` only supplies the IR so the
+    # extractor is skipped; the runner loops over --models to generate sources, and it
+    # passes that same list to the ingest as --networks. Leaving the staged net out gave
+    # "schedule entry 'yolov8_nano_64x960_dispatch_0' references unknown network
+    # 'yolov8_nano_64x'" -- the ingest stripping the instance suffix off a name that
+    # itself ends in a digit, then failing to find it in a list it was never given.
+    models = ",".join(nets)
     cmd = ["bash", "scripts/run_xpurt_k1.sh", "--schedule", os.path.relpath(sched, MB),
-           "--backends", "rvv_x60,ime_x60,rvv_x60", "--jobs", "4"]
-    if models:
-        cmd += ["--models", models]
+           "--backends", "rvv_x60,ime_x60,rvv_x60", "--jobs", "4",
+           "--models", models]
     for s in staged:
         cmd += ["--staged-ir", s]
     if any(n.startswith("fused_") for n in nets):
