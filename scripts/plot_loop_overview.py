@@ -171,15 +171,22 @@ def mini_gantt(ax, key):
     ax.plot([0, 100], [nrow - 0.42] * 2, color="#b0b0b0", lw=0.5, clip_on=False)
 
 
-def band_a(fig, fw, fh, y_top, gantt_h):
-    """Two before -> after pairs, side by side, labelled 'inner loop' / 'outer loop'."""
+def band_a(fig, fw, fh, y_top, gantt_h, centres=None):
+    """Two before -> after pairs, side by side, labelled 'inner loop' / 'outer loop'.
+
+    `centres` optionally pins each group's centre in mm. In the two-band layout the four
+    stage panels below carry the meaning by ALIGNMENT -- stages 1-2 under `inner loop`,
+    3-4 under `outer loop` -- so the schematics have to sit over their own halves rather
+    than be spaced for their own convenience.
+    """
     pair_w, arrow_w, sub_h = 30.0, 11.0, 3.2
     group_w = pair_w * 2 + arrow_w
     margin = (fw - 2 * group_w) / 3.0               # equal air left, middle, right
     for gi, (title, keys, lever) in enumerate(
             [("inner loop", ("modelled", "optimised"), "shard + IME"),
              ("outer loop", ("measured", "re-solved"), "re-solve")]):
-        gx = margin + gi * (group_w + margin)
+        gx = (centres[gi] - group_w / 2.0 if centres
+              else margin + gi * (group_w + margin))
         fig.text((gx + group_w / 2) / fw, 1.0 - (y_top - 0.3) / fh, title,
                  ha="center", va="bottom", fontsize=6.0, fontweight="bold",
                  color=figstyle.BLACK)
@@ -336,7 +343,7 @@ def _stage2_title(path):
         marks.append("shard")
     if "ime" in impls:
         marks.append("IME")
-    return "AOT optimise" + (" · " + " + ".join(marks) if marks else "")
+    return "AOT optimise" + (" · " + "+".join(marks) if marks else "")
 
 
 STAGES = [("1", "Baseline · RVV", "a1_baseline"),
@@ -388,6 +395,12 @@ def main() -> int:
                     help="the workload spec band C's deadlines come from")
     ap.add_argument("--height-mm", type=float, default=58.5,
                     help="canvas height; the brief caps the figure at a quarter page")
+    ap.add_argument("--no-ablation", action="store_true",
+                    help="drop band B and align the four stage panels under the two "
+                         "schematics: stages 1-2 (predicted costs) under `inner loop`, "
+                         "stages 3-4 (measured board costs) under `outer loop`. The "
+                         "alignment is the argument -- it says which loop owns which "
+                         "beat without a caption having to.")
     ap.add_argument("--stem", default="loop_overview")
     ap.add_argument("--out-dir",
                     default=os.path.join(_REPO, "results/codesign_feedback"))
@@ -411,13 +424,22 @@ def main() -> int:
 
     # ---- Band A ---------------------------------------------------------------------
     A_TOP, A_GANTT_H = 3.2, 8.2
-    band_a(fig, FW, FH, A_TOP, A_GANTT_H)
+    # STAGE-ROW GEOMETRY FIRST, because in the two-band layout band A is centred on the
+    # halves the stage panels define. Four panels, a wider gap in the middle to make the
+    # inner/outer split visible without a rule through it.
+    C_PW, C_GAP, C_MIDGAP, C_X0 = 37.0, 8.0, 13.0, 8.0
+    _xs = [C_X0, C_X0 + C_PW + C_GAP,
+           C_X0 + 2 * C_PW + C_GAP + C_MIDGAP,
+           C_X0 + 3 * C_PW + 2 * C_GAP + C_MIDGAP]
+    _centres = [(_xs[0] + _xs[1] + C_PW) / 2.0, (_xs[2] + _xs[3] + C_PW) / 2.0]
+
+    band_a(fig, FW, FH, A_TOP, A_GANTT_H, centres=(_centres if a.no_ablation else None))
     a_bot = A_TOP + 0.7 + A_GANTT_H + 3.0
     divider(fig, FH, a_bot + 0.3)
 
     # ---- Band B ---------------------------------------------------------------------
     B_TOP = a_bot + 5.9
-    data = load_ablation(summaries)
+    data = None if a.no_ablation else load_ablation(summaries)
     notes["summaries_used"] = [p for p in summaries if os.path.exists(p)]
     notes["summaries_missing"] = [p for p in summaries if not os.path.exists(p)]
     B_PLOT_H = 8.6
@@ -450,12 +472,17 @@ def main() -> int:
         notes["ablation"] = {r: {"n_nets": data[r]["n_nets"],
                                  **{sv: data[r][sv] for sv in solvers if sv in data[r]}}
                              for r in rungs}
+    elif a.no_ablation:
+        notes["ablation"] = "dropped by --no-ablation"
     else:
         print("WARNING: band B dropped - no ablation summary parsed", file=sys.stderr)
         notes["ablation"] = None
 
-    b_bot = B_TOP + B_PLOT_H + 4.0                  # plot + two-line x tick labels
-    divider(fig, FH, b_bot + 0.5)
+    if a.no_ablation:
+        b_bot = a_bot                               # no band B, no second divider
+    else:
+        b_bot = B_TOP + B_PLOT_H + 4.0              # plot + two-line x tick labels
+        divider(fig, FH, b_bot + 0.5)
 
     # ---- Band C ---------------------------------------------------------------------
     C_TOP = b_bot + 5.0
@@ -480,12 +507,17 @@ def main() -> int:
         first = evo.build_remap([(None, None, loaded[0])])
         rest = evo.build_remap([(None, None, r) for r in loaded[1:]])
 
-        cw, cgap, cx = 37.0, 8.0, 9.0
+        # In the two-band layout the panels sit on the SAME x positions band A was
+        # centred on, with a wider gap between stage 2 and 3. That gap is the inner/outer
+        # boundary and the alignment is what tells the reader which loop owns which beat.
+        cw, cgap, cx = (C_PW, C_GAP, C_X0) if a.no_ablation else (37.0, 8.0, 9.0)
         stage_rows = []
         for i, (num, title, _stem) in enumerate(STAGES):
             if num == "2":
                 title = _stage2_title(paths[i])
             remap, xmax, breaks, merged = first if i == 0 else rest
+            if a.no_ablation:
+                cx = _xs[i]
             ax = mm_axes(fig, FW, FH, cx, C_TOP, cw, C_PLOT_H)
             miss, missed = stage_axes(ax, paths[i], dl, nets, remap, xmax, breaks,
                                       feedback=(i >= 2))
@@ -501,7 +533,12 @@ def main() -> int:
             ax.text(-0.005, 1.30, num, transform=ax.transAxes, fontsize=4.6,
                     weight="bold", color="white", ha="center", va="center", zorder=6,
                     bbox=dict(boxstyle="circle,pad=0.24", fc=col, ec="none"))
-            ax.text(0.055, 1.30, title, transform=ax.transAxes, fontsize=4.7,
+            # The badge is right-anchored in the same strip, so a long title collides
+            # with it -- "AOT optimise · shard + IME" plus "✓ ALL MET" does not fit a
+            # 37 mm panel at 4.7 pt. Shrink the title rather than truncate it: the lever
+            # names are the informative half and must survive.
+            _tfs = 4.7 if len(title) <= 22 else (4.2 if len(title) <= 28 else 3.8)
+            ax.text(0.055, 1.30, title, transform=ax.transAxes, fontsize=_tfs,
                     weight="bold", color="#111", ha="left", va="center")
             ax.text(1.0, 1.30, ("✓ ALL MET" if miss == 0 else f"✗ {miss} MISSED"),
                     transform=ax.transAxes, ha="right", va="center", fontsize=4.2,
