@@ -126,6 +126,26 @@ def classify_failure(text: str) -> str:
     return "unavailable" if any(m in low for m in UNAVAILABLE_MARKERS) else "error"
 
 
+def comparability_of(cells: dict) -> dict:
+    """Whether the cells of one workload scheduled the SAME amount of work.
+
+    Extracted so it can be pinned by a test. Two cells with different per-model
+    instance counts are two amounts of work, not two schedules -- ranking them ranks
+    different experiments, which is the trap `compare_candidates.py` refuses on and
+    `feedback_benchmark` enforces per phase. A cell that never produced a schedule
+    contributes no count and cannot make the set incomparable on its own.
+    """
+    counts = {n: (c or {}).get("instances")
+              for n, c in (cells or {}).items()
+              if isinstance(c, dict) and c.get("instances")}
+    distinct = {json.dumps(v, sort_keys=True) for v in counts.values()}
+    if len(distinct) > 1:
+        return {"status": "REFUSED", "per_cell": counts,
+                "why": ("cells scheduled different instance counts; that is two "
+                        "amounts of work, not two schedules")}
+    return {"status": "ok", "per_cell": counts}
+
+
 def instances_per_model(sched_path, spec_obj):
     """`{model: n_instances}` -- two arms that scheduled different amounts of work are
     not two schedules, and ranking them ranks different experiments."""
@@ -421,17 +441,10 @@ def main() -> int:
         # Comparability across the cells of one workload: same amount of work, or the
         # comparison is between two workloads rather than two schedulers.
         for solver, blob in per_solver.items():
-            counts = {n: (c or {}).get("instances")
-                      for n, c in (blob.get("cells") or {}).items()
-                      if isinstance(c, dict) and c.get("instances")}
-            distinct = {json.dumps(v, sort_keys=True) for v in counts.values()}
-            if len(distinct) > 1:
-                blob["comparability"] = {"status": "REFUSED", "per_cell": counts,
-                                         "why": "cells scheduled different instance "
-                                                "counts; that is two amounts of work"}
-                log(f"    !! {solver}: COMPARABILITY REFUSED — {counts}")
-            else:
-                blob["comparability"] = {"status": "ok"}
+            verdict = comparability_of(blob.get("cells") or {})
+            blob["comparability"] = verdict
+            if verdict["status"] == "REFUSED":
+                log(f"    !! {solver}: COMPARABILITY REFUSED — {verdict['per_cell']}")
         rows.append({"workload": w, "family": family_of(stem),
                      "solvers": per_solver})
 
