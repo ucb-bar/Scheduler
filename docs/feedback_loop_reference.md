@@ -592,10 +592,28 @@ the four defects in §2.3 and §2.4 were removed.
 | b5y (5 nets) | 3 → **0 → 0** → 0 | zero misses that HOLD on hardware; zero execution-bound instances |
 | w5 (5 nets) | 11 → 7 → **16** → 14 | the reveal: 9 misses the model did not predict, 5 in a network it thought was clean |
 | sensor (5 nets) | 2 → 0 → **1** → 0 | reveal **and** fix — the arc the figure shows |
-| s5 (5 nets) | 1 → 0 → **1** → 1 | reveal, and the residual is provably unfixable |
+| **s5** (5 nets) | 1 → 0 → **6** → **2** | reveal AND fix: 6 misses exposed across all five networks, 4 recovered; residual is execution-bound |
 
 Nine board runs were taken, each calibrated from its own trace (aggregate multipliers
 1.13–1.73, 109–484 dispatch samples).
+
+**s5 in detail**, because it is the arc where both halves of the outer loop are visible:
+
+| beat | misses | what changed |
+|---|---:|---|
+| 1 baseline | 1 | 215 dispatches, every one at width 1 |
+| 2 AOT optimise | **0** | `shard:yolo` + `shard:ffn_block`; 20 dispatches move to width 2, 49 to width 4; makespan −30.4% |
+| 3 board re-cost | **6** | misses appear in *all five* networks, none of them predicted |
+| 4 board re-solve | **2** | re-places against measured costs and visibly re-shards (13 at width 2, 56 at width 4), recovering 4 of the 6 |
+
+The residual 2 is execution-bound rather than mis-scheduled: sharded YOLO measures
+40.3 ms against its 30 ms window — 1.66× its 24.35 ms profile at four cores — so no
+placement recovers it, and the attribution tool says so directly.
+
+One number to be ready for: the measured multipliers on this run span 0.73–14.31 with a
+mean of 1.82. The 14× is timer granularity on a sub-0.1 ms dispatch, which is why the
+pooled op-kind tier carries a 0.1 ms floor; the per-dispatch tier, where the samples are
+the same code on the same core, keeps every sample.
 
 ### 7.3 Solver behaviour
 
@@ -623,13 +641,24 @@ From all 204 CP-SAT certificates in the repo (83 OPTIMAL / 121 FEASIBLE):
 * A five-network workload reaches zero misses that hold under measurement (`b5y`).
 * The whole chain runs unattended: propose → solve → verify buildable → execute on
   hardware → calibrate → re-cost → re-solve.
+* On at least one five-network workload (**s5**) every stage of that chain visibly
+  contributes: the inner loop clears the deadline offline with two composed sharding
+  decisions, the board exposes six misses in networks the model thought were clean, and
+  the re-solve recovers four of them by re-sharding against measured costs. The two
+  remaining are attributed, with measurements, to a network whose execution exceeds its
+  window at any placement.
 
 **Not supported, and worth not implying:**
 
-* *That the outer loop's re-solve reliably recovers what it reveals.* Across w4, w5 and
-  b5z, with both solvers, re-solving on measured costs did **not** pay off; on b5z the
-  minimum over the entire shard lever space was 3 misses while the blind schedule measured
-  1. The reveal-and-attribute half is what consistently earns its place.
+* *That the outer loop's re-solve reliably recovers what it reveals.* It sometimes does
+  and sometimes does not, and the honest claim is conditional. On **s5** it recovers 4 of
+  6 revealed misses. On **w4, w5 and b5z**, with both solvers, it recovered little or
+  nothing — on b5z the minimum over the *entire* shard lever space was 3 misses while the
+  blind schedule measured 1, so no re-solve could have helped there. What separates them
+  is whether a better schedule exists at all under the measured costs, which is a property
+  of the workload rather than of the method. The **reveal-and-attribute** half, by
+  contrast, produced information on every rung. Claim the reveal unconditionally; claim
+  the recovery with the condition attached.
 * *That CP-SAT beats greedy here.* It ties on small rungs and loses on large ones. It is
   the better *re-optimiser* (recovering 9 misses on one re-solve where greedy recovered 2)
   but the worse *solver* at these sizes.
