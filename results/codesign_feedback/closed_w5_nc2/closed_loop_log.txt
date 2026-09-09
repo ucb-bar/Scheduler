@@ -1,6 +1,5 @@
 == closed board loop: w5_ffn_dronet_yolo ==
 networks: ['mlp_control', 'fused_full', 'ffn_block', 'dronet', 'yolov8_nano_64x96']
-  board build will use /scratch2/agustin/miniforge3/envs/merlin-dev/bin/python
 
 [1/4] AOT search on isolated profile costs
   $ /scratch/agustin/xpurt-dev-sync/.venv/bin/python -u /scratch/agustin/xpurt-dev-sync/scripts/run_codesign_loop.py --workload data/toplevel/scaling/w5_ffn_dronet_yolo.json --solver greedy --objective lateness --out-dir /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/aot --time-limit 90
@@ -8,23 +7,11 @@ networks: ['mlp_control', 'fused_full', 'ffn_block', 'dronet', 'yolov8_nano_64x9
   converged spec: results/codesign_feedback/closed_w5_nc2/aot/w5_ffn_dronet_yolo/specs/w5_ffn_dronet_yolo_r1_ime.json
 
 [2/4] execute that schedule on the K1 x5
-  solved: makespan 69.57 ms, 93 dispatch-level deadline misses
-  fused net present: quantising against /scratch/dima/rose-infra/RoSE/experiments/rose_nav_cosim/calib/calib_real.pkl
-  staged IR for ['yolov8_nano_64x96'] (no --model can regenerate these)
-  board run 1/5
-  $ bash scripts/run_xpurt_k1.sh --schedule ../schedules/scheduled_w5_ffn_dronet_yolo_r1_ime_greedy_profiled.json --backends rvv_x60,ime_x60,rvv_x60 --jobs 4 --models mlp_control,fused_full,ffn_block,dronet,yolov8_nano_64x96 --staged-ir yolov8_nano_64x96:/scratch/agustin/xpurt-dev-sync/gen_mb/ir/yolov8_nano_64x96/int8
-    worker_idx,kind_idx,kind,hart,kernel_us,dep_wait_us,sync_overhead_us,target_gate_spin_us,hart_idle_us,gemmini_cfg_emit_us,entries_done,wall_total_us
-  board run 2/5
-    worker_idx,kind_idx,kind,hart,kernel_us,dep_wait_us,sync_overhead_us,target_gate_spin_us,hart_idle_us,gemmini_cfg_emit_us,entries_done,wall_total_us
-  board run 3/5
-    worker_idx,kind_idx,kind,hart,kernel_us,dep_wait_us,sync_overhead_us,target_gate_spin_us,hart_idle_us,gemmini_cfg_emit_us,entries_done,wall_total_us
-  board run 4/5
-    worker_idx,kind_idx,kind,hart,kernel_us,dep_wait_us,sync_overhead_us,target_gate_spin_us,hart_idle_us,gemmini_cfg_emit_us,entries_done,wall_total_us
-  board run 5/5
-    worker_idx,kind_idx,kind,hart,kernel_us,dep_wait_us,sync_overhead_us,target_gate_spin_us,hart_idle_us,gemmini_cfg_emit_us,entries_done,wall_total_us
+  --skip-board: reusing 5 trace(s) already here
 
 [3/4] fit a calibration to this workload's own 5 run(s)
-  $ /scratch/agustin/xpurt-dev-sync/.venv/bin/python /scratch/agustin/xpurt-dev-sync/scripts/emit_board_calibration.py --workload w5_ffn_dronet_yolo: mlp_control+fused_full+ffn_block+dronet+yolov8_nano_64x96 --out /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/k1_calibration_w5_ffn_dronet_yolo.json --validate-against results/codesign_feedback/k1_board_calibration.json --schedule /scratch/agustin/xpurt-dev-sync/schedules/scheduled_w5_ffn_dronet_yolo_r1_ime_greedy_profiled.json --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/board_0_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/board_1_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/board_2_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/board_3_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/board_4_trace.csv
+  alignment will be checked against scheduled_w5_ffn_dronet_yolo_r1_ime_greedy_profiled.json
+  $ /scratch/agustin/xpurt-dev-sync/.venv/bin/python /scratch/agustin/xpurt-dev-sync/scripts/emit_board_calibration.py --workload w5_ffn_dronet_yolo: mlp_control+fused_full+ffn_block+dronet+yolov8_nano_64x96 --out /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/k1_calibration_w5_ffn_dronet_yolo.json --validate-against results/codesign_feedback/k1_board_calibration.json --schedule /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/scheduled_w5_ffn_dronet_yolo_r1_ime_greedy_profiled.json --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/board_0_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/board_1_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/board_2_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/board_3_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5_nc2/board_4_trace.csv
   read 5 trace(s), 2420 dispatch samples
     MISALIGNED yolov8_nano_64x96: the trace has ids the schedule does not: [3, 11, 22, 33, 48, 56]
       -> per-dispatch keys for yolov8_nano_64x96 are OMITTED; it is costed by its op kinds, which are keyed by the row's own op and are unaffected
@@ -62,3 +49,9 @@ networks: ['mlp_control', 'fused_full', 'ffn_block', 'dronet', 'yolov8_nano_64x9
   board-cost search : ['ime']
   same transformations either way: the AOT decision is robust to the cost model on this workload
   residual lateness the AOT view reports: 99.024 ms; measured-cost view: 140.861 ms (1.42x)
+
+[5/5] stability: does the answer move when the sample does?
+  stability[first  n=2]: ['ime']   160.128 -> 142.531 ms   misses 11.0 -> 11.0
+  stability[second n=3]: ['ime']   164.358 -> 140.478 ms   misses 11.0 -> 11.0
+  stability[all    n=5]: ['ime']   164.748 -> 140.861 ms   misses 11.0 -> 11.0
+  stability: residual spread 1.5% across 3 subsets

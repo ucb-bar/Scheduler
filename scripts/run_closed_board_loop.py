@@ -389,6 +389,66 @@ def decisions_of(report):
             report.get("baseline_score_ms"), report.get("final_score_ms"))
 
 
+def stability(traces, workload, out_dir, stem, nets, sched, solver, loop_extra,
+              log):
+    """Refit from DISJOINT halves of the traces and re-decide on each.
+
+    WHY THIS IS PART OF THE TOOL AND NOT A THING TO REMEMBER. A measured-cost ratio was
+    reported three times from this driver before it was right, and the reason each time
+    was a defect one layer down rather than noise -- misaligned per-dispatch keys, then
+    the wrong detector. What would have caught both immediately is asking whether the
+    number moves when the sample changes, because a defect in the cost model shifts every
+    subset the same way while sampling noise does not.
+
+    It is cheap and it is the difference between "1.42x" and "1.42x, and here is the
+    spread". On w5: residual lateness 141.32 / 140.48 / 140.86 ms from runs 0-2, runs 2-4
+    and all five -- 0.6%, so the ratio is the model's and not the draw's.
+
+    Total lateness makes this necessary rather than nice. It is a critical-path quantity,
+    not a sum: on w5 a 2%-of-time difference in which dispatches ran moved it 20%, because
+    the dispatches involved sit at the end of a chain and push whole instances past their
+    deadlines.
+    """
+    if len(traces) < 4:
+        log(f"  --stability needs at least 4 traces to split; have {len(traces)}")
+        return None
+    half = len(traces) // 2
+    subsets = [("first", traces[:half]), ("second", traces[half:]),
+               ("all", list(traces))]
+    rows = []
+    for name, subset in subsets:
+        cal = os.path.join(out_dir, f"k1_calibration_{stem}_{name}.json")
+        if fit_calibration(subset, f"{stem} [{name} {len(subset)} runs]", cal,
+                           lambda _s: None, schedule=sched) is None:
+            log(f"  stability[{name}]: calibration fit failed")
+            continue
+        rep = loop(workload, os.path.join(out_dir, f"stability_{name}"),
+                   lambda _s: None, search_cal=cal, solver=solver, extra=loop_extra)
+        if rep is None:
+            log(f"  stability[{name}]: search failed")
+            continue
+        lv, mb_, mf_, sb, sf = decisions_of(rep)
+        rows.append(dict(subset=name, n_traces=len(subset), levers=lv,
+                         misses_before=mb_, misses_after=mf_,
+                         lateness_before_ms=sb, lateness_after_ms=sf))
+        log(f"  stability[{name:6} n={len(subset)}]: {lv or 'nothing'}   "
+            f"{sb} -> {sf} ms   misses {mb_} -> {mf_}")
+    finals = [r["lateness_after_ms"] for r in rows
+              if isinstance(r.get("lateness_after_ms"), (int, float))]
+    spread = None
+    if len(finals) >= 2:
+        spread = (max(finals) - min(finals)) / (sum(finals) / len(finals)) * 100
+        log(f"  stability: residual spread {spread:.1f}% across {len(finals)} subsets")
+        if spread > 10:
+            log("  >10% -- the ratio is the SAMPLE's as much as the model's; say so "
+                "wherever it is quoted, or take more runs")
+        # A decision that changes with the subset is not a decision.
+        if len({tuple(r["levers"] or ()) for r in rows}) > 1:
+            log("  WARNING: the subsets do not agree on which transformations to apply, "
+                "so the decision is not supported by this many runs")
+    return {"subsets": rows, "residual_spread_pct": spread}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--workload", required=True)
@@ -400,6 +460,13 @@ def main() -> int:
     # rejects "90.0" -- a float here fails four stages in, after the solve.
     ap.add_argument("--time-limit", type=int, default=90)
     ap.add_argument("--out-dir", required=True)
+    ap.add_argument("--stability", action="store_true",
+                    help="refit from disjoint halves of the traces and re-decide on "
+                         "each, reporting the spread. Cheap with greedy, expensive with "
+                         "cpsat. Run it before quoting a ratio: a defect in the cost "
+                         "model shifts every subset the same way, which is how the "
+                         "misaligned keys and the wrong detector would both have been "
+                         "caught on the spot.")
     ap.add_argument("--loop-args", default="",
                     help="extra arguments passed verbatim to run_codesign_loop.py in "
                          "BOTH search stages, e.g. \"--levers ime\"")
@@ -534,6 +601,12 @@ def main() -> int:
         log(f"  residual lateness the AOT view reports: {sf} ms; measured-cost view: "
             f"{sf2} ms ({sf2 / sf:.2f}x)")
 
+    stab = None
+    if a.stability:
+        log("\n[5/5] stability: does the answer move when the sample does?")
+        stab = stability(traces, a.workload, out_dir, stem, nets, sched, a.solver,
+                         loop_extra, log)
+
     summary = dict(
         workload=stem, networks=nets, solver=a.solver, repeats=len(traces),
         generated_at=datetime.datetime.now().isoformat(timespec="seconds"),
@@ -545,6 +618,7 @@ def main() -> int:
                  lateness_before_ms=sb, lateness_after_ms=sf),
         board=dict(levers=lv2, misses_before=mb2, misses_after=mf2,
                    lateness_before_ms=sb2, lateness_after_ms=sf2),
+        stability=stab,
         levers_dropped_on_measured_costs=dropped,
         levers_added_on_measured_costs=added,
         traces=[os.path.relpath(t, REPO) for t in traces],

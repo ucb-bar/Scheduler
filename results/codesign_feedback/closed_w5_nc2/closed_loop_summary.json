@@ -9,7 +9,7 @@
  ],
  "solver": "greedy",
  "repeats": 5,
- "generated_at": "2026-09-08T22:47:13",
+ "generated_at": "2026-09-08T22:51:20",
  "calibration": "results/codesign_feedback/closed_w5_nc2/k1_calibration_w5_ffn_dronet_yolo.json",
  "calibration_aggregate": 1.328,
  "board_warnings": [],
@@ -39,6 +39,44 @@
   "misses_after": 11.0,
   "lateness_before_ms": 164.748,
   "lateness_after_ms": 140.861
+ },
+ "stability": {
+  "subsets": [
+   {
+    "subset": "first",
+    "n_traces": 2,
+    "levers": [
+     "ime"
+    ],
+    "misses_before": 11.0,
+    "misses_after": 11.0,
+    "lateness_before_ms": 160.128,
+    "lateness_after_ms": 142.531
+   },
+   {
+    "subset": "second",
+    "n_traces": 3,
+    "levers": [
+     "ime"
+    ],
+    "misses_before": 11.0,
+    "misses_after": 11.0,
+    "lateness_before_ms": 164.358,
+    "lateness_after_ms": 140.478
+   },
+   {
+    "subset": "all",
+    "n_traces": 5,
+    "levers": [
+     "ime"
+    ],
+    "misses_before": 11.0,
+    "misses_after": 11.0,
+    "lateness_before_ms": 164.748,
+    "lateness_after_ms": 140.861
+   }
+  ],
+  "residual_spread_pct": 1.4530398471229369
  },
  "levers_dropped_on_measured_costs": [],
  "levers_added_on_measured_costs": [],

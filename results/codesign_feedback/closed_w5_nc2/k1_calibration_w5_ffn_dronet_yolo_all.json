@@ -1,9 +1,9 @@
 {
  "schema": "k1_board_calibration/v2",
  "source": "5 board trace(s), real SpaceMiT K1; actual=(end-start)ticks/24MHz vs the predicted_duration_ms the runner stamped from the schedule",
- "workload": "w5_ffn_dronet_yolo: mlp_control+fused_full+ffn_block+dronet+yolov8_nano_64x96",
+ "workload": "w5_ffn_dronet_yolo [all 5 runs]",
  "generated_by": "scripts/emit_board_calibration.py",
- "generated_at": "2026-09-08T22:50:32",
+ "generated_at": "2026-09-08T22:51:08",
  "measures": "EXECUTION inflation only. Queue delay is carried separately by the trace and excluded: a dispatch that waited is not a dispatch that ran slowly, and folding queueing in would charge the scheduler twice for its own placement.",
  "statistic": "mean of per-sample ratios; pooled op tier and aggregate floored at predicted >= 0.1 ms (2400 rdtime ticks) so timer granularity cannot inflate a pooled multiplier",
  "n_dispatch_samples": 2420,
