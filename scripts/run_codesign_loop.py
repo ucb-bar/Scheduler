@@ -60,6 +60,10 @@ try:
 except Exception:  # pragma: no cover - the scheduling-lever loop works without it
     rewrite_arm = None
 try:
+    import codegen_contract
+except Exception:  # pragma: no cover - the loop still runs, it just cannot gate
+    codegen_contract = None
+try:
     import candidate_objective as objective
     import schedule_scoring
     import workload_spec
@@ -119,6 +123,38 @@ def objective_verdict(cand_out, base_out, cand_sched_path, base_sched_path, spec
         return False, (f"refused -- instance counts differ ({bi} vs {ci}); that is two "
                        f"amounts of work, not two graphs")
     return objective.accept(cand_out, base_out)
+
+
+def buildable(sched_path, log, label):
+    """`(ok, why)` -- is this candidate's schedule something ModelBlaster can BUILD?
+
+    A LEVER THAT WINS ON PAPER AND CANNOT BE COMPILED IS NOT A WIN. `shard` mode lets
+    every periodic instance of a dispatch pick its own core width, which for a packed
+    convolution is unbuildable -- one generated model cannot carry two weight layouts
+    for one dispatch. Without this gate the loop happily accepted such a candidate,
+    reported the improvement, and the board build then died at stage 1 of 5 with an
+    error from inside a shell script. The contract
+    (`ModelBlaster/cores/codegen_contract.json`) is what makes the constraint visible on
+    this side, and checking it costs milliseconds.
+
+    A missing contract does NOT fail a candidate: refusing everything because the
+    submodule is absent would be worse than not checking. It is reported once, so the
+    run says which mode it was in.
+    """
+    if codegen_contract is None or not sched_path:
+        return True, "codegen contract unavailable -- NOT gated"
+    try:
+        vs = codegen_contract.violations(sched_path)
+    except codegen_contract.ContractUnavailable as e:
+        return True, f"codegen contract unavailable ({e}) -- NOT gated"
+    except Exception as e:  # a checker bug must not silently reject every candidate
+        return True, f"codegen contract check errored ({type(e).__name__}) -- NOT gated"
+    refuse = [v for v in vs if v.get("severity") == "refuse"]
+    if not refuse:
+        return True, "buildable"
+    first = codegen_contract.describe(refuse[0])
+    return False, (f"NOT BUILDABLE ({len(refuse)} contract violation"
+                   f"{'s' if len(refuse) > 1 else ''}): {first}")
 
 
 def objective_of(spec: dict) -> str:
@@ -622,6 +658,14 @@ def main():
             if cmk is None:
                 log(f"round {rnd} · try {lever}: SOLVE FAILED ({cerr[:120] if cerr else ''}) — reject")
                 continue
+            ok_build, why_build = buildable(csched, log, lever)
+            if not ok_build:
+                log(f"round {rnd} · try {lever}: {why_build}")
+                log(f"round {rnd} · try {lever}: rejected -- the schedule is valid for "
+                    f"the runtime and cannot be code-generated; not a candidate")
+                inapplicable.append(dict(round=rnd, lever=lever, reason=why_build,
+                                         kind="unbuildable"))
+                continue
             csc = score(csched, cspec, cmk)
             cgmiss = guard_miss(csched, cspec, cmiss)
             delta = cur_score - csc
@@ -692,6 +736,12 @@ def main():
                 if cmk is None:
                     log(f"round {rnd} · rewrite {label}: SOLVE FAILED "
                         f"({(cerr or '')[:120]}) — reject")
+                    continue
+                ok_build, why_build = buildable(csched, log, label)
+                if not ok_build:
+                    log(f"round {rnd} · rewrite {label}: {why_build} — rejected")
+                    inapplicable.append(dict(round=rnd, lever=label, kind="unbuildable",
+                                             reason=why_build))
                     continue
                 csc = score(csched, cspec, cmk)
                 cgmiss = guard_miss(csched, cspec, cmiss)

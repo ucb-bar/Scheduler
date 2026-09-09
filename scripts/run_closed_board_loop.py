@@ -51,13 +51,23 @@ _venv = os.path.join(REPO, ".venv/bin/python")
 PY = os.environ.get("XPURT_PY") or (_venv if os.path.exists(_venv) else sys.executable)
 MB = os.environ.get("MB_ROOT") or os.path.join(REPO, "ModelBlaster")
 
-#: Networks whose IR is supplied rather than extracted. `yolov8_nano_64x96` is the
-#: `yolov8_nano` module built at a different input size and registered under its own
-#: name, so `extract_graph --model yolov8_nano_64x96` has nothing to extract -- the
-#: runner needs --staged-ir for it. Kept as data so a new such net is one line.
+#: Networks whose IR is supplied rather than extracted, as `net -> repo-relative DIR`.
+#: `yolov8_nano_64x96` is the `yolov8_nano` module built at a different input size and
+#: registered under its own name, so `extract_graph --model yolov8_nano_64x96` has
+#: nothing to extract -- the runner needs --staged-ir for it. Build the IR with
+#: `MODELBLASTER_YOLOV8N_INPUT=64x96 python -m pipeline.extract_graph --model
+#: yolov8_nano --quant int8 --out-dir <dir>`; the size comes from that env var, not from
+#: the name.
+#:
+#: A DIRECTORY, and made absolute below. `--staged-ir` wants `<net>:<dir>` containing
+#: graph.json, weights.npz and io.npz, and resolves it against ModelBlaster's own root
+#: rather than this repo's -- so a repo-relative path silently points somewhere else.
 NEEDS_STAGED_IR = {
-    "yolov8_nano_64x96": "gen_mb/ir/yolov8_nano_64x96/int8/graph.json",
+    "yolov8_nano_64x96": "gen_mb/ir/yolov8_nano_64x96/int8",
 }
+#: Files `--staged-ir` requires in that directory, checked here so the failure names the
+#: missing artifact instead of arriving from inside a shell script.
+STAGED_IR_FILES = ("graph.json", "weights.npz", "io.npz")
 
 #: The board build needs GCC 14.3. 13.2 -- what CROSS defaults to via chipyard --
 #: miscompiles the RVV intrinsics into a SIGILL with no stdout; see
@@ -222,6 +232,51 @@ def solve_for_board(spec_path, out_dir, solver, time_limit, log):
     return sched
 
 
+#: Ops whose weights are PACKED PER SHARD at codegen time, so one generated model
+#: cannot carry two layouts for one dispatch. Mirrors
+#: `ModelBlaster/pipeline/schedule_shards._PACKED_WEIGHT_SHARD_OPS`; a linear is absent
+#: because its row-major weights are sliced at runtime from the entry's own pool width.
+PACKED_WEIGHT_OPS = {"conv2d_s8", "conv2d_batchnorm2d_s8",
+                     "conv2d_batchnorm2d_silu_s8", "conv2d_silu_s8"}
+
+
+def undeployable_widths(sched_path, log):
+    """`{net: {dispatch_id: [widths]}}` a ModelBlaster build cannot express.
+
+    WHY THIS IS CHECKED HERE. XPU-RT's `shard` mode lets every periodic INSTANCE of a
+    dispatch pick its own aligned core block, and for a convolution that is not
+    buildable: the packed weight array is materialized per shard while generating the
+    skeleton, so the width has to be one value per dispatch. The scheduler does not know
+    that constraint, so it produces schedules that are valid for the runtime and
+    impossible for the compiler -- on the 5-net rung, `dronet` dispatches 0, 3, 8 and 9
+    each take two or three different widths across their five instances.
+
+    Discovering it inside the board build costs the whole build: it dies at stage 1 of 5,
+    after extracting and generating for every model, with an error raised from a shell
+    script. Checking the schedule first costs milliseconds and names the dispatches.
+    """
+    sched = json.load(open(sched_path))
+    packed, widths = {}, {}
+    for e in (sched.get("dispatches") or {}).values():
+        job = str(e.get("job_name", ""))
+        net = job.rstrip("0123456789") or job
+        did = int(e["id"])
+        # The op is not its own field; it is embedded in `module_name`, shaped
+        # `<net>$dispatch_<id>_<backend>_<op>_<SHAPE>` -- so match the op name
+        # delimited by underscores rather than trying to split the whole thing. The
+        # packed names do not prefix one another (`conv2d_batchnorm2d_s8` does not
+        # contain `conv2d_s8`), so a delimited substring test is exact here.
+        mod = str(e.get("module_name") or "")
+        packed[(net, did)] = any(f"_{op}_" in mod for op in PACKED_WEIGHT_OPS)
+        n = len([x for x in str(e.get("hardware_target", "")).split("+") if x.strip()])
+        widths.setdefault((net, did), set()).add(n)
+    bad = {}
+    for (net, did), ws in sorted(widths.items()):
+        if len(ws) > 1 and packed.get((net, did)):
+            bad.setdefault(net, {})[did] = sorted(ws)
+    return bad
+
+
 def run_on_board(sched, nets, repeats, out_dir, cross, mb_py, log,
                  warnings=None):
     """Execute the schedule on the K1 `repeats` times; return the pulled trace paths.
@@ -231,7 +286,17 @@ def run_on_board(sched, nets, repeats, out_dir, cross, mb_py, log,
     iteration is what makes `--repeats` mean anything.
     """
     warnings = warnings if warnings is not None else []
-    staged = [f"{n}:{NEEDS_STAGED_IR[n]}" for n in nets if n in NEEDS_STAGED_IR]
+    staged = []
+    for n in nets:
+        if n not in NEEDS_STAGED_IR:
+            continue
+        d = os.path.join(REPO, NEEDS_STAGED_IR[n])
+        missing = [f for f in STAGED_IR_FILES if not os.path.exists(os.path.join(d, f))]
+        if missing:
+            log(f"  {n} needs a staged IR at {os.path.relpath(d, REPO)} and "
+                f"{missing} are missing -- see NEEDS_STAGED_IR for how to build it")
+            return []
+        staged.append(f"{n}:{d}")
     models = ",".join(n for n in nets if n not in NEEDS_STAGED_IR)
     cmd = ["bash", "scripts/run_xpurt_k1.sh", "--schedule", os.path.relpath(sched, MB),
            "--backends", "rvv_x60,ime_x60,rvv_x60", "--jobs", "4"]
@@ -333,6 +398,9 @@ def main() -> int:
     # rejects "90.0" -- a float here fails four stages in, after the solve.
     ap.add_argument("--time-limit", type=int, default=90)
     ap.add_argument("--out-dir", required=True)
+    ap.add_argument("--loop-args", default="",
+                    help="extra arguments passed verbatim to run_codesign_loop.py in "
+                         "BOTH search stages, e.g. \"--levers ime\"")
     ap.add_argument("--board-py", default=None,
                     help="interpreter for the board build's ModelBlaster steps; it "
                          "needs torch, which this repo's venv deliberately does not "
@@ -364,8 +432,8 @@ def main() -> int:
     # ---- stage 1: AOT, isolated profile costs -----------------------------------
     log("\n[1/4] AOT search on isolated profile costs")
     aot_dir = os.path.join(out_dir, "aot")
-    rep_aot = loop(a.workload, aot_dir, log, solver=a.solver,
-                   extra=["--time-limit", str(a.time_limit)])
+    loop_extra = ["--time-limit", str(a.time_limit)] + a.loop_args.split()
+    rep_aot = loop(a.workload, aot_dir, log, solver=a.solver, extra=loop_extra)
     if rep_aot is None:
         return 1
     lv, mb_, mf_, sb, sf = decisions_of(rep_aot)
@@ -389,6 +457,23 @@ def main() -> int:
         sched = solve_for_board(cspec, out_dir, a.solver, a.time_limit, log)
         if sched is None:
             return 1
+        bad = undeployable_widths(sched, log)
+        if bad:
+            log("  NOT DEPLOYABLE: this schedule gives a packed-weight (convolution) "
+                "dispatch different core widths in different periodic instances, and "
+                "one generated model cannot encode two packed layouts for one dispatch:")
+            for net, dids in bad.items():
+                for did, ws in dids.items():
+                    log(f"    {net} dispatch {did}: widths {ws}")
+            log("  This is a scheduler/compiler mismatch, not a bad schedule: XPU-RT's "
+                "shard mode lets every INSTANCE pick its own aligned block and does not "
+                "know the codegen constraint. Re-run restricting the levers to ones "
+                "that do not vary width per instance (e.g. --loop-args '--levers ime'), "
+                "or pin a single shard width per net.")
+            json.dump({"undeployable_widths": bad,
+                       "schedule": os.path.relpath(sched, REPO)},
+                      open(os.path.join(out_dir, "deployability.json"), "w"), indent=1)
+            return 2
         traces = run_on_board(sched, nets, a.repeats, out_dir, cross,
                               mb_py, log, board_warnings)
     if not traces:
@@ -413,7 +498,7 @@ def main() -> int:
     log("\n[4/4] AOT search again, scored on those measured costs")
     brd_dir = os.path.join(out_dir, "board")
     rep_brd = loop(a.workload, brd_dir, log, search_cal=cal_path, solver=a.solver,
-                   extra=["--time-limit", str(a.time_limit)])
+                   extra=loop_extra)
     if rep_brd is None:
         return 1
     lv2, mb2, mf2, sb2, sf2 = decisions_of(rep_brd)
