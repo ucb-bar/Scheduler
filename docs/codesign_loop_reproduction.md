@@ -316,13 +316,28 @@ to run.
 |---|---|---|
 | transformations | `ime` (`shard` refused: not buildable) | `ime` |
 | instance misses | 11 -> 11 | 11 -> 11 |
-| baseline lateness | 109.81 ms | **201.62 ms** |
-| residual lateness | 99.02 ms | **175.12 ms** (1.77x) |
+| baseline lateness | 109.81 ms | **164.75 ms** |
+| residual lateness | 99.02 ms | **140.86 ms** (1.42x) |
+
+The ratio is stable across disjoint samples of the same five board runs -- residual
+lateness 141.32 / 140.48 / 140.86 ms from runs 0-2, runs 2-4 and all five, agreeing
+within 0.6% -- so 1.42x is the number and not one draw of it.
 
 This is the honest negative, and it is worth as much as w2's clean win. Nothing clears a
 deadline on this rung. What the board adds is *why*: the isolated profile database
-understates the baseline by 1.84x and the residual by 1.77x, so an AOT-only loop would
+understates the baseline by 1.50x and the residual by 1.42x, so an AOT-only loop would
 report itself much closer to feasible than it is.
+
+**A 2%-of-time provenance error moved this by 20%, which is worth knowing before quoting
+any lateness ratio.** A first pass measured 175.12 ms (1.77x) because the board ran the
+STOCK COCO-80 detector while the schedule was costed from the deployed 2-class fine-tune
+(see the contract's `staged_ir_networks`: a default extraction produces a different
+network under the same name, with the same 98 dispatches and no error). Only 10 of those
+dispatches differ, 2.02% of measured yolo time, and their per-op multipliers differ by
+1-6% -- yet total lateness moved 20%, because the dispatches that differ are the detect
+head at the END of yolo's chain, so extra time there pushes whole instances past their
+deadlines. Total lateness is a critical-path quantity, not a sum, and it does not
+degrade gracefully with small cost errors.
 
 **yolo is costed by its op kinds here, not per dispatch, and that is deliberate.** The
 runner records zero-cost ops (`chunk`, `split`, `slice`) with `dispatch_id = -1` and
