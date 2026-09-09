@@ -450,8 +450,46 @@ def schedule_iree_networks(
         return any(jn.startswith(nid) and jn[len(nid):].isdigit() and jn != nid
                    for nid in periodic_net_ids)
 
+    def _annotate_op_kinds(workload):
+        """Attach the profiled op kind to each Operation as `op_kind`.
+
+        WHY IT IS NEEDED HERE. A dispatch graph carries only id/ordinal/dependencies, so
+        `operation_name` is `<net-instance>_dispatch_<id>` and says nothing about WHAT
+        the dispatch computes. The op kind lives in the profile database, and the solver
+        needs it to honour the codegen contract: only packed-weight (convolution)
+        dispatches must take one core width across their periodic instances, and
+        constraining the rest would throw away the freedom shard mode exists to give.
+
+        The base-network lookup is by MEMBERSHIP, never by trimming trailing digits.
+        `yolov8_nano_64x96` ends in a digit, so a blind strip yields `yolov8_nano_64x`
+        and every one of its dispatches silently loses its op kind -- the same hazard
+        `postprocessing.py` resolves by longest base-network prefix.
+        """
+        if not profiled_by_network:
+            return
+        bases = sorted(profiled_by_network, key=len, reverse=True)
+        for op in getattr(workload, "operations", []) or []:
+            did = getattr(op, "operation_id", None)
+            name = str(getattr(op, "operation_name", "") or "")
+            if did is None or not name:
+                continue
+            head = name.split("_dispatch_")[0]
+            net = head if head in profiled_by_network else next(
+                (b for b in bases
+                 if head.startswith(b) and head[len(b):].isdigit()), None)
+            if net is None:
+                continue
+            per = profiled_by_network.get(net) or {}
+            for side in ("p", "e"):
+                rec = (per.get(side) or {}).get(did)
+                kind = (rec or {}).get("op")
+                if kind:
+                    op.op_kind = str(kind)
+                    op.op_network = net
+                    break
+
     def _build_workload():
-        return create_workload_from_network_hierarchy(
+        _w = create_workload_from_network_hierarchy(
             networks_data=networks_data,
             repo_base_path=repo_base_path,
             machines=machines,
@@ -461,6 +499,8 @@ def schedule_iree_networks(
             processing_times=processing_times,
             machine_combinations=machine_combinations,
         )
+        _annotate_op_kinds(_w)
+        return _w
 
     if solver == "milp":
         # Single global solve. Build workload once, run the selected registry

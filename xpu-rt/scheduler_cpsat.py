@@ -71,6 +71,44 @@ def _lazy_cp_model():
         ) from exc
 
 
+def _packed_weight_groups(ops):
+    """`{(network, dispatch_id): [op index, ...]}` for packed-weight dispatches only.
+
+    The op kind is not a field on an Operation; it is inside `operation_name`, which is
+    the module name (`<net>$dispatch_<id>_<backend>_<op>_<SHAPE>`). The packed set comes
+    from ModelBlaster's codegen contract so there is one definition of it, and an
+    unavailable contract yields no groups -- constraining nothing is the right failure
+    here, since the alternative is constraining every dispatch on a guess.
+    """
+    try:
+        import codegen_contract
+        packed = codegen_contract.packed_weight_ops()
+        op_of = codegen_contract.op_of
+    except Exception:
+        return {}
+    groups = {}
+    for i, op in enumerate(ops):
+        name = str(getattr(op, "operation_name", "") or "")
+        # `op_kind` is attached from the profile database by
+        # run_xpurt_schedule._annotate_op_kinds, because a dispatch graph carries only
+        # ids and dependencies -- `operation_name` is `<net-instance>_dispatch_<id>` and
+        # names no op at all. The module-name parse is the fallback for callers that
+        # build a workload without going through that path.
+        kind = str(getattr(op, "op_kind", "") or "") or op_of(name, packed)
+        if kind not in packed:
+            continue
+        did = getattr(op, "operation_id", None)
+        if did is None:
+            continue
+        # The GROUP is the base network: its periodic instances are what must agree.
+        net = str(getattr(op, "op_network", "") or "")
+        if not net:
+            net = (name.split("$")[0] if "$" in name
+                   else name.split("_dispatch_")[0])
+        groups.setdefault((net, int(did)), []).append(i)
+    return groups
+
+
 def _to_int_us(x: float) -> int:
     if x is None or x <= 0:
         return 0
@@ -218,6 +256,43 @@ def cpsat_schedule(
         # Release time.
         if op.min_start_t is not None and op.min_start_t > 0:
             model.Add(chosen_s >= _to_int_us(float(op.min_start_t)))
+
+    # ---- CODEGEN CONTRACT: one width per packed-weight dispatch --------------
+    # Every periodic instance of a dispatch whose weights are PACKED PER SHARD must be
+    # given the same core width, because the packed weight array is materialised per
+    # shard while generating the skeleton -- one generated model cannot carry two
+    # layouts for one dispatch. Without this the solver is free to give `dronet`
+    # dispatch 0 two cores in one instance and four in another; the schedule is valid
+    # for the runtime and the compiler refuses it, and the refusal arrives at stage 1 of
+    # 5 of a board build.
+    #
+    # Encoded as a per-(dispatch, width) indicator rather than by pinning a width: the
+    # solver still CHOOSES the width, it just has to choose one. Pinning would trade a
+    # correctness constraint for a policy decision, and the whole point of shard mode is
+    # that the right width depends on what else is running.
+    #
+    # Off unless asked for, so no existing result moves. The co-design loop's `shard`
+    # lever turns it on, which is what makes that lever's output deployable.
+    if os.environ.get("XPURT_UNIFORM_PACKED_WIDTH", "0") not in ("0", "", "false"):
+        _groups = _packed_weight_groups(ops)
+        _n_coupled = 0
+        for _key, _idxs in sorted(_groups.items()):
+            if len(_idxs) < 2:
+                continue
+            _widths = sorted({len(combos[k]) for k in range(n_combos)})
+            _w_vars = {}
+            for _w in _widths:
+                _ks = [k for k in range(n_combos) if len(combos[k]) == _w]
+                _wv = model.NewBoolVar(f"pw_{_key[0]}_{_key[1]}_{_w}")
+                _w_vars[_w] = _wv
+                for _i in _idxs:
+                    # this instance runs at width w  <=>  the dispatch runs at width w
+                    model.Add(sum(presence[_i][k] for k in _ks) == _wv)
+            model.AddExactlyOne(_w_vars.values())
+            _n_coupled += 1
+        if _n_coupled:
+            print(f"[cpsat] codegen contract: {_n_coupled} packed-weight dispatch(es) "
+                  f"constrained to one width across their instances")
 
     # Per-machine NoOverlap.
     for m, ivars in intervals_per_machine.items():
