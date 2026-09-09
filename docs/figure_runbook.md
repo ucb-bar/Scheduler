@@ -117,26 +117,41 @@ the board appears only as a **profiler**). *Outer* = HIL (measured multipliers f
 real-time runs of the whole schedule, returned and re-solved against; the board is the
 **runtime**). HERO metric = network-instance deadline misses.
 
-**Generate** (CPU only; no board needed — the calibration is a committed artifact):
+**Generate** (CPU only; no board needed — the calibration is a committed artifact).
+The current population is the **2→5 network ladder**, not the K1 corpus:
 
 ```bash
 export XPURT_NO_COMPACT=1                 # the script sets it too, and records it
 $PY scripts/ablate_feedback_loops.py \
-    --workloads $($PY scripts/loop_over_workloads.py --list-k1) \
-    --solvers cpsat,greedy --cpsat-time-limit 900 --repeats 3 \
-    --one-per-family --max-rounds 3 \
-    --out-dir results/loop_ablation
+    --workloads data/toplevel/scaling/w2_ffn_tight.json \
+                data/toplevel/scaling/w3_ffn_dronet.json \
+                data/toplevel/scaling/w4_ffn_dronet_sensor.json \
+                data/toplevel/scaling/w5_ffn_dronet_yolo.json \
+    --solvers cpsat,greedy --time-limit 90 --cpsat-time-limit 300 --repeats 3 \
+    --max-rounds 3 --out-dir results/loop_ablation_ladder_v2
 ```
 
-Writes `results/loop_ablation/ablation_summary.json` (+ `ablation.log`). Greedy over all
-families is ~11 min; a CP-SAT arm is budget-bound — its cost is set by
-`--cpsat-time-limit`, not by the instance — so expect hours and run it `nice`d.
+**Why the ladder and not the 25 K1 specs.** That corpus is bimodal and answers a
+different question: 12 of 25 have a baseline that misses no deadline at all (nothing at
+stake), and most of the rest ask for something no schedule can deliver — 44 of the 50
+residual misses in the corpus-wide run were **infeasible by construction**, because
+`yolov8_nano_64x96` needs 23.95 ms at 8 cores against a 22 ms window and its core scaling
+has saturated. `scripts/make_scaling_workloads.py --check` builds the ladder so that every
+rung's singleton baseline MISSES and a measured wider implementation FITS, with **zero
+infeasible misses** — the band where a scheduler decides the outcome. The corpus-wide
+command (`--workloads $($PY scripts/loop_over_workloads.py --list-k1) --one-per-family`)
+still works and is the right thing for a generality claim, with the family de-duplication
+that claim requires.
+
+Writes `<out-dir>/ablation_summary.json` (+ `ablation.log`). Greedy over the four rungs is
+~4 min; a CP-SAT arm is budget-bound — its cost is set by `--cpsat-time-limit`, not by the
+instance — so expect a couple of hours and run it `nice`d.
 
 **Render:**
 
 ```bash
 $PY scripts/plot_loop_ablation.py \
-    --summary results/loop_ablation/ablation_summary.json \
+    --summary results/loop_ablation_ladder_v2/ablation_summary.json \
     --out-dir results/codesign_feedback --stem loop_ablation
 ```
 
@@ -162,6 +177,18 @@ and `results/codesign_feedback/k1_board_calibration.json`.
   the solver did not prove optimality, and reported as median with the spread.
 - **MOSEK is absent on purpose**: it exhausted ~89 GiB on the rich workload and no memory
   guard exists in code.
+- **Every cell obeys the codegen contract, and the two arms obey it differently.** A
+  schedule that gives a packed-weight (convolution) dispatch different core widths in
+  different periodic instances cannot be code-generated, so it is not a result. CP-SAT is
+  CONSTRAINED (`XPURT_UNIFORM_PACKED_WIDTH=1`, set automatically for shard-mode solves):
+  it still chooses the width and must choose one. Greedy has no combination-selection
+  variable to couple, so its unbuildable candidates are REJECTED by the inner search
+  instead. That asymmetry disadvantages greedy on exactly the workloads where sharding is
+  the answer, it is recorded in the summary's `codegen_contract` field, and it must be
+  stated wherever the two arms are compared. See `docs/board_and_model_gaps.md` gap 3.
+- **A number this gate already retracted.** Before it existed, `shard` was credited with
+  11 → 5 instance misses on `w5_ffn_dronet_yolo` using a schedule the compiler refuses.
+  Any older table carrying that halving is carrying a number that was never deployable.
 
 ---
 **Regenerate all** (from cached artifacts where possible): `bash scripts/make_all_codesign_figures.sh`.
