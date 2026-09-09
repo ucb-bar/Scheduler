@@ -384,6 +384,17 @@ def main():
                          "cpsat gives an optimal 0-miss AOT schedule, needed for the sharp board arc).")
     ap.add_argument("--time-limit", type=int, default=45,
                     help="per-solve CP-SAT seconds during the lever search (ignored by greedy).")
+    ap.add_argument("--search-calibration", nargs="?", const=True, default=None,
+                    metavar="PATH",
+                    help="run the INNER lever/rewrite search itself against measured "
+                         "board costs instead of the isolated profile database. This is "
+                         "the AOT decisions being re-taken in light of what the silicon "
+                         "actually did: an op the board inflates (linear_f16 runs 2.05x "
+                         "its profile) is worth splitting or widening even when the "
+                         "isolated profile says it is cheap, and the AOT-cost search "
+                         "cannot see that. Bare flag uses the default calibration "
+                         "artifact; pass a path to override. Distinct from "
+                         "--board-calibration, which only RE-SOLVES a fixed spec.")
     ap.add_argument("--board-calibration", nargs="?", const=True, default=None, metavar="PATH",
                     help="ENABLE THE BOARD-FEEDBACK ARM. After the predicted lever search converges, "
                          "re-cost the accepted schedule under measured K1 board costs; if that reveals "
@@ -458,10 +469,22 @@ def main():
             return 1
         active_levers = [l for l in LEVERS if l in want]
 
+    DEFAULT_CAL = os.path.join(REPO,
+                               "results/codesign_feedback/k1_board_calibration.json")
     board_cal_path = None
     if args.board_calibration is not None:
-        board_cal_path = (os.path.join(REPO, "results/codesign_feedback/k1_board_calibration.json")
-                          if args.board_calibration is True else args.board_calibration)
+        board_cal_path = (DEFAULT_CAL if args.board_calibration is True
+                          else args.board_calibration)
+    # The calibration the INNER search solves against. None keeps the historical
+    # behaviour: levers are chosen on isolated profile costs, and the board only ever
+    # gets to re-solve what the AOT stage already decided.
+    search_cal_path = None
+    if args.search_calibration is not None:
+        search_cal_path = (DEFAULT_CAL if args.search_calibration is True
+                           else args.search_calibration)
+        if not os.path.exists(search_cal_path):
+            print(f"--search-calibration: no artifact at {search_cal_path}")
+            return 1
 
     wl_stem = os.path.splitext(os.path.basename(args.workload))[0]
     out_dir = os.path.join(REPO, args.out_dir, wl_stem)
@@ -490,7 +513,16 @@ def main():
     working = baseline(json.load(open(args.workload)))
     base_path = os.path.join(spec_dir, f"{wl_stem}_r0_baseline.json")
     json.dump(working, open(base_path, "w"), indent=1)
-    mk, miss, sched, err = solve(base_path, solver=args.solver, time_limit=args.time_limit)
+    if search_cal_path:
+        # SAY IT LOUDLY. Every number the search reports now includes the board's
+        # measured inflation, so it is not comparable with an AOT-cost run of the same
+        # workload, and the baseline it improves on is the board-honest baseline.
+        log(f"inner search runs against MEASURED board costs "
+            f"({os.path.relpath(search_cal_path, REPO)}) -- lever scores here are "
+            f"board-honest and are NOT comparable with an isolated-profile run")
+    mk, miss, sched, err = solve(base_path, solver=args.solver,
+                                 board_cal=search_cal_path,
+                                 time_limit=args.time_limit)
     if mk is None:
         log(f"BASELINE SOLVE FAILED: {err}")
         return 1
@@ -584,7 +616,9 @@ def main():
                 continue
             cpath = os.path.join(spec_dir, f"{wl_stem}_r{rnd}_{lever}.json")
             json.dump(cspec, open(cpath, "w"), indent=1)
-            cmk, cmiss, csched, cerr = solve(cpath, solver=args.solver, time_limit=args.time_limit)
+            cmk, cmiss, csched, cerr = solve(cpath, solver=args.solver,
+                                             board_cal=search_cal_path,
+                                             time_limit=args.time_limit)
             if cmk is None:
                 log(f"round {rnd} · try {lever}: SOLVE FAILED ({cerr[:120] if cerr else ''}) — reject")
                 continue
@@ -653,6 +687,7 @@ def main():
                                       backend, cpath)
                 cspec = json.load(open(cpath))
                 cmk, cmiss, csched, cerr = solve(cpath, solver=args.solver,
+                                                 board_cal=search_cal_path,
                                                  time_limit=args.time_limit)
                 if cmk is None:
                     log(f"round {rnd} · rewrite {label}: SOLVE FAILED "
@@ -873,6 +908,12 @@ def main():
                                   if use_objective and base_out is not None else None),
                   final_terms=(objective.terms_dict(cur_out)
                                if use_objective and cur_out is not None else None),
+                  # WHICH COSTS THE SEARCH SAW. Without this a board-honest run and an
+                  # isolated-profile run of the same workload produce two reports that
+                  # look comparable and are not.
+                  search_costs=("measured board ("
+                                + os.path.relpath(search_cal_path, REPO) + ")"
+                                if search_cal_path else "isolated profile database"),
                   baseline_score_ms=round(base_score, 3), final_score_ms=round(cur_score, 3),
                   total_reduction_pct=round((base_score - cur_score) / denom * 100, 1),
                   baseline_makespan_ms=round(mk, 1), final_makespan_ms=round(cur_mk, 1),
