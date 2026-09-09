@@ -9,9 +9,26 @@ import torch.nn as nn
 
 
 class DronetTorch(nn.Module):
-    def __init__(self, img_dims, img_channels, output_dim, small=True):
+    """DroNet steering backbone with a switchable output head.
+
+    ``head="regression"`` (``output_dim=1``): ``linear1`` emits a continuous
+    yaw-rate scalar — the original behaviour, so existing ``best.pt`` files load
+    unchanged. ``head="classifier"`` (``output_dim=3``): ``linear1`` emits
+    turn-left/straight/turn-right logits. In both cases ``forward`` returns
+    ``(steer_or_logits, collision)``; only the interpretation + loss differ.
+
+    ``img_channels=1`` is the default now that the real front sensor is the
+    monochrome HM01B0 (greyscale). Pass ``img_channels=3`` to load a legacy RGB
+    checkpoint.
+    """
+
+    def __init__(self, img_dims, img_channels=1, output_dim=1, small=True, head="regression"):
         super().__init__()
+        if head not in ("regression", "classifier"):
+            raise ValueError(f"head must be 'regression' or 'classifier', got {head!r}")
         self.small = small
+        self.head = head
+        self.output_dim = output_dim
         self.conv_modules = nn.ModuleList()
 
         if small:
@@ -41,8 +58,11 @@ class DronetTorch(nn.Module):
         self.dropout1 = nn.Dropout()
 
         linear_in = 2048 if small else 6272
+        # linear1: steering scalar (regression) or 3-class logits (classifier).
+        # linear2: collision-probability scalar — always dim-1 and currently
+        # unused, so its shape stays stable across heads and legacy checkpoints.
         self.linear1 = nn.Linear(linear_in, output_dim)
-        self.linear2 = nn.Linear(linear_in, output_dim)
+        self.linear2 = nn.Linear(linear_in, 1)
         self.sigmoid1 = nn.Sigmoid()
 
         self._init_weights()

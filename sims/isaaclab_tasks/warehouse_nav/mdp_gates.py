@@ -58,6 +58,23 @@ FUSED_GATES = [
     ((-8.05, 21.0, 2.0), 0.0),
 ]
 
+# --- alternate gate course (env-var selected) for cross-course GENERALIZATION -----------------
+# A second flyable weave in the SAME aisle with a different lateral phase + y-offset, so the nav
+# and controller face a genuinely different gate LAYOUT (not merely a different obstacle seed).
+# Selected by env var WAREHOUSE_COURSE (default "a" => the original courses, byte-identical).
+# When "b" is chosen, BOTH GATES (the command tracker) and FUSED_GATES (scene + demo goal) rebind
+# to course B so every consumer stays consistent. Unset => nothing changes.
+FUSED_GATES_B = [
+    ((-7.75, 8.5, 2.0), 0.0),
+    ((-8.30, 12.5, 2.0), 0.0),
+    ((-7.80, 16.5, 2.0), 0.0),
+    ((-8.25, 20.5, 2.0), 0.0),
+]
+import os as _os
+if _os.environ.get("WAREHOUSE_COURSE", "a").lower() == "b":
+    GATES = FUSED_GATES_B
+    FUSED_GATES = FUSED_GATES_B
+
 # gate frame dimensions (metres). CRL gate.glb is outer 1.28 / opening ~1.0; we use a wider
 # ~1.5 m opening so a from-scratch forward-only policy can reliably thread it.
 _OPEN = 1.5

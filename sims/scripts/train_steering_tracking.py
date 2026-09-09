@@ -9,6 +9,7 @@
 """Launch Isaac Sim Simulator first."""
 
 import argparse
+import importlib
 import sys
 import os
 
@@ -34,6 +35,15 @@ parser.add_argument("--task", type=str, default="Isaac-Track-Steering-Vision-Cra
 parser.add_argument("--seed", type=int, default=42, help="Seed used for the environment")
 parser.add_argument("--max_iterations", type=int, default=None, help="RL Policy training iterations.")
 parser.add_argument("--resume", type=str, default=None, help="Path to checkpoint to resume training from.")
+parser.add_argument("--entropy_coef", type=float, default=None,
+                    help="Override PPO entropy_coef. Raise it to fight premature entropy collapse "
+                         "(we observed action std pinned at 0.06 with the default 0.005).")
+parser.add_argument("--init_noise_std", type=float, default=None,
+                    help="Override the actor's initial action-noise std (Gaussian init_std).")
+parser.add_argument("--actor_hidden_dims", type=str, default=None,
+                    help="Comma-separated actor+critic hidden dims, e.g. '512,512,512,256' (bigger controller).")
+parser.add_argument("--run_note", type=str, default=None,
+                    help="Suffix appended to the run directory name, so parallel runs are tellable apart.")
 
 # Append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
@@ -63,17 +73,41 @@ from sims.isaaclab_tasks.track_steering_vision.config.crazyflie.agents.rsl_rl_pp
 )
 
 
+def _env_cfg_for_task(task: str):
+    """Instantiate the env cfg that `task` was registered with.
+
+    We must NOT hard-code ``TrackSteeringEnvCfg`` here: ``gym.make(task, cfg=...)`` lets an
+    explicitly-passed cfg win over the task's registered ``env_cfg_entry_point``, so hard-coding
+    it silently ignores ``--task``.  That is exactly how a "Harsh" run would end up training
+    against the *default* reward weights (height=50 swamping steering=10) and learn to hold
+    altitude while ignoring the yaw command.
+    """
+    entry_point = gym.spec(task).kwargs["env_cfg_entry_point"]
+    module_name, class_name = entry_point.split(":")
+    return getattr(importlib.import_module(module_name), class_name)()
+
+
 def main():
     """Train with RSL-RL agent."""
-    # Load configurations
-    env_cfg = TrackSteeringEnvCfg()
+    # Load configurations (env cfg comes from the *task registration*, not a hard-coded class)
+    env_cfg = _env_cfg_for_task(args_cli.task)
     agent_cfg = SteeringTrackingPPORunnerCfg()
+    print(f"[INFO]: Task '{args_cli.task}' -> env cfg {type(env_cfg).__name__}")
 
     # Override with command line arguments
     if args_cli.num_envs is not None:
         env_cfg.scene.num_envs = args_cli.num_envs
     if args_cli.max_iterations is not None:
         agent_cfg.max_iterations = args_cli.max_iterations
+    if args_cli.entropy_coef is not None:
+        agent_cfg.algorithm.entropy_coef = args_cli.entropy_coef
+    if args_cli.init_noise_std is not None:
+        agent_cfg.actor.distribution_cfg.init_std = args_cli.init_noise_std
+    if args_cli.actor_hidden_dims is not None:
+        dims = [int(x) for x in args_cli.actor_hidden_dims.split(",")]
+        agent_cfg.actor.hidden_dims = dims
+        agent_cfg.critic.hidden_dims = dims
+        print(f"[cfg] actor/critic hidden_dims overridden -> {dims}")
 
     env_cfg.seed = args_cli.seed
     env_cfg.sim.device = args_cli.device
@@ -82,6 +116,8 @@ def main():
     log_root_path = os.path.join("logs", "rsl_rl", agent_cfg.experiment_name)
     log_root_path = os.path.abspath(log_root_path)
     log_dir = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    if args_cli.run_note:
+        log_dir = f"{log_dir}_{args_cli.run_note}"
     log_dir = os.path.join(log_root_path, log_dir)
     os.makedirs(log_dir, exist_ok=True)
 

@@ -75,3 +75,67 @@ gym.register(
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:SteeringTrackingPPORunnerCfg",
     },
 )
+
+# ── Sensor-rig variants (Workstream S) ─────────────────────────────────────────
+# Same play envs as above, but with the onboard sensor rig (front Himax
+# greyscale cam + 4 VL53L5CX ToF cross) attached. Launch with --enable_cameras.
+
+gym.register(
+    id="Isaac-Forest-Trail-Vision-Crazyflie-Play-WithSensors-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.forest_env_cfg:ForestTrailEnvCfg_PLAY_WithSensors",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:SteeringTrackingPPORunnerCfg",
+    },
+)
+
+gym.register(
+    id="Isaac-Forest-Trail-Vision-Crazyflie-Play-WithHumans-WithSensors-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.forest_env_cfg:ForestTrailEnvCfg_PLAY_WithHumans_WithSensors",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:SteeringTrackingPPORunnerCfg",
+    },
+)
+
+gym.register(
+    id="Isaac-Forest-Trail-Slalom-Vision-Crazyflie-Play-WithSensors-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.forest_env_cfg:ForestTrailEnvCfg_Slalom_PLAY_WithSensors",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:SteeringTrackingPPORunnerCfg",
+    },
+)
+
+gym.register(
+    id="Isaac-Forest-Gates-Vision-Crazyflie-Play-WithSensors-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.forest_env_cfg:ForestTrailEnvCfg_Gates_PLAY_WithSensors",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:SteeringTrackingPPORunnerCfg",
+    },
+)
+
+gym.register(
+    id="Isaac-Forest-Trail-Curved-Vision-Crazyflie-Play-WithSensors-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.forest_env_cfg:ForestTrailEnvCfg_Curved_PLAY_WithSensors",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:SteeringTrackingPPORunnerCfg",
+    },
+)
+
+gym.register(
+    id="Isaac-Forest-Trail-Curved-Vision-Crazyflie-Play-WithHumans-WithSensors-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.forest_env_cfg:ForestTrailEnvCfg_Curved_PLAY_WithHumans_WithSensors",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:SteeringTrackingPPORunnerCfg",
+    },
+)

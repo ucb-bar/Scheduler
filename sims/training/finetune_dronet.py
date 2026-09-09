@@ -37,7 +37,7 @@ if str(REPO_ROOT) not in sys.path:
 from qnn_models.dronet import DronetTorch  # noqa: E402
 from sims.training.dataset_idsia import IDSIAConfig, IDSIATrailDataset  # noqa: E402
 from sims.training.dataset_sim import SimDataConfig, SimTrailDataset  # noqa: E402
-from sims.training.train_dronet import evaluate, steering_only_loss  # noqa: E402
+from sims.training.train_dronet import evaluate, head_loss  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -57,6 +57,13 @@ def parse_args() -> argparse.Namespace:
     # Model
     p.add_argument("--model_size", choices=["small", "large"], default="small")
     p.add_argument("--img_size", type=int, default=None)
+    p.add_argument("--head", choices=["regression", "classifier"], default="regression",
+                   help="Must match the head of the base checkpoint.")
+    p.add_argument("--rgb", action="store_true",
+                   help="Train on 3-channel RGB. Default is 1-channel greyscale (HM01B0).")
+    p.add_argument("--mix_idsia", type=Path, default=None,
+                   help="With --sim_data: also mix in IDSIA frames from this root to "
+                        "reduce catastrophic forgetting of the real distribution.")
 
     # Optimization — lower LR for finetuning
     p.add_argument("--epochs", type=int, default=20)
@@ -96,15 +103,28 @@ def main() -> int:
         json.dump(cfg_dict, f, indent=2)
 
     # --- data ---
+    greyscale = not args.rgb
     if args.sim_data:
         train_ds = SimTrailDataset(SimDataConfig(
             root=args.data_root, img_size=args.img_size,
             augment=True, split="train", seed=args.seed,
+            greyscale=greyscale, return_class=True,
         ))
         val_ds = SimTrailDataset(SimDataConfig(
             root=args.data_root, img_size=args.img_size,
             augment=False, split="val", seed=args.seed,
+            greyscale=greyscale, return_class=True,
         ))
+        # Optionally mix in real IDSIA frames to fight catastrophic forgetting.
+        if args.mix_idsia is not None:
+            idsia_train = IDSIATrailDataset(IDSIAConfig(
+                root=args.mix_idsia, img_size=args.img_size, omega_max=args.omega_max,
+                augment=True, split="train", val_segments=tuple(args.val_segments),
+                seed=args.seed, greyscale=greyscale, return_class=True,
+            ))
+            from torch.utils.data import ConcatDataset
+            print(f"[info] mixing IDSIA: n={len(idsia_train)} into sim train n={len(train_ds)}")
+            train_ds = ConcatDataset([train_ds, idsia_train])
     else:
         base_cfg = IDSIAConfig(
             root=args.data_root,
@@ -113,14 +133,17 @@ def main() -> int:
             augment=True,
             val_segments=tuple(args.val_segments),
             seed=args.seed,
+            greyscale=greyscale,
+            return_class=True,
         )
         train_cfg = IDSIAConfig(**{**base_cfg.__dict__, "split": "train"})
         val_cfg = IDSIAConfig(**{**base_cfg.__dict__, "split": "val", "augment": False})
         train_ds = IDSIATrailDataset(train_cfg)
         val_ds = IDSIATrailDataset(val_cfg)
 
-    print(f"[info] train: n={len(train_ds)} counts={train_ds.class_counts()}")
-    print(f"[info] val:   n={len(val_ds)} counts={val_ds.class_counts()}")
+    _counts = lambda ds: ds.class_counts() if hasattr(ds, "class_counts") else "(mixed)"
+    print(f"[info] train: n={len(train_ds)} counts={_counts(train_ds)}")
+    print(f"[info] val:   n={len(val_ds)} counts={_counts(val_ds)}")
 
     train_loader = DataLoader(
         train_ds, batch_size=args.batch_size, shuffle=True,
@@ -132,30 +155,41 @@ def main() -> int:
     )
 
     # --- model (load from checkpoint) ---
+    img_channels = 3 if args.rgb else 1
+    output_dim = 3 if args.head == "classifier" else 1
     model = DronetTorch(
         img_dims=(args.img_size, args.img_size),
-        img_channels=3,
-        output_dim=1,
+        img_channels=img_channels,
+        output_dim=output_dim,
         small=(args.model_size == "small"),
+        head=args.head,
     ).to(args.device)
 
     state = torch.load(args.checkpoint, map_location=args.device, weights_only=True)
     model.load_state_dict(state, strict=True)
     n_params = sum(p.numel() for p in model.parameters())
     print(f"[info] loaded checkpoint: {args.checkpoint}")
-    print(f"[info] DronetTorch: small={args.model_size == 'small'} "
+    print(f"[info] DronetTorch: head={args.head} channels={img_channels} "
+          f"small={args.model_size == 'small'} "
           f"input={args.img_size}x{args.img_size} params={n_params/1e6:.2f}M")
 
+    def _fmt_val(v: dict) -> str:
+        if args.head == "classifier":
+            return (f"val_acc={v['accuracy']:.3f} "
+                    f"recall={ {k: f'{x:.2f}' for k, x in v['per_class_recall'].items()} }")
+        return (f"val_mse={v['mse']:.4f} sign_agree={v['sign_agreement']:.3f} "
+                f"means={ {k: f'{x:+.3f}' for k, x in v['means_by_class'].items()} }")
+
     # Evaluate baseline before finetuning
-    val_baseline = evaluate(model, val_loader, args.device)
-    print(f"[baseline] val_mse={val_baseline['mse']:.4f}  "
-          f"means_by_class={ {k: f'{v:+.3f}' for k, v in val_baseline['means_by_class'].items()} }")
+    val_baseline = evaluate(model, val_loader, args.device, head=args.head)
+    print(f"[baseline] {_fmt_val(val_baseline)}")
 
     optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
 
     # --- finetune ---
-    best_val = val_baseline["mse"]
+    # best on val["select"] (higher = better): accuracy (classifier) / sign-agreement (regression)
+    best_select = val_baseline["select"]
     # Save the baseline as a starting point (so best.pt always exists)
     torch.save(model.state_dict(), run_dir / "best.pt")
     history: list[dict] = []
@@ -165,12 +199,13 @@ def main() -> int:
         t0 = time.time()
         train_loss_sum = 0.0
         train_count = 0
-        for step, (img, target) in enumerate(train_loader, 1):
+        for step, (img, target, class_idx) in enumerate(train_loader, 1):
             img = img.to(args.device, non_blocking=True)
             target = target.to(args.device, non_blocking=True)
+            class_idx = class_idx.to(args.device, non_blocking=True)
 
-            steer_pred, _collision = model(img)
-            loss = steering_only_loss(steer_pred, target)
+            out, _collision = model(img)
+            loss = head_loss(out, target, class_idx, args.head)
 
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
@@ -184,25 +219,23 @@ def main() -> int:
                       f"loss={loss.item():.4f} avg={running:.4f}", flush=True)
 
         scheduler.step()
-        train_mse = train_loss_sum / max(1, train_count)
-        val = evaluate(model, val_loader, args.device)
+        train_loss = train_loss_sum / max(1, train_count)
+        val = evaluate(model, val_loader, args.device, head=args.head)
         elapsed = time.time() - t0
-        print(f"[ep{epoch:02d}] train_mse={train_mse:.4f}  val_mse={val['mse']:.4f}  "
-              f"means_by_class={ {k: f'{v:+.3f}' for k, v in val['means_by_class'].items()} }  "
-              f"({elapsed:.1f}s)")
+        print(f"[ep{epoch:02d}] train_loss={train_loss:.4f}  {_fmt_val(val)}  ({elapsed:.1f}s)")
 
         torch.save(model.state_dict(), run_dir / "last.pt")
-        if val["mse"] < best_val:
-            best_val = val["mse"]
+        if val["select"] > best_select:
+            best_select = val["select"]
             torch.save(model.state_dict(), run_dir / "best.pt")
-            print(f"  ^ new best val_mse={best_val:.4f}, saved best.pt")
+            print(f"  ^ new best select={best_select:.4f}, saved best.pt")
 
-        history.append({"epoch": epoch, "train_mse": train_mse, **val,
+        history.append({"epoch": epoch, "train_loss": train_loss, **val,
                         "elapsed_s": elapsed, "lr": scheduler.get_last_lr()[0]})
         with open(run_dir / "history.json", "w") as f:
             json.dump(history, f, indent=2)
 
-    print(f"\n[done] baseline val_mse={val_baseline['mse']:.4f} → best val_mse={best_val:.4f}")
+    print(f"\n[done] baseline select={val_baseline['select']:.4f} → best select={best_select:.4f}")
     print(f"[done] checkpoints in: {run_dir}")
     print(f"[done] use with: --dronet_weights {run_dir / 'best.pt'}")
     return 0

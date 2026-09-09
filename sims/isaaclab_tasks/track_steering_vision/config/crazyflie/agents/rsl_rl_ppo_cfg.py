@@ -18,7 +18,9 @@ class SteeringTrackingPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     """PPO runner configuration for steering tracking task."""
 
     num_steps_per_env = 24
-    max_iterations = 2000
+    # 2000 was too short: the run silently stops before the policy is trained (Dima's
+    # reference checkpoint is model_6998).
+    max_iterations = 7000
     save_interval = 50
     experiment_name = "crazyflie_steering_tracking"
 
@@ -35,7 +37,12 @@ class SteeringTrackingPPORunnerCfg(RslRlOnPolicyRunnerCfg):
         obs_normalization=False,
         distribution_cfg=RslRlMLPModelCfg.GaussianDistributionCfg(
             init_std=1.0,
-            std_type="scalar",
+            # "scalar" makes the action std a RAW learnable parameter, so PPO can drive it
+            # to <= 0 -- which is exactly how a run dies with
+            #   RuntimeError: normal expects all elements of std >= 0.0
+            # (it also explains the "entropy collapse" we saw: std decaying 0.94 -> 0.22 -> 0).
+            # "log" parameterizes std = exp(log_std), so it is positive by construction.
+            std_type="log",
         ),
     )
 

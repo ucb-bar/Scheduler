@@ -72,6 +72,11 @@ parser.add_argument("--dronet_weights", type=str, required=True,
                     help="DroNet state_dict.pt (e.g. logs/dronet/<run>/best.pt).")
 parser.add_argument("--dronet_size", choices=["small", "large"], default="small",
                     help="Must match what the DroNet checkpoint was trained as.")
+parser.add_argument("--dronet_head", choices=["regression", "classifier"], default="regression",
+                    help="Head of the DroNet checkpoint. 'classifier' -> 3-class turn logits "
+                         "mapped to a yaw rate via softmax-expected value.")
+parser.add_argument("--dronet_rgb", action="store_true",
+                    help="Checkpoint expects 3-channel RGB. Default is 1-channel greyscale (HM01B0).")
 parser.add_argument("--schedule_json", type=Path, default=_DEFAULT_SCHEDULE,
                     help="Schedule JSON (XPURT profiler output).")
 parser.add_argument("--schedule_time_unit", choices=("ms", "s"), default="ms",
@@ -285,11 +290,19 @@ def find_latest_checkpoint() -> str:
     return max(cks, key=os.path.getmtime)
 
 
-def preprocess_for_dronet(rgb_uint8: np.ndarray, img_size: int, device: str) -> torch.Tensor:
-    """``(H, W, 3) uint8 RGB`` → ``(1, 3, S, S) float32`` in [0, 1] on device."""
+def preprocess_for_dronet(rgb_uint8: np.ndarray, img_size: int, device: str,
+                          greyscale: bool = True) -> torch.Tensor:
+    """``(H, W, 3) uint8 RGB`` → ``(1, C, S, S) float32`` in [0, 1] on device.
+
+    ``C`` is 1 (greyscale luma, matching the mono HM01B0 the model trained on) or
+    3 (RGB) depending on ``greyscale``.
+    """
     img = torch.from_numpy(np.ascontiguousarray(rgb_uint8)).to(device, non_blocking=True)
     img = img.float().div_(255.0)
-    img = img.permute(2, 0, 1).unsqueeze(0).contiguous()
+    img = img.permute(2, 0, 1).unsqueeze(0).contiguous()  # (1,3,H,W)
+    if greyscale:
+        w = torch.tensor([0.299, 0.587, 0.114], device=device).view(1, 3, 1, 1)
+        img = (img * w).sum(dim=1, keepdim=True)  # (1,1,H,W) Rec.601 luma
     img = F.interpolate(img, size=(img_size, img_size), mode="bilinear", align_corners=False)
     return img
 
@@ -516,14 +529,17 @@ def main():
     img_size = 112 if args_cli.dronet_size == "small" else 224
     dronet = DronetTorch(
         img_dims=(img_size, img_size),
-        img_channels=3,
-        output_dim=1,
+        img_channels=3 if args_cli.dronet_rgb else 1,
+        output_dim=3 if args_cli.dronet_head == "classifier" else 1,
         small=(args_cli.dronet_size == "small"),
+        head=args_cli.dronet_head,
     ).to(args_cli.device)
     state = torch.load(args_cli.dronet_weights, map_location=args_cli.device, weights_only=True)
     dronet.load_state_dict(state, strict=True)
     dronet.eval()
-    _b(f"[info] DroNet loaded ({args_cli.dronet_size}, input {img_size}x{img_size})")
+    _dronet_grey = not args_cli.dronet_rgb
+    _b(f"[info] DroNet loaded ({args_cli.dronet_size}, head={args_cli.dronet_head}, "
+       f"{'greyscale' if _dronet_grey else 'rgb'}, input {img_size}x{img_size})")
 
     # --- YOLOv8-nano (optional) ---
     yolo_model = None
@@ -579,8 +595,44 @@ def main():
     if not has_fpv:
         raise RuntimeError("Forest env has no fpv_camera; cannot run DroNet.")
 
+    # Third-person chase camera (optional). Free-floating prim driven each step
+    # to sit behind + above the drone and look down at it, so trail motion is
+    # visible (onboard FPV in a uniform tree corridor reads as static).
+    has_chase = "chase_camera" in unwrapped_env.scene.sensors
+    chase_cam = unwrapped_env.scene["chase_camera"] if has_chase else None
+    # Behind + above, looking FORWARD down the trail (not straight down at the
+    # drone) so the trees/trail stream past as the drone advances = motion reads.
+    CHASE_DIST, CHASE_HEIGHT = 2.0, 1.0     # 2 m back, 1 m up
+    CHASE_LOOKAHEAD, CHASE_LOOKDOWN = 5.0, 0.6  # aim 5 m ahead, 0.6 m below drone
+    _b(f"[info] chase camera: {'enabled' if has_chase else 'NOT FOUND (falling back to FPV in viz)'}")
+
+    def _drive_chase_camera():
+        """Behind+above the drone, aimed forward along its heading."""
+        if chase_cam is None:
+            return
+        rb = unwrapped_env.scene["robot"]
+        p = rb.data.root_pos_w[0]
+        q = rb.data.root_quat_w[0]  # (w, x, y, z)
+        w_, x_, y_, z_ = q[0], q[1], q[2], q[3]
+        yaw = torch.atan2(2 * (w_ * z_ + x_ * y_), 1 - 2 * (y_ * y_ + z_ * z_))
+        fx, fy = torch.cos(yaw), torch.sin(yaw)
+        eye = torch.stack([p[0] - fx * CHASE_DIST,
+                           p[1] - fy * CHASE_DIST,
+                           p[2] + CHASE_HEIGHT])
+        target = torch.stack([p[0] + fx * CHASE_LOOKAHEAD,
+                              p[1] + fy * CHASE_LOOKAHEAD,
+                              p[2] - CHASE_LOOKDOWN])
+        chase_cam.set_world_poses_from_view(eye.unsqueeze(0), target.unsqueeze(0))
+
     # --- visualization ---
-    show_plot = not args_cli.headless and not args_cli.no_fpv_plot
+    # --headless is REQUIRED for Isaac's cameras to actually render on a
+    # display-less box (it loads headless.rendering.kit → offscreen render;
+    # without it the camera image is frozen). The matplotlib composite still
+    # renders fine headless via the Agg backend, so keep it on when saving a
+    # video even under --headless.
+    show_plot = (not args_cli.no_fpv_plot) and (
+        (not args_cli.headless) or (args_cli.save_video is not None)
+    )
     fpv_fig = None
     im_rgb = im_processed = None
     text_overlay = None
@@ -675,6 +727,10 @@ def main():
                 rgb3 = (np.clip(rgb3, 0.0, 1.0) * 255).astype(np.uint8)
             rgb3 = np.ascontiguousarray(rgb3)
 
+            # Reposition the chase cam behind+above the drone before this
+            # step's render, so the captured frame follows the drone.
+            _drive_chase_camera()
+
             # ── Job-level scheduling ─────────────────────────────────────
             # Correct hardware-in-the-loop semantics:
             #   • A model's input (camera frame) is sampled when the job STARTS
@@ -708,9 +764,15 @@ def main():
             dronet_active = _job_completed(dronet_key)
             if dronet_active and dronet_snapshot is not None:
                 with torch.no_grad():
-                    x = preprocess_for_dronet(dronet_snapshot, img_size, args_cli.device)
-                    steer_pred, coll_pred = dronet(x)
-                steer_val = float(steer_pred.item())
+                    x = preprocess_for_dronet(dronet_snapshot, img_size, args_cli.device,
+                                              greyscale=_dronet_grey)
+                    out, coll_pred = dronet(x)
+                if args_cli.dronet_head == "classifier":
+                    # 3-class logits [lc, sc, rc] -> smooth yaw via softmax-expected value.
+                    probs = torch.softmax(out, dim=1)[0]
+                    steer_val = float(args_cli.omega_clamp * (probs[2] - probs[0]).item())  # rc - lc
+                else:
+                    steer_val = float(out.item())
                 coll_val = float(coll_pred.item())
 
                 if dronet_exec_count == 0:
@@ -778,6 +840,17 @@ def main():
             obs, rewards, dones, info = env.step(actions)
             sim_time += control_dt
 
+            # Chase-cam frame (rendered during env.step at the pose set above).
+            chase_rgb = None
+            if chase_cam is not None:
+                try:
+                    cr = chase_cam.data.output["rgb"][0].cpu().numpy()[:, :, :3]
+                    if cr.dtype != np.uint8:
+                        cr = (np.clip(cr, 0.0, 1.0) * 255).astype(np.uint8)
+                    chase_rgb = np.ascontiguousarray(cr)
+                except Exception:
+                    chase_rgb = None
+
             # Telemetry
             robot = unwrapped_env.scene["robot"]
             x_local = (robot.data.root_pos_w[0] - unwrapped_env.scene.env_origins[0])[0].item()
@@ -821,13 +894,18 @@ def main():
                         ax_yaw = fpv_fig.add_subplot(gs[0, 2])
                         ax_schedule = fpv_fig.add_subplot(gs[1, :])
 
-                        if yolo_model is not None and last_yolo_results is not None:
+                        if chase_rgb is not None:
+                            initial_fpv = chase_rgb
+                            _rgb_title = "Chase cam (3rd person — following the drone)"
+                        elif yolo_model is not None and last_yolo_results is not None:
                             last_yolo_results[0].orig_img = rgb3
                             initial_fpv = last_yolo_results[0].plot()
+                            _rgb_title = "FPV camera (YOLO boxes = stale)"
                         else:
                             initial_fpv = rgb3
+                            _rgb_title = "FPV camera"
                         im_rgb = ax_rgb.imshow(initial_fpv)
-                        ax_rgb.set_title("FPV camera" + (" (YOLO boxes = stale)" if yolo_model else ""))
+                        ax_rgb.set_title(_rgb_title)
                         ax_rgb.axis("off")
 
                         proc_init = (cached_processed_vis if cached_processed_vis is not None
@@ -923,7 +1001,9 @@ def main():
                         # stale results, swap orig_img so .plot() overlays the
                         # stale boxes on the live camera feed — matching what a
                         # real scheduled system would see between inferences.
-                        if yolo_model is not None and last_yolo_results is not None:
+                        if chase_rgb is not None:
+                            im_rgb.set_data(chase_rgb)
+                        elif yolo_model is not None and last_yolo_results is not None:
                             last_yolo_results[0].orig_img = rgb3
                             im_rgb.set_data(last_yolo_results[0].plot())
                         else:

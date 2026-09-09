@@ -400,3 +400,34 @@ def generate_curved_human_positions(
         positions.append((best[0], best[1], yaw))
 
     return positions
+
+
+# ── Slalom / in-corridor obstacle course (task #56, avoidance) ─────────────────
+def generate_slalom_obstacles(
+    trail_length: float = 30.0,
+    start_x: float = 5.0,
+    spacing: float = 3.5,
+    offset: float = 0.7,
+    end_margin: float = 3.0,
+) -> list[tuple[float, float]]:
+    """Return ``[(x, y), ...]`` obstacle positions placed IN the trail corridor,
+    alternating left/right of the centreline, forcing the drone to weave.
+
+    Unlike ``generate_straight_trail`` (trees at |y| in [2.5, 6] m, OUTSIDE the
+    1.5 m corridor and thus never requiring avoidance), these sit at
+    ``|y| = offset`` (default 0.7 m, inside the corridor). The drone can deviate
+    up to the off-trail ``lateral_margin`` (3 m) to pass, so a 0.7 m slalom leaves
+    ample room. Deterministic (no RNG) so the course is fixed and reproducible.
+    """
+    positions: list[tuple[float, float]] = []
+    x = start_x
+    i = 0
+    while x <= trail_length - end_margin:
+        y = offset if (i % 2 == 0) else -offset
+        positions.append((x, y))
+        x += spacing
+        i += 1
+    return positions
+
+
+DEFAULT_SLALOM_OBSTACLES: list[tuple[float, float]] = generate_slalom_obstacles()

@@ -134,6 +134,11 @@ parser.add_argument("--episode_length_s", type=float, default=120.0,
                     help="Per-episode timer (s). Default 120.")
 parser.add_argument("--no_episode_timeout", action="store_true",
                     help="Disable the time_out termination entirely.")
+parser.add_argument("--chase_cam", action="store_true",
+                    help="Show the 3rd-person chase view instead of onboard FPV.")
+parser.add_argument("--fly_through", action="store_true",
+                    help="Disable ALL resets (time_out + off_trail + crash) so the drone "
+                         "flies the whole trail continuously (matches Dima's full traversal).")
 parser.add_argument("--save_video", type=str, default=None,
                     help="Path to save a video (mp4/gif) of the matplotlib FPV capture.")
 parser.add_argument("--video_fps", type=int, default=30,
@@ -418,8 +423,11 @@ def main():
     env_cfg.commands.steering_command.resampling_time_range = (1.0e9, 1.0e9)
     env_cfg.scene.fpv_camera.update_period = args_cli.camera_update_period
     env_cfg.episode_length_s = args_cli.episode_length_s
-    if args_cli.no_episode_timeout and hasattr(env_cfg.terminations, "time_out"):
+    if (args_cli.no_episode_timeout or args_cli.fly_through) and hasattr(env_cfg.terminations, "time_out"):
         env_cfg.terminations.time_out = None
+    if args_cli.fly_through:
+        _b("[info] fly_through: recording continues through auto-resets "
+           "(drone re-flies the trail; video shows continuous forward motion)")
 
     env = gym.make(task_id, cfg=env_cfg)
     env = RslRlVecEnvWrapper(env)
@@ -520,7 +528,46 @@ def main():
     if "fpv_camera" not in unwrapped_env.scene.sensors:
         raise RuntimeError("Forest env has no fpv_camera; cannot run ViNT.")
 
-    show_plot = not args_cli.headless and not args_cli.no_fpv_plot
+    # Third-person chase camera (behind+above, aimed forward along heading) so
+    # the drone's trail-following toward the goal is visible from outside.
+    # NOTE: the body-attached fpv_camera does NOT re-render in this headless
+    # setup (its image is frozen). Only a free-floating camera we reposition
+    # every step via set_world_poses_from_view actually re-renders. So we drive
+    # the free 'chase_camera' prim and use it as our live view — either a
+    # nose-forward onboard FPV (default, world rushes past = motion) or, with
+    # --chase_cam, a 3rd-person behind-the-drone shot.
+    has_chase = "chase_camera" in unwrapped_env.scene.sensors
+    chase_cam = unwrapped_env.scene["chase_camera"] if has_chase else None
+    _b(f"[info] live camera: {'chase (3rd person)' if args_cli.chase_cam else 'nose FPV'} "
+       f"({'driven free-cam' if has_chase else 'NOT FOUND'})")
+
+    def _drive_chase_camera():
+        if chase_cam is None:
+            return
+        rb = unwrapped_env.scene["robot"]
+        p = rb.data.root_pos_w[0]
+        q = rb.data.root_quat_w[0]
+        w_, x_, y_, z_ = q[0], q[1], q[2], q[3]
+        yaw = torch.atan2(2 * (w_ * z_ + x_ * y_), 1 - 2 * (y_ * y_ + z_ * z_))
+        fx, fy = torch.cos(yaw), torch.sin(yaw)
+        if args_cli.chase_cam:
+            # 3rd person: 2 m behind, 1 m up, aimed 5 m ahead.
+            eye = torch.stack([p[0] - fx * 2.0, p[1] - fy * 2.0, p[2] + 1.0])
+            target = torch.stack([p[0] + fx * 5.0, p[1] + fy * 5.0, p[2] - 0.6])
+        else:
+            # nose FPV: just above the body, looking far forward along heading.
+            eye = torch.stack([p[0] + fx * 0.10, p[1] + fy * 0.10, p[2] + 0.12])
+            target = torch.stack([p[0] + fx * 12.0, p[1] + fy * 12.0, p[2] + 0.02])
+        chase_cam.set_world_poses_from_view(eye.unsqueeze(0), target.unsqueeze(0))
+
+    # Build the matplotlib composite whenever we're saving a video, even under
+    # --headless: the Agg backend renders offscreen, and --headless is REQUIRED
+    # for the Isaac cameras to actually render (loads headless.rendering.kit →
+    # offscreen render). Without --headless the non-headless kit expects a
+    # viewport/display and the camera image is frozen.
+    show_plot = (not args_cli.no_fpv_plot) and (
+        (not args_cli.headless) or (args_cli.save_video is not None)
+    )
     fpv_fig = None
     im_fpv = None
     overlay_text = None
@@ -531,6 +578,21 @@ def main():
     control_dt = unwrapped_env.cfg.sim.dt * unwrapped_env.cfg.decimation
 
     obs = env.get_observations()
+
+    # --fly_through: neuter the termination manager on the LIVE env so the
+    # drone never auto-resets — it flies one continuous path out of the forest
+    # into the open field (the forest→field transition is the clearest motion
+    # cue, matching how Dima's full 33 m traversal reads). Done here (not via
+    # env_cfg) because _compute_goal_pose above still needs off_trail.params.
+    if args_cli.fly_through:
+        _tm = env.unwrapped.termination_manager
+        _orig_tm_compute = _tm.compute
+        def _no_reset_compute(*a, **k):
+            d = _orig_tm_compute(*a, **k)
+            return d & False  # all-False → env never resets
+        _tm.compute = _no_reset_compute
+        _b("[info] fly_through: termination manager neutered — one continuous flight, no resets")
+
     step = 0
     last_waypoint_xy = (0.0, 0.0)
     last_target_w = 0.0
@@ -549,13 +611,17 @@ def main():
            f"max_frames={args_cli.video_max_frames or 'unlimited'})")
 
     while simulation_app.is_running():
-        camera = unwrapped_env.scene["fpv_camera"]
-        rgb_data = camera.data.output["rgb"][0].cpu().numpy()
+        # ViNT input = the REAL onboard fpv_camera (it renders correctly now that
+        # we pass --headless → offscreen render kit). This is exactly the view
+        # ViNT was designed for and what Dima fed it — feeding an ad-hoc chase/
+        # nose cam instead confuses the model (it steers off toward trees).
+        rgb_data = unwrapped_env.scene["fpv_camera"].data.output["rgb"][0].cpu().numpy()
         rgb3 = rgb_data[:, :, :3]
         if rgb3.dtype != np.uint8:
             rgb3 = (np.clip(rgb3, 0.0, 1.0) * 255).astype(np.uint8)
+        rgb3 = np.ascontiguousarray(rgb3)
 
-        # Push current frame into the rolling context queue.
+        # Push current frame into the rolling context queue (ViNT input).
         context.append(PILImage.fromarray(rgb3).resize(pil_size))
 
         # Run ViNT only when we've accumulated enough context (context_size+1 frames).
@@ -588,8 +654,27 @@ def main():
         steering_term.target_velocity.fill_(target_v)
         steering_term.target_yaw_rate.fill_(last_target_w)
 
+        if args_cli.chase_cam:
+            _drive_chase_camera()
         actions = inner_policy(obs)
         obs, _rew, dones, _info = env.step(actions)
+
+        # Force an RTX render so the camera sensors actually refresh — without
+        # this, the camera image is frozen in headless (only physics advances).
+        try:
+            unwrapped_env.sim.render()
+        except Exception:
+            pass
+
+        chase_rgb = None
+        if chase_cam is not None:
+            try:
+                cr = chase_cam.data.output["rgb"][0].cpu().numpy()[:, :, :3]
+                if cr.dtype != np.uint8:
+                    cr = (np.clip(cr, 0.0, 1.0) * 255).astype(np.uint8)
+                chase_rgb = np.ascontiguousarray(cr)
+            except Exception:
+                chase_rgb = None
 
         robot = unwrapped_env.scene["robot"]
         height = robot.data.root_pos_w[0, 2].item()
@@ -610,11 +695,13 @@ def main():
 
         if dones.any():
             _b(f"  [reset] step {step + 1}: drone reset")
-            if video_writer is not None:
+            if video_writer is not None and not args_cli.fly_through:
                 video_writer.close()
                 _b(f"[info] video saved to {args_cli.save_video} "
                    f"({video_frame_count} frames, trail exit)")
                 video_writer = None
+            # --fly_through: keep the writer open so recording continues across
+            # the auto-reset (drone re-flies the trail) — one continuous clip.
 
         if show_plot and step % 5 == 0 and len(context) == context_size + 1:
             try:
@@ -629,7 +716,12 @@ def main():
                     ax_img = fpv_fig.add_subplot(gs[:, 0])
                     ax_goal = fpv_fig.add_subplot(gs[0, 1])
                     ax_w = fpv_fig.add_subplot(gs[1, 1])
-                    im_fpv = ax_img.imshow(rgb3)
+                    im_fpv = ax_img.imshow(chase_rgb if (args_cli.chase_cam and chase_rgb is not None) else rgb3)
+                    ax_img.set_title(
+                        "Chase cam (3rd person — following the drone toward the goal)"
+                        if args_cli.chase_cam else
+                        "Onboard FPV — flying the trail toward the goal (trees rush past = motion)",
+                        fontsize=10)
                     ax_img.axis("off")
                     overlay_text = ax_img.text(
                         10, 30, "", color="lime", fontsize=10, weight="bold",
@@ -656,7 +748,7 @@ def main():
                     fpv_fig._act_line = line_act_w
                     fpv_fig._ax_w = ax_w
 
-                im_fpv.set_data(rgb3)
+                im_fpv.set_data(chase_rgb if (args_cli.chase_cam and chase_rgb is not None) else rgb3)
                 wx, wy = last_waypoint_xy
                 overlay_text.set_text(
                     f"ViNT wp[{waypoint_idx}]=({wx:+.2f},{wy:+.2f})  ω={last_target_w:+.2f}\n"

@@ -29,6 +29,7 @@ from torchvision import transforms
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 CAMERA_TO_SIGN = {"lc": -1.0, "sc": 0.0, "rc": +1.0}
+CAMERA_TO_CLASS = {"lc": 0, "sc": 1, "rc": 2}
 
 
 @dataclass
@@ -39,18 +40,25 @@ class SimDataConfig:
     val_fraction: float = 0.15
     split: str = "train"
     seed: int = 0
+    greyscale: bool = True  # emit 1-channel luma (matches the HM01B0 mono sensor)
+    return_class: bool = False  # if True, __getitem__ also yields the 3-class index
 
 
-def build_transform(img_size: int, augment: bool):
+def build_transform(img_size: int, augment: bool, greyscale: bool = True):
+    grey = [transforms.Grayscale(num_output_channels=1)] if greyscale else []
     if augment:
         return transforms.Compose([
             transforms.Resize((img_size + 16, img_size + 16)),
-            transforms.RandomCrop(img_size),
+            transforms.RandomResizedCrop(img_size, scale=(0.8, 1.0), ratio=(0.9, 1.1)),
+            transforms.RandomRotation(5),
             transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.2),
+            transforms.GaussianBlur(3, sigma=(0.1, 1.5)),
+            *grey,
             transforms.ToTensor(),
         ])
     return transforms.Compose([
         transforms.Resize((img_size, img_size)),
+        *grey,
         transforms.ToTensor(),
     ])
 
@@ -78,7 +86,8 @@ class SimTrailDataset(Dataset):
             keep = set(indices[n_val:])
         self.samples = [self.samples[i] for i in sorted(keep)]
 
-        self._tx = build_transform(cfg.img_size, augment=(cfg.augment and cfg.split == "train"))
+        self._tx = build_transform(cfg.img_size, augment=(cfg.augment and cfg.split == "train"),
+                                    greyscale=cfg.greyscale)
         self._rng = random.Random(cfg.seed + 1)
 
     def _load_from_csv(self, csv_path: Path) -> list[tuple[Path, float, str]]:
@@ -107,20 +116,25 @@ class SimTrailDataset(Dataset):
     def __len__(self) -> int:
         return len(self.samples)
 
-    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
-        path, label, _cls = self.samples[idx]
+    def __getitem__(self, idx: int):
+        path, label, cls = self.samples[idx]
         with Image.open(path) as im:
             im = im.convert("RGB")
             img = self._tx(im)
 
         target = label
+        class_idx = CAMERA_TO_CLASS[cls]
 
-        # Random horizontal flip with sign-flipped label
+        # Random horizontal flip with sign-flipped label (class mirrors lc<->rc)
         if self.cfg.augment and self.cfg.split == "train" and self._rng.random() < 0.5:
             img = torch.flip(img, dims=[2])
             target = -target
+            class_idx = 2 - class_idx
 
-        return img, torch.tensor([target], dtype=torch.float32)
+        target_t = torch.tensor([target], dtype=torch.float32)
+        if self.cfg.return_class:
+            return img, target_t, torch.tensor(class_idx, dtype=torch.long)
+        return img, target_t
 
     def class_counts(self) -> dict[str, int]:
         counts = {"lc": 0, "sc": 0, "rc": 0}

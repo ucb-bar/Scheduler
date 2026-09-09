@@ -43,6 +43,7 @@ from sims.isaaclab_tasks.forest_trail.tree_layout import (
     generate_curved_trail_trees,
     generate_curved_waypoints,
     generate_human_positions,
+    generate_slalom_obstacles,
     generate_straight_trail,
 )
 from sims.isaaclab_tasks.track_steering_vision.config.crazyflie.track_steering_env_cfg import (
@@ -272,6 +273,8 @@ def _build_forest_scene_cfg_class(
     layout: StraightTrailLayout,
     human_layout: HumanLayout | None = None,
     class_name: str = "ForestSceneCfg",
+    extra_obstacles: "list[tuple[float, float]] | None" = None,
+    extra_assets: "dict | None" = None,
 ) -> type:
     """Dynamically build a configclass with one field per tree (and optional humans).
 
@@ -311,6 +314,24 @@ def _build_forest_scene_cfg_class(
         def _factory(idx=i, x=x, y=y, scale_xy=sxy, scale_z=sz):
             return _make_tree_cfg(idx, x, y, scale_xy, scale_z)
         fields.append((f"tree_{i:03d}", AssetBaseCfg, field(default_factory=_factory)))
+
+    # Optional IN-CORRIDOR obstacles (slalom course for the avoidance task, #56).
+    # Placed at small |y| so the drone MUST weave around them (default trees sit
+    # outside the corridor). Rendered as trees at a fixed moderate scale. Guarded:
+    # default None → this loop never runs → existing scenes are byte-identical.
+    if extra_obstacles:
+        for i, (ox, oy) in enumerate(extra_obstacles):
+            def _obst_factory(idx=1000 + i, x=ox, y=oy):
+                return _make_tree_cfg(idx, x, y, scale_xy=0.7, scale_z=0.9)
+            fields.append((f"obstacle_{i:03d}", AssetBaseCfg, field(default_factory=_obst_factory)))
+
+    # Optional pre-built asset cfgs (e.g. gate-frame bars from gates.make_forest_gate_scene()).
+    # Guarded: default None → no fields added → existing scenes unaffected.
+    if extra_assets:
+        for name, asset_cfg in extra_assets.items():
+            def _asset_factory(cfg=asset_cfg):
+                return cfg
+            fields.append((name, AssetBaseCfg, field(default_factory=_asset_factory)))
 
     # Optional human figures along the trail.
     if human_layout is not None:
@@ -495,6 +516,26 @@ ForestSceneCfgWithHumans = _build_forest_scene_cfg_class(
     DEFAULT_STRAIGHT_LAYOUT,
     human_layout=DEFAULT_HUMAN_LAYOUT,
     class_name="ForestSceneCfgWithHumans",
+)
+
+# ── Slalom (in-corridor obstacle) course for the avoidance task (#56) ──────────
+DEFAULT_SLALOM_OBSTACLES = generate_slalom_obstacles(
+    trail_length=DEFAULT_STRAIGHT_LAYOUT.trail_length
+)
+ForestSceneCfg_Slalom = _build_forest_scene_cfg_class(
+    DEFAULT_STRAIGHT_LAYOUT,
+    human_layout=DEFAULT_HUMAN_LAYOUT,
+    extra_obstacles=DEFAULT_SLALOM_OBSTACLES,
+    class_name="ForestSceneCfg_Slalom",
+)
+
+# ── Gate course: visual gate frames the drone navigates through (goal-conditioned, #56) ──
+from sims.isaaclab_tasks.forest_trail.gates import make_forest_gate_scene  # noqa: E402
+ForestSceneCfg_Gates = _build_forest_scene_cfg_class(
+    DEFAULT_STRAIGHT_LAYOUT,
+    human_layout=DEFAULT_HUMAN_LAYOUT,
+    extra_assets=make_forest_gate_scene(),
+    class_name="ForestSceneCfg_Gates",
 )
 
 # ── Curved-trail module-level instances ───────────────────────────────────────

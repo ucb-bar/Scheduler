@@ -28,6 +28,7 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -53,6 +54,11 @@ def parse_args() -> argparse.Namespace:
                    help="'small' = 112x112 input, 2048-dim flatten; 'large' = 224x224, 6272-dim.")
     p.add_argument("--img_size", type=int, default=None,
                    help="Override input edge length. Default: 112 for small, 224 for large.")
+    p.add_argument("--head", choices=["regression", "classifier"], default="regression",
+                   help="'regression' = continuous yaw-rate (MSE); "
+                        "'classifier' = 3-class turn-left/straight/right (cross-entropy).")
+    p.add_argument("--rgb", action="store_true",
+                   help="Train on 3-channel RGB. Default is 1-channel greyscale (HM01B0 sensor).")
 
     # Optimization
     p.add_argument("--epochs", type=int, default=30)
@@ -76,36 +82,76 @@ def parse_args() -> argparse.Namespace:
 
 def steering_only_loss(steer_pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     """MSE on the steering head only (collision head dropped per agreed plan)."""
-    return torch.nn.functional.mse_loss(steer_pred, target)
+    return F.mse_loss(steer_pred, target)
 
 
-def evaluate(model: DronetTorch, loader: DataLoader, device: str) -> dict:
-    """Return dict with val MSE and per-class mean prediction for debugging."""
+def head_loss(out: torch.Tensor, target: torch.Tensor, class_idx: torch.Tensor, head: str) -> torch.Tensor:
+    """Per-head training loss: MSE for regression, cross-entropy for classifier."""
+    if head == "classifier":
+        return F.cross_entropy(out, class_idx)
+    return F.mse_loss(out, target)
+
+
+_CLASS_NAMES = ("lc", "sc", "rc")
+
+
+def evaluate(model: DronetTorch, loader: DataLoader, device: str, head: str = "regression") -> dict:
+    """Head-aware validation. Every returned dict carries a ``select`` key
+    (higher = better) used for best-checkpoint selection.
+
+    - classifier: top-1 accuracy, per-class recall, 3x3 confusion (rows=true).
+    - regression: MSE + **sign-agreement** (fraction of non-straight samples whose
+      predicted turn direction matches) — the metric that predicts flight quality,
+      since MSE is dominated by magnitude regression-to-the-mean.
+    """
     model.eval()
+
+    if head == "classifier":
+        confusion = torch.zeros(3, 3, dtype=torch.long)  # [true, pred]
+        with torch.no_grad():
+            for img, _target, cls in loader:
+                img = img.to(device, non_blocking=True)
+                logits, _ = model(img)
+                pred = logits.argmax(dim=1).cpu()
+                for t, pr in zip(cls.tolist(), pred.tolist()):
+                    confusion[t, pr] += 1
+        total = int(confusion.sum().item())
+        acc = int(confusion.diag().sum().item()) / max(1, total)
+        recall = {}
+        for i, name in enumerate(_CLASS_NAMES):
+            denom = int(confusion[i].sum().item())
+            recall[name] = (int(confusion[i, i].item()) / denom) if denom else float("nan")
+        return {"accuracy": acc, "per_class_recall": recall,
+                "confusion": confusion.tolist(), "n": total, "select": acc}
+
+    # regression
     total_mse = 0.0
     n = 0
+    sign_agree = 0
+    sign_total = 0
     sums = {"lc": 0.0, "sc": 0.0, "rc": 0.0}
     counts = {"lc": 0, "sc": 0, "rc": 0}
-
     with torch.no_grad():
-        for img, target in loader:
+        for img, target, _cls in loader:
             img = img.to(device, non_blocking=True)
             target = target.to(device, non_blocking=True)
             steer_pred, _ = model(img)
-            total_mse += torch.nn.functional.mse_loss(steer_pred, target, reduction="sum").item()
+            total_mse += F.mse_loss(steer_pred, target, reduction="sum").item()
             n += target.numel()
-
-            # Bin predictions by target sign — coarse, but tells us if the
-            # network distinguishes the three classes at all.
             t = target.squeeze(1).cpu()
             s = steer_pred.squeeze(1).cpu()
             for ti, si in zip(t.tolist(), s.tolist()):
                 key = "sc" if abs(ti) < 1e-6 else ("rc" if ti > 0 else "lc")
                 sums[key] += si
                 counts[key] += 1
+                if abs(ti) >= 1e-6:  # sign-agreement is undefined for straight (sc)
+                    sign_total += 1
+                    sign_agree += int((si > 0) == (ti > 0))
 
     means = {k: (sums[k] / counts[k] if counts[k] else float("nan")) for k in sums}
-    return {"mse": total_mse / max(1, n), "means_by_class": means, "counts": counts}
+    sa = sign_agree / max(1, sign_total)
+    return {"mse": total_mse / max(1, n), "means_by_class": means, "counts": counts,
+            "sign_agreement": sa, "select": sa}
 
 
 def main() -> int:
@@ -131,6 +177,8 @@ def main() -> int:
         augment=True,
         val_segments=tuple(args.val_segments),
         seed=args.seed,
+        greyscale=not args.rgb,
+        return_class=True,  # loaders yield (img, target, class_idx) for both heads
     )
     train_cfg = IDSIAConfig(**{**base_cfg.__dict__, "split": "train"})
     val_cfg = IDSIAConfig(**{**base_cfg.__dict__, "split": "val", "augment": False})
@@ -150,32 +198,40 @@ def main() -> int:
     )
 
     # --- model ---
+    img_channels = 3 if args.rgb else 1
+    output_dim = 3 if args.head == "classifier" else 1
     model = DronetTorch(
         img_dims=(args.img_size, args.img_size),
-        img_channels=3,
-        output_dim=1,
+        img_channels=img_channels,
+        output_dim=output_dim,
         small=(args.model_size == "small"),
+        head=args.head,
     ).to(args.device)
     n_params = sum(p.numel() for p in model.parameters())
-    print(f"[info] DronetTorch: small={args.model_size == 'small'} input={args.img_size}x{args.img_size} params={n_params/1e6:.2f}M")
+    print(f"[info] DronetTorch: head={args.head} channels={img_channels} "
+          f"small={args.model_size == 'small'} input={args.img_size}x{args.img_size} "
+          f"params={n_params/1e6:.2f}M")
 
     optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
 
     # --- train ---
-    best_val = float("inf")
+    # best is selected on val["select"] (higher = better): accuracy for the
+    # classifier, sign-agreement for regression.
+    best_select = float("-inf")
     history: list[dict] = []
     for epoch in range(1, args.epochs + 1):
         model.train()
         t0 = time.time()
         train_loss_sum = 0.0
         train_count = 0
-        for step, (img, target) in enumerate(train_loader, 1):
+        for step, (img, target, class_idx) in enumerate(train_loader, 1):
             img = img.to(args.device, non_blocking=True)
             target = target.to(args.device, non_blocking=True)
+            class_idx = class_idx.to(args.device, non_blocking=True)
 
-            steer_pred, _collision = model(img)
-            loss = steering_only_loss(steer_pred, target)
+            out, _collision = model(img)
+            loss = head_loss(out, target, class_idx, args.head)
 
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
@@ -189,26 +245,34 @@ def main() -> int:
                       f"loss={loss.item():.4f} avg={running:.4f}", flush=True)
 
         scheduler.step()
-        train_mse = train_loss_sum / max(1, train_count)
-        val = evaluate(model, val_loader, args.device)
+        train_loss = train_loss_sum / max(1, train_count)
+        val = evaluate(model, val_loader, args.device, head=args.head)
         elapsed = time.time() - t0
-        print(f"[ep{epoch:02d}] train_mse={train_mse:.4f}  val_mse={val['mse']:.4f}  "
-              f"means_by_class={ {k: f'{v:+.3f}' for k, v in val['means_by_class'].items()} }  "
-              f"({elapsed:.1f}s)")
+        if args.head == "classifier":
+            print(f"[ep{epoch:02d}] train_ce={train_loss:.4f}  val_acc={val['accuracy']:.3f}  "
+                  f"recall={ {k: f'{v:.2f}' for k, v in val['per_class_recall'].items()} }  "
+                  f"({elapsed:.1f}s)")
+        else:
+            print(f"[ep{epoch:02d}] train_mse={train_loss:.4f}  val_mse={val['mse']:.4f}  "
+                  f"sign_agree={val['sign_agreement']:.3f}  "
+                  f"means_by_class={ {k: f'{v:+.3f}' for k, v in val['means_by_class'].items()} }  "
+                  f"({elapsed:.1f}s)")
 
         # Save plain state_dict — drops into sim scripts via --dronet_weights.
         torch.save(model.state_dict(), run_dir / "last.pt")
-        if val["mse"] < best_val:
-            best_val = val["mse"]
+        if val["select"] > best_select:
+            best_select = val["select"]
             torch.save(model.state_dict(), run_dir / "best.pt")
-            print(f"  ^ new best val_mse={best_val:.4f}, saved best.pt")
+            metric = "val_acc" if args.head == "classifier" else "sign_agree"
+            print(f"  ^ new best {metric}={best_select:.4f}, saved best.pt")
 
-        history.append({"epoch": epoch, "train_mse": train_mse, **val,
+        history.append({"epoch": epoch, "train_loss": train_loss, **val,
                         "elapsed_s": elapsed, "lr": scheduler.get_last_lr()[0]})
         with open(run_dir / "history.json", "w") as f:
             json.dump(history, f, indent=2)
 
-    print(f"[done] best val_mse={best_val:.4f}")
+    metric = "val_acc" if args.head == "classifier" else "sign_agree"
+    print(f"[done] best {metric}={best_select:.4f}")
     print(f"[done] checkpoints in: {run_dir}")
     print(f"[done] use with: --dronet_weights {run_dir / 'best.pt'}")
     return 0

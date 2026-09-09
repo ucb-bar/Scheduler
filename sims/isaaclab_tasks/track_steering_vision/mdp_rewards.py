@@ -53,6 +53,48 @@ def steering_angle_tracking(
     return torch.exp(-(error**2) / std**2)
 
 
+def body_rate_tracking(
+    env: ManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    std: float = 0.5,
+    command_name: str = "body_rate_command",
+) -> torch.Tensor:
+    """Reward for tracking a full 3-axis body-rate command (CTBR).
+
+    Computes ``exp(-||command[:, :3] - root_ang_vel_b[:, :3]||^2 / std^2)`` over the
+    roll/pitch/yaw rates. Generalizes :func:`steering_angle_tracking` (yaw only) to
+    all three body axes.
+    """
+    asset: RigidObject = env.scene[asset_cfg.name]
+    command = env.command_manager.get_command(command_name)
+    target_rates = command[:, :3]
+    current_rates = asset.data.root_ang_vel_b[:, :3]
+    error = torch.sum((target_rates - current_rates) ** 2, dim=1)
+    return torch.exp(-error / std**2)
+
+
+def collective_thrust_tracking(
+    env: ManagerBasedRLEnv,
+    std: float = 0.3,
+    command_name: str = "body_rate_command",
+) -> torch.Tensor:
+    """Reward for producing the commanded collective thrust (channel 3 of the
+    body-rate command).
+
+    The applied normalized thrust is ``(action[:, 0].clamp(-1, 1) + 1) / 2`` — the
+    same [-1,1]->[0,1] map the :class:`DirectThrustMomentAction` term uses (thrust is
+    action channel 0). Rewarding the match keeps the policy honouring the thrust
+    channel (so it holds altitude rather than cutting throttle to make body-rate
+    tracking trivial), while staying a light term so it never swamps the rate objective.
+    """
+    command = env.command_manager.get_command(command_name)
+    target_thrust = command[:, 3]
+    action = env.action_manager.action  # concatenated raw policy action; ch0 = thrust
+    applied_thrust_norm = (action[:, 0].clamp(-1.0, 1.0) + 1.0) / 2.0
+    error = (target_thrust - applied_thrust_norm) ** 2
+    return torch.exp(-error / std**2)
+
+
 def forward_velocity_tracking(
     env: ManagerBasedRLEnv,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),

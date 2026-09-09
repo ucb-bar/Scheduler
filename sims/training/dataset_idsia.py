@@ -47,6 +47,11 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 CAMERA_TO_SIGN = {"lc": -1.0, "sc": 0.0, "rc": +1.0}
 """Map from camera-id sub-directory to the sign of the target yaw rate."""
 
+CAMERA_TO_CLASS = {"lc": 0, "sc": 1, "rc": 2}
+"""Map from camera-id sub-directory to the 3-class label (turn-left / straight /
+turn-right) for the DroNet classifier head. A horizontal flip swaps lc<->rc
+(0<->2), leaving sc (1) unchanged — mirrors the sign flip on the regression target."""
+
 # Segments whose info.txt (or community convention) flags them as test-only or
 # training-unsuitable. Routed to the 'test' split, never used for training/val.
 HOLDOUT_SEGMENTS = {"014"}
@@ -65,6 +70,8 @@ class IDSIAConfig:
     augment: bool = True
     val_segments: tuple[str, ...] = ("011", "012")  # held out from training
     seed: int = 0
+    greyscale: bool = True  # emit 1-channel luma (matches the HM01B0 mono sensor)
+    return_class: bool = False  # if True, __getitem__ also yields the 3-class index
 
 
 def _enumerate_frames(root: Path) -> list[tuple[Path, str, str]]:
@@ -105,17 +112,34 @@ def _split_segments(all_segments: set[str], cfg: IDSIAConfig) -> dict[str, set[s
     return {"train": train, "val": val, "test": test}
 
 
-def build_transform(img_size: int, augment: bool) -> Callable:
-    """Image transform pipeline. Outputs a ``[3, H, W]`` float tensor in [0, 1]."""
+def build_transform(img_size: int, augment: bool, greyscale: bool = True) -> Callable:
+    """Image transform pipeline. Outputs a ``[C, H, W]`` float tensor in [0, 1]
+    where ``C`` is 1 (greyscale, HM01B0) or 3 (RGB).
+
+    Augmentation is strengthened for the forest domain (heavy texture, variable
+    light): larger colour jitter, a small rotation, mild blur, and a
+    resized-crop, all of which improve the train->val/deploy domain gap.
+    """
+    grey = [transforms.Grayscale(num_output_channels=1)] if greyscale else []
     if augment:
+        # IMPORTANT: this is a *direction*-prediction task (the label is which way
+        # to steer), so augmentations must NOT change the apparent trail heading.
+        # Rotation and aggressive resized-crop/aspect changes silently corrupt the
+        # label (they rotate/shift the trail but keep the target) -> they hurt.
+        # Keep only photometric robustness + a SMALL translation crop; horizontal
+        # flip is handled in __getitem__ (with the label sign/class swapped).
+        # ColorJitter's saturation term is a no-op on 1-channel, so jitter before Grayscale.
         return transforms.Compose([
-            transforms.Resize((img_size + 16, img_size + 16)),
-            transforms.RandomCrop(img_size),
-            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
+            transforms.Resize((img_size + 12, img_size + 12)),
+            transforms.RandomCrop(img_size),  # small translation only (direction-preserving)
+            transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.2),
+            transforms.GaussianBlur(3, sigma=(0.1, 1.2)),
+            *grey,
             transforms.ToTensor(),
         ])
     return transforms.Compose([
         transforms.Resize((img_size, img_size)),
+        *grey,
         transforms.ToTensor(),
     ])
 
@@ -151,7 +175,8 @@ class IDSIATrailDataset(Dataset):
             keep = partitions[cfg.split]
         self.samples = [s for s in all_samples if s[1] in keep]
 
-        self._tx = build_transform(cfg.img_size, augment=(cfg.augment and cfg.split == "train"))
+        self._tx = build_transform(cfg.img_size, augment=(cfg.augment and cfg.split == "train"),
+                                    greyscale=cfg.greyscale)
         self._rng = random.Random(cfg.seed)
 
     def __len__(self) -> int:
@@ -172,15 +197,21 @@ class IDSIATrailDataset(Dataset):
 
         sign = CAMERA_TO_SIGN[camera]
         target = sign * self.cfg.omega_max
+        class_idx = CAMERA_TO_CLASS[camera]
 
         # Horizontal flip with sign-flipped label. Important: the dataset has
         # a slight L/R imbalance and flipping doubles effective coverage. Only
-        # done on the train split; val/test stay deterministic.
+        # done on the train split; val/test stay deterministic. The class label
+        # mirrors too: lc<->rc (0<->2), sc (1) unchanged.
         if self.cfg.augment and self.cfg.split == "train" and self._rng.random() < 0.5:
             img = torch.flip(img, dims=[2])
             target = -target
+            class_idx = 2 - class_idx
 
-        return img, torch.tensor([target], dtype=torch.float32)
+        target_t = torch.tensor([target], dtype=torch.float32)
+        if self.cfg.return_class:
+            return img, target_t, torch.tensor(class_idx, dtype=torch.long)
+        return img, target_t
 
     # Convenience: per-class counts, useful for debugging imbalance.
     def class_counts(self) -> dict[str, int]:

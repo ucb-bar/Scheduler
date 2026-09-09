@@ -60,6 +60,12 @@ parser.add_argument("--decimation", type=int, default=None,
 parser.add_argument("--sim_dt", type=float, default=None,
                     help="Override sim.dt (base 0.01 = 100 Hz physics). e.g. 0.005 = 200 Hz physics for finer "
                          "dynamics while keeping the control rate via decimation.")
+parser.add_argument("--sched_latency_ms", type=float, default=0.0,
+                    help="Onboard-schedule worst-case control latency (ms). The motor command can only be "
+                         "REFRESHED every ceil(latency/control_dt) control steps; between refreshes the last "
+                         "command is held (zero-order hold). Models a schedule that cannot deliver a fresh "
+                         "command faster than its worst critical response — e.g. 12.40 (ROS per-net pinning) "
+                         "vs 4.89 (XPU-RT shard). 0 = ideal (fresh every step).")
 parser.add_argument("--dump_figure_data", type=str, default=None,
                     help="Capture stroboscopic-figure data (clean overhead bg + all drone poses + "
                          "cam intrinsics/pose + gates + a few sensor snapshots) to a dir, for "
@@ -663,6 +669,11 @@ def main():
     dev = uenv.device
     N = uenv.num_envs
     control_dt = float(env_cfg.sim.dt * env_cfg.decimation)
+    # onboard-schedule control-refresh limit: a fresh motor command only every N control steps
+    _ctrl_refresh = max(1, _math.ceil(args_cli.sched_latency_ms / (control_dt * 1000.0))) \
+        if args_cli.sched_latency_ms > 0 else 1
+    log(f"[sched] latency={args_cli.sched_latency_ms} ms, control_dt={control_dt*1000:.1f} ms "
+        f"-> refresh every {_ctrl_refresh} step(s) ({1000.0/(control_dt*1000*_ctrl_refresh):.0f} Hz effective command rate)")
 
     est = model = actor = yolo = None
     # CLEAN-BACKGROUND mode skips the nav/controller/detector nets entirely (no flight).
@@ -945,6 +956,7 @@ def main():
         comp.reset_traces()
         hidden = None
         last_action = torch.zeros((N, 4), device=dev, dtype=torch.float32)
+        _applied_action = last_action                   # held motor command (schedule-refresh ZOH)
         last_safety_dets = []          # most-recent YOLO detections (held between 4 Hz ticks)
         safety_tele = None
         tmp = f"{final}.ep{ep:02d}.tmp.mp4"
@@ -957,7 +969,9 @@ def main():
                    "alt_dtof": [], "alt_baro": [],
                    "dense_chase": [], "dense_fpv": [], "dense_tof": [], "dense_det": [],
                    "frame_steps": [], "iso_frames": [],
+                   "ov_seq": [], "ov_seq_t": [], "ov_seq_pose": [], "ov_seq_obst": [],
                    "ov_bg": None, "iso_bg": None} if args_cli.dump_figure_data else None)
+        _OVSEQ_N = 9; _ovseq_stride = max(1, args_cli.max_steps // _OVSEQ_N)   # chronophotography stride
         last_det = []   # freshest YOLO detections, held between the sparse figure snapshots
         for t in range(args_cli.max_steps):
             xy_now = (robot.data.root_pos_w[0] - origin[0])[:2].cpu().numpy().astype(np.float64)
@@ -1047,6 +1061,13 @@ def main():
                 _figep["imu_w"].append(np.asarray(snap["w"], dtype=np.float32))    # (3,) body ang-vel
                 _figep["alt_dtof"].append(np.float32(snap["dtof"]))
                 _figep["alt_baro"].append(np.float32(snap["baro"]))
+                # --- chronophotography: fixed overhead cam at ~9 evenly-spaced steps (movers move, bg fixed) ---
+                if t % _ovseq_stride == 0 and len(_figep["ov_seq"]) < _OVSEQ_N:
+                    _figep["ov_seq"].append(_rgb(ov))
+                    _figep["ov_seq_t"].append(t * control_dt)
+                    _figep["ov_seq_pose"].append(np.concatenate([snap["pos_w"],
+                                                 robot.data.root_quat_w[0].cpu().numpy()]))
+                    _figep["ov_seq_obst"].append(coll.data.object_pos_w[0].cpu().numpy())
                 # --- dense per-moment frames (every FIG_DENSE steps) for post-hoc moment selection ---
                 if t % FIG_DENSE == 0:
                     # run YOLO fresh so the boxes match THIS fpv frame (cls,x0,y0,x1,y1,conf in 90×60)
@@ -1064,7 +1085,11 @@ def main():
                                     robot.data.projected_gravity_b, (robot.data.root_pos_w - origin)[:, 2:3],
                                     steer_cmd, last_action], dim=1)
                 with torch.no_grad():
-                    action = actor(rl_obs).clamp(-1.0, 1.0)
+                    fresh = actor(rl_obs).clamp(-1.0, 1.0)
+                # onboard schedule can only deliver a fresh command every _ctrl_refresh steps; hold otherwise
+                if t % _ctrl_refresh == 0:
+                    _applied_action = fresh
+                action = _applied_action
                 last_action = action.detach()
                 obs, _r, dones, _i = env.step(action)
             else:
@@ -1166,6 +1191,11 @@ def main():
             gates_world=gates_world,                                       # (G,3)
             # --- fixed overhead (top-down) camera ---
             ov_bg=fe["ov_bg"], ovK=ovK, ovpos=ovpos, ovquat=ovquat,
+            # --- chronophotography sequence of the fixed overhead cam (N frames; movers at successive pos) ---
+            ov_seq=np.asarray(fe["ov_seq"], dtype=np.uint8),
+            ov_seq_t=np.asarray(fe["ov_seq_t"], dtype=np.float64),
+            ov_seq_pose=np.asarray(fe["ov_seq_pose"], dtype=np.float64),
+            ov_seq_obst=np.asarray(fe["ov_seq_obst"], dtype=np.float32),
             # --- fixed isometric overview camera ---
             iso_bg=fe["iso_bg"], iso_over=iso_over,
             isoK=iso_calib["K"], isopos=iso_calib["pos"], isoquat=iso_calib["quat"],

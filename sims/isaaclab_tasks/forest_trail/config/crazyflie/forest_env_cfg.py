@@ -28,15 +28,19 @@ import math
 
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import TerminationTermCfg as DoneTerm
+from isaaclab.sensors import CameraCfg
 from isaaclab.utils import configclass
 from isaaclab.envs.mdp import reset_root_state_uniform
 
 from sims.isaaclab_tasks.forest_trail import mdp_terminations
+from sims.isaaclab_tasks.forest_trail import sensors
 from sims.isaaclab_tasks.forest_trail.forest_scene import (
     DEFAULT_STRAIGHT_LAYOUT,
     DEFAULT_CURVED_WAYPOINTS_2D,
     ForestSceneCfg,
     ForestSceneCfgWithHumans,
+    ForestSceneCfg_Slalom,
+    ForestSceneCfg_Gates,
     CurvedForestSceneCfg,
     CurvedForestSceneCfgWithHumans,
     _build_curved_forest_scene_cfg_class,
@@ -224,6 +228,134 @@ class ForestTrailEnvCfg_Curved_PLAY_WithHumans(ForestTrailEnvCfg_Curved_PLAY):
     """Curved trail, play variant with procedural humans."""
 
     scene: CurvedForestSceneCfgWithHumans = CurvedForestSceneCfgWithHumans(
+        num_envs=1, env_spacing=15.0
+    )
+
+
+# ── Sensor-rig scene + env cfgs (Workstream S) ────────────────────────────────
+# Additive siblings: attach the onboard sensor rig (front Himax greyscale cam +
+# 4 VL53L5CX ToF cross) built by ``sensors.build_sensor_cfgs()`` on top of the
+# existing forest scenes. Each scene subclass just adds the five camera fields;
+# the trees/humans/trail/ground are inherited unchanged. The cameras only stream
+# when the sim is launched with ``--enable_cameras`` (as the debug script does).
+
+@configclass
+class ForestSceneCfg_WithSensors(ForestSceneCfg):
+    """Straight-trail forest scene + onboard sensor rig."""
+
+    front_camera: CameraCfg = sensors.front_greyscale_camera_cfg()
+    tof_n: CameraCfg = sensors.tof_camera_cfg("N")
+    tof_e: CameraCfg = sensors.tof_camera_cfg("E")
+    tof_s: CameraCfg = sensors.tof_camera_cfg("S")
+    tof_w: CameraCfg = sensors.tof_camera_cfg("W")
+
+
+@configclass
+class ForestSceneCfgWithHumans_WithSensors(ForestSceneCfgWithHumans):
+    """Straight-trail forest scene (with humans) + onboard sensor rig."""
+
+    front_camera: CameraCfg = sensors.front_greyscale_camera_cfg()
+    tof_n: CameraCfg = sensors.tof_camera_cfg("N")
+    tof_e: CameraCfg = sensors.tof_camera_cfg("E")
+    tof_s: CameraCfg = sensors.tof_camera_cfg("S")
+    tof_w: CameraCfg = sensors.tof_camera_cfg("W")
+
+
+@configclass
+class CurvedForestSceneCfg_WithSensors(CurvedForestSceneCfg):
+    """Curved-trail forest scene + onboard sensor rig."""
+
+    front_camera: CameraCfg = sensors.front_greyscale_camera_cfg()
+    tof_n: CameraCfg = sensors.tof_camera_cfg("N")
+    tof_e: CameraCfg = sensors.tof_camera_cfg("E")
+    tof_s: CameraCfg = sensors.tof_camera_cfg("S")
+    tof_w: CameraCfg = sensors.tof_camera_cfg("W")
+
+
+@configclass
+class CurvedForestSceneCfgWithHumans_WithSensors(CurvedForestSceneCfgWithHumans):
+    """Curved-trail forest scene (with humans) + onboard sensor rig."""
+
+    front_camera: CameraCfg = sensors.front_greyscale_camera_cfg()
+    tof_n: CameraCfg = sensors.tof_camera_cfg("N")
+    tof_e: CameraCfg = sensors.tof_camera_cfg("E")
+    tof_s: CameraCfg = sensors.tof_camera_cfg("S")
+    tof_w: CameraCfg = sensors.tof_camera_cfg("W")
+
+
+@configclass
+class ForestSceneCfg_Slalom_WithSensors(ForestSceneCfg_Slalom):
+    """Straight trail + IN-CORRIDOR slalom obstacles + onboard sensor rig (avoidance, #56)."""
+
+    front_camera: CameraCfg = sensors.front_greyscale_camera_cfg()
+    tof_n: CameraCfg = sensors.tof_camera_cfg("N")
+    tof_e: CameraCfg = sensors.tof_camera_cfg("E")
+    tof_s: CameraCfg = sensors.tof_camera_cfg("S")
+    tof_w: CameraCfg = sensors.tof_camera_cfg("W")
+
+
+@configclass
+class ForestTrailEnvCfg_PLAY_WithSensors(ForestTrailEnvCfg_PLAY):
+    """Straight-trail play env with the onboard sensor rig attached."""
+
+    scene: ForestSceneCfg_WithSensors = ForestSceneCfg_WithSensors(num_envs=1, env_spacing=10.0)
+
+
+@configclass
+class ForestTrailEnvCfg_Slalom_PLAY_WithSensors(ForestTrailEnvCfg_PLAY):
+    """Straight trail + in-corridor slalom obstacles + sensors (avoidance course)."""
+
+    scene: ForestSceneCfg_Slalom_WithSensors = ForestSceneCfg_Slalom_WithSensors(
+        num_envs=1, env_spacing=12.0
+    )
+
+
+@configclass
+class ForestSceneCfg_Gates_WithSensors(ForestSceneCfg_Gates):
+    """Forest gate course (collidable gate frames) + onboard sensor rig + demo chase cam (#56)."""
+
+    front_camera: CameraCfg = sensors.front_greyscale_camera_cfg()
+    tof_n: CameraCfg = sensors.tof_camera_cfg("N")
+    tof_e: CameraCfg = sensors.tof_camera_cfg("E")
+    tof_s: CameraCfg = sensors.tof_camera_cfg("S")
+    tof_w: CameraCfg = sensors.tof_camera_cfg("W")
+    chase_camera: CameraCfg = sensors.chase_camera_cfg()   # 3rd-person demo view
+
+
+@configclass
+class ForestTrailEnvCfg_Gates_PLAY_WithSensors(ForestTrailEnvCfg_PLAY):
+    """Forest gate course + sensors — goal-conditioned navigation through gates."""
+
+    scene: ForestSceneCfg_Gates_WithSensors = ForestSceneCfg_Gates_WithSensors(
+        num_envs=1, env_spacing=12.0
+    )
+
+
+@configclass
+class ForestTrailEnvCfg_PLAY_WithHumans_WithSensors(ForestTrailEnvCfg_PLAY_WithHumans):
+    """Straight-trail play env, humans on the trail, + onboard sensor rig."""
+
+    scene: ForestSceneCfgWithHumans_WithSensors = ForestSceneCfgWithHumans_WithSensors(
+        num_envs=1, env_spacing=10.0
+    )
+
+
+@configclass
+class ForestTrailEnvCfg_Curved_PLAY_WithSensors(ForestTrailEnvCfg_Curved_PLAY):
+    """Curved-trail play env with the onboard sensor rig attached."""
+
+    scene: CurvedForestSceneCfg_WithSensors = CurvedForestSceneCfg_WithSensors(
+        num_envs=1, env_spacing=15.0
+    )
+
+
+@configclass
+class ForestTrailEnvCfg_Curved_PLAY_WithHumans_WithSensors(
+    ForestTrailEnvCfg_Curved_PLAY_WithHumans
+):
+    """Curved-trail play env, humans on the trail, + onboard sensor rig."""
+
+    scene: CurvedForestSceneCfgWithHumans_WithSensors = CurvedForestSceneCfgWithHumans_WithSensors(
         num_envs=1, env_spacing=15.0
     )
 

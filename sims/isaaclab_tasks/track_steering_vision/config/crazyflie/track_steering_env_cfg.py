@@ -197,7 +197,7 @@ class RewardsCfg:
     # Track forward velocity
     velocity_tracking = RewTerm(
         func=mdp_rewards.forward_velocity_tracking,
-        weight=5.0,
+        weight=10.0,  # Increased from 5.0 to make tracking more important
         params={
             "asset_cfg": SceneEntityCfg("robot"),
             "std": 0.5,
@@ -208,7 +208,7 @@ class RewardsCfg:
     # Stay upright
     upright = RewTerm(
         func=mdp_rewards.upright_orientation,
-        weight=3.0,
+        weight=5.0,  # Increased from 3.0 to encourage stability
         params={
             "asset_cfg": SceneEntityCfg("robot"),
             "std": 0.3,
@@ -218,7 +218,12 @@ class RewardsCfg:
     # Maintain height (CRITICAL: prevents shooting into sky)
     height_tracking = RewTerm(
         func=mdp_rewards.height_tracking,
-        weight=50.0,  # Very high weight to compete with action penalty
+        # 50.0 SWAMPED steering_tracking(10): PPO just held altitude and ignored the yaw
+        # command, so the drone circled and never executed DroNet's steering.
+        # These are the weights Dima actually trained model_6998 with -- they live only in
+        # his DIRTY working tree, not in the committed file we cloned. His TB confirms it:
+        # every term saturates at its weight (steering 9.99, velocity 9.94, height 19.7).
+        weight=20.0,  # Reduced from 50.0 to balance with other objectives
         params={
             "asset_cfg": SceneEntityCfg("robot"),
             "target_height": 1.0,
@@ -323,6 +328,32 @@ class SteeringSceneCfg_WithCamera(SteeringSceneCfg):
         offset=CameraCfg.OffsetCfg(
             pos=(0.06, 0.0, 0.01),
             rot=(0.5, -0.5, 0.5, -0.5),  # ROS convention
+            convention="ros",
+        ),
+    )
+
+    # Third-person "chase" camera — a free-floating prim (NOT parented to the
+    # robot body) so the pilot can drive it each control step with
+    # ``set_world_poses_from_view(eye, target=drone)``. Placed behind + above
+    # the drone looking down at it, so forward motion along the trail (and the
+    # trail's curvature) is visually obvious — an onboard/forward-looking view
+    # in a uniform tree corridor reads as nearly static. Initial pose here is a
+    # placeholder; the pilot overrides it every step.
+    chase_camera = CameraCfg(
+        prim_path="{ENV_REGEX_NS}/ChaseCam",
+        update_period=0.0,  # update every render (pilot repositions each step)
+        height=480,
+        width=640,
+        data_types=["rgb"],
+        spawn=sim_utils.PinholeCameraCfg(
+            focal_length=18.0,
+            focus_distance=400.0,
+            horizontal_aperture=20.955,
+            clipping_range=(0.05, 200.0),
+        ),
+        offset=CameraCfg.OffsetCfg(
+            pos=(-1.3, 0.0, 0.8),
+            rot=(0.5, -0.5, 0.5, -0.5),
             convention="ros",
         ),
     )
