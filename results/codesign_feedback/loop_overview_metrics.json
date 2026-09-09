@@ -1,107 +1,55 @@
 {
  "summaries_used": [
-  "/scratch/agustin/xpurt-dev-sync/results/loop_ablation_v4_small/ablation_summary.json",
-  "/scratch/agustin/xpurt-dev-sync/results/loop_ablation_v4_big/ablation_summary.json"
+  "results/loop_ablation_postfix/ablation_summary.json"
  ],
- "summaries_missing": [
-  "/scratch/agustin/xpurt-dev-sync/results/loop_ablation_stable/ablation_summary.json"
- ],
+ "summaries_missing": [],
  "ablation": {
-  "w2": {
-   "n_nets": 2,
-   "cpsat": {
-    "cells": {
-     "A": 5,
-     "B": 0,
-     "C": 5,
-     "D": 0
-    },
-    "levers": [
-     "shard"
-    ]
-   },
-   "greedy": {
-    "cells": {
-     "A": 5,
-     "B": 0,
-     "C": 5,
-     "D": 0
-    },
-    "levers": [
-     "shard"
-    ]
-   }
-  },
-  "w3": {
-   "n_nets": 3,
-   "cpsat": {
-    "cells": {
-     "A": 9,
-     "B": 5,
-     "C": 10,
-     "D": 5
-    },
-    "levers": [
-     "shard"
-    ]
-   },
-   "greedy": {
-    "cells": {
-     "A": 10,
-     "B": 5,
-     "C": 10,
-     "D": 5
-    },
-    "levers": [
-     "shard"
-    ]
-   }
-  },
   "w4": {
    "n_nets": 4,
    "cpsat": {
     "cells": {
+     "A": 23,
+     "B": 10,
+     "C": 28,
+     "D": 26
+    },
+    "levers": [
+     "shard:dronet",
+     "shard:fused_full"
+    ]
+   },
+   "greedy": {
+    "cells": {
      "A": 10,
-     "B": 11,
+     "B": 4,
      "C": 10,
-     "D": 10
+     "D": 8
+    },
+    "levers": [
+     "shard:ffn_block"
+    ]
+   }
+  },
+  "s5": {
+   "n_nets": 5,
+   "cpsat": {
+    "cells": {
+     "A": 1,
+     "B": 1,
+     "C": 1,
+     "D": 1
     },
     "levers": []
    },
    "greedy": {
     "cells": {
-     "A": 10,
-     "B": 10,
-     "C": 10,
-     "D": 10
+     "A": 1,
+     "B": 0,
+     "C": 1,
+     "D": 0
     },
     "levers": [
-     "ime"
-    ]
-   }
-  },
-  "w5": {
-   "n_nets": 5,
-   "cpsat": {
-    "cells": {
-     "A": 13,
-     "B": 17,
-     "C": 13,
-     "D": 16
-    },
-    "levers": [
-     "ime"
-    ]
-   },
-   "greedy": {
-    "cells": {
-     "A": 11,
-     "B": 11,
-     "C": 11,
-     "D": 11
-    },
-    "levers": [
-     "ime"
+     "shard"
     ]
    }
   }
@@ -110,6 +58,14 @@
   {
    "stage": 1,
    "title": "Baseline \u00b7 RVV",
+   "has_shard": false,
+   "has_ime": false,
+   "dispatch_widths": [
+    1
+   ],
+   "implementations": [
+    "rvv"
+   ],
    "instance_misses": 2,
    "missed_by_network": {
     "FFN": 2
@@ -118,12 +74,30 @@
   {
    "stage": 2,
    "title": "AOT optimise \u00b7 IME",
+   "has_shard": false,
+   "has_ime": true,
+   "dispatch_widths": [
+    1
+   ],
+   "implementations": [
+    "ime",
+    "rvv"
+   ],
    "instance_misses": 0,
    "missed_by_network": {}
   },
   {
    "stage": 3,
    "title": "K1-calibrated replay",
+   "has_shard": false,
+   "has_ime": true,
+   "dispatch_widths": [
+    1
+   ],
+   "implementations": [
+    "ime",
+    "rvv"
+   ],
    "instance_misses": 1,
    "missed_by_network": {
     "NAV": 1
@@ -132,6 +106,15 @@
   {
    "stage": 4,
    "title": "K1-calibrated re-solve",
+   "has_shard": false,
+   "has_ime": true,
+   "dispatch_widths": [
+    1
+   ],
+   "implementations": [
+    "ime",
+    "rvv"
+   ],
    "instance_misses": 0,
    "missed_by_network": {}
   }
