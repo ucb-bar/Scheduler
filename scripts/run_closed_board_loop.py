@@ -64,6 +64,17 @@ NEEDS_STAGED_IR = {
 #: scripts/setup_spacemit_toolchain.sh for the reordered vsetvl.
 CORE_KINDS = "rvv,ime,rvv_c1"
 
+#: `fused_full` is the stateful FP16 sensor-fusion net, and extracting it needs the REAL
+#: calibration set -- it is quantised against recorded sensor data, not synthetic input,
+#: and its low-dimensional branch stays float. Every documented board run of a workload
+#: containing it sets these three. Without the pkl the extraction still runs and produces
+#: a differently-quantised model, which is the worst kind of failure: the run succeeds
+#: and the numbers are not the published ones.
+FUSED_CALIB_PKL = os.environ.get(
+    "MB_FUSED_CALIB_PKL",
+    "/scratch/dima/rose-infra/RoSE/experiments/rose_nav_cosim/calib/calib_real.pkl")
+FUSED_ENV = {"MB_FUSED_LOWDIM_FLOAT": "1", "NUM_CALIBRATION": "32"}
+
 
 def sh(cmd, env=None, cwd=None, log=None, stream=False):
     e = dict(os.environ)
@@ -228,7 +239,20 @@ def run_on_board(sched, nets, repeats, out_dir, cross, mb_py, log,
         cmd += ["--models", models]
     for s in staged:
         cmd += ["--staged-ir", s]
-    env = {"CORE_KINDS": CORE_KINDS, "CROSS": cross, "PY": mb_py,
+    if any(n.startswith("fused_") for n in nets):
+        if os.path.exists(FUSED_CALIB_PKL):
+            extra_env = dict(FUSED_ENV, MB_FUSED_CALIB_PKL=FUSED_CALIB_PKL)
+            log(f"  fused net present: quantising against {FUSED_CALIB_PKL}")
+        else:
+            extra_env = {}
+            log(f"  WARNING: {[n for n in nets if n.startswith('fused_')]} present but "
+                f"no calibration set at {FUSED_CALIB_PKL} -- the extraction will "
+                f"succeed and produce a DIFFERENTLY QUANTISED model than every "
+                f"published run. Set MB_FUSED_CALIB_PKL.")
+            warnings.append("fused net quantised without the real calibration set")
+    else:
+        extra_env = {}
+    env = {**extra_env, "CORE_KINDS": CORE_KINDS, "CROSS": cross, "PY": mb_py,
            "MODELBLASTER_KERNEL_CC": cross + "gcc",
            # SCHED_FIFO 80: the measured runs this project publishes are RT-pinned, and
            # a CFS run measures the Linux scheduler as much as the kernel -- the
