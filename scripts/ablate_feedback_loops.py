@@ -705,7 +705,7 @@ def main() -> int:
         "solve_env": SOLVE_ENV,
         "cpsat_workers": {
             "cells": SOLVE_ENV.get("XPURT_CPSAT_WORKERS"),
-            "inner_search": ("1 (--replay pins it)" if args.replay
+            "inner_search": ("1 (--replay pins it)" if a.replay
                              else SOLVE_ENV.get("XPURT_CPSAT_WORKERS")),
             "why_recorded": ("these were once different -- 1 for the inner search under "
                              "--replay, 4 for the cells -- which made cell B and cells "

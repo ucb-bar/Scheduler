@@ -603,7 +603,40 @@ def cpsat_schedule(
 
     status = None
     phase_reports = []
+    bounded_phases: List[str] = []
+
+    # PER-PHASE BUDGET. `max_time_in_seconds` applies to EACH Solve() call, so a
+    # three-phase lexicographic solve under a "300 s limit" could legitimately run
+    # 900 s -- and, worse, phase 1 could spend the entire wall clock the caller
+    # budgeted for the whole solve and leave nothing for the rest. Split it: the top
+    # phase matters most, so it gets half, and the remaining phases share the other
+    # half, with a floor so no phase gets a budget too small to find a point at all.
+    total_budget = float(time_limit) if time_limit and time_limit > 0 else None
+    last_solution = None
+
+    def _snapshot():
+        """The current solution as (var, value) pairs, to hint the next phase with."""
+        out = [(chosen_start[i], solver.Value(chosen_start[i])) for i in range(n)]
+        for i in range(n):
+            for k in range(n_combos):
+                out.append((presence[i][k], solver.Value(presence[i][k])))
+        return out
+
     for phase, (phase_name, phase_obj, phase_unit) in enumerate(objectives):
+        if total_budget is not None:
+            n_rest = max(1, len(objectives) - 1)
+            share = (total_budget * 0.5 if phase == 0
+                     else total_budget * 0.5 / n_rest)
+            solver.parameters.max_time_in_seconds = max(10.0, share)
+        # START EACH PHASE WHERE THE LAST ONE ENDED. Minimize+Solve restarts the
+        # search, keeping no incumbent across calls, so a phase given a modest budget
+        # can otherwise return a point WORSE than the phase before it -- or, on a hard
+        # instance, nothing at all, discarding a schedule we already had in hand.
+        if last_solution is not None:
+            if hasattr(model, "ClearHints"):
+                model.ClearHints()  # re-hinting a var without this is a proto error
+            for _var, _val in last_solution:
+                model.AddHint(_var, _val)
         model.Minimize(phase_obj)
         status = solver.Solve(model)
         phase_reports.append({
@@ -628,12 +661,35 @@ def cpsat_schedule(
                 "certified": False,
             }
             return None, None, None, None  # type: ignore[return-value]
+        last_solution = _snapshot()
         if objective_stop_after and phase_name == objective_stop_after:
             break
-        if status != cp_model.OPTIMAL or phase == len(objectives) - 1:
+        if phase == len(objectives) - 1:
             break
-        optimum = int(round(solver.ObjectiveValue()))
-        model.Add(phase_obj == optimum)
+        value = int(round(solver.ObjectiveValue()))
+        if status == cp_model.OPTIMAL:
+            model.Add(phase_obj == value)
+        else:
+            # BOUND THE PHASE, DO NOT ABANDON THE REST. This loop used to break out
+            # whenever a phase failed to PROVE its optimum, reasoning that fixing an
+            # unproven value would be a false lexicographic claim. The reasoning was
+            # right; the remedy was wrong. Breaking meant that on every instance where
+            # phase 1 timed out, THE LOWER PHASES NEVER RAN AT ALL: the schedule
+            # returned minimised deadline misses only, with lateness and makespan left
+            # wherever phase 1's incumbent happened to drop them. That is the whole
+            # reason CP-SAT came back with a worse makespan than greedy on the big
+            # rungs (77.95 vs 71.57 ms on w5) -- not a solver limitation, an objective
+            # that was never optimised. The certificates show it plainly: one phase,
+            # `dispatch_deadline_misses`, FEASIBLE, and nothing after it.
+            #
+            # `<= value` is sound where `== value` was not. The incumbent is achieved,
+            # so the feasible region stays non-empty; the higher-priority term can
+            # never get worse than what we already had; and the next phase minimises
+            # the lower term subject to that bound. The claim it supports is
+            # "lexicographic, with this phase bounded but not proven" -- which is what
+            # the certificate now records, per phase.
+            model.Add(phase_obj <= value)
+            bounded_phases.append(phase_name)
 
     assert status is not None
 
@@ -649,6 +705,13 @@ def cpsat_schedule(
         "phases": phase_reports,
         "certified": all(p["status"] == "OPTIMAL" for p in phase_reports),
         "certified_through": phase_reports[-1]["name"],
+        # Phases that ran, but under a bound taken from an unproven incumbent rather
+        # than a proven optimum. A reader can tell "lexicographic and proven" from
+        # "lexicographic and bounded" without inferring it from statuses.
+        "bounded_not_proven": list(bounded_phases),
+        "phase_budget_s": ({"top": total_budget * 0.5,
+                            "each_lower": total_budget * 0.5 / max(1, len(objectives) - 1)}
+                           if total_budget is not None else None),
     }
 
     t = np.zeros(n)

@@ -602,11 +602,25 @@ def schedule_iree_networks(
                 "objective_stop_after": cfg["objective_stop_after"],
             }
 
+        # THE CP-SAT BUDGET HAS TO REACH CP-SAT ON *THIS* PATH TOO. `--cpsat-time-limit`
+        # was added because `--time-limit` is the MILP's, but it was only ever wired into
+        # the milp-native fallback below (`candidate == "cpsat"`). The registry path --
+        # which is what `--scheduler cpsat` actually takes -- kept handing CP-SAT the
+        # MILP limit, so every `--cpsat-time-limit 300` run in the ablation really solved
+        # at the `--time-limit 90` the MILP arm was given, and the certificates recorded
+        # `wall_s: 90.1`. One flag, two call sites, only one of them honouring it.
+        cpsat_budget = effective_time_limit
+        if scheduler.startswith("cpsat"):
+            cpsat_budget = cfg["cpsat_time_limit"]
+            if cpsat_budget != effective_time_limit:
+                print(f"  cpsat_time_limit: {cpsat_budget} "
+                      f"(MILP --time-limit {effective_time_limit} does not apply)")
+
         solver_t0 = time.perf_counter()
         result = scheduler_fn(
             combined_workload,
             solver_verbosity=effective_solver_verbosity,
-            time_limit=effective_time_limit,
+            time_limit=cpsat_budget,
             restrict_makespan_to_nonperiodic=effective_restrict_makespan_to_nonperiodic,
             prune_cross_period_constraints=effective_prune_periodic,
             **fresh_kwargs,
