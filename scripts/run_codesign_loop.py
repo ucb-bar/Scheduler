@@ -894,8 +894,43 @@ def main():
 
     _plot_traj(traj, os.path.join(out_dir, "objective_vs_round"), metric_name)
     _write_readme(out_dir, wl_stem, args, report, fnote)
-    log(f"\nCONVERGED [{metric_name}]: {base_score:.3f} -> {cur_score:.3f} ms "
-        f"(-{report['total_reduction_pct']:.1f}%), levers applied: {applied or 'none'}")
+    # WHAT THIS LINE MUST SAY. It used to report only the declared objective, which the
+    # nine-term rule may not have optimised: the rule ranks hard deadline misses FIRST
+    # and lateness fourth, so a large miss reduction can arrive with the objective going
+    # UP. w3 printed "total-lateness: 257.989 -> 274.292 ms (--6.3%)" -- note also the
+    # doubled minus from formatting a negative reduction -- next to a miss count that had
+    # gone 10 -> 1. Read quickly, that looks like a failure. So: lead with the misses,
+    # name the term that actually decided each acceptance, and give the objective its
+    # sign.
+    _deciding = [f"{r['lever']} ({str(r.get('why', '')).split('--', 1)[-1].strip()})"
+                 for r in rounds if r.get("accepted") and r.get("lever")]
+    _red = report["total_reduction_pct"]
+    # WHICH MISS COUNTER. There are two, and they disagree: guard_miss returns the
+    # scheduler's per-DISPATCH op_deadline_miss_count for the makespan/worst-response
+    # objectives, while candidate_objective's term 1 counts per-INSTANCE misses. On w2
+    # that is 20 against 5 for the same schedule. Quoting one next to a verdict decided
+    # on the other is how a reader ends up comparing two experiments, so report the
+    # rule's own number when the rule is what decided, and label the fallback.
+    if use_objective and base_out is not None and cur_out is not None:
+        _mlabel = "hard deadline misses (instances)"
+        _mbase, _mfinal = base_out.total_misses(), cur_out.total_misses()
+    else:
+        _mlabel = ("instance-misses" if instance_guard
+                   else "dispatch-window misses")
+        _mbase, _mfinal = base_gmiss, cur_miss
+    log(f"\nCONVERGED: {_mlabel} {_mbase} -> {_mfinal}"
+        f"; {metric_name} {base_score:.3f} -> {cur_score:.3f} ms "
+        f"({-_red:+.1f}%), levers applied: {applied or 'none'}")
+    if _deciding:
+        for d in _deciding:
+            log(f"  decided by: {d}")
+    elif not applied:
+        log("  no lever was accepted; every candidate and its reason is in "
+            "loop_report.json under rounds[].rejected")
+    if _red < 0:
+        log(f"  note: {metric_name} rose while the rule accepted on a higher-ranked "
+            f"term (misses rank first, {metric_name} lower) — this is the rule working, "
+            f"not a regression")
     log(f"artifacts in {out_dir}")
     open(os.path.join(out_dir, "loop_log.txt"), "w").write("\n".join(lines) + "\n")
     return 0
@@ -938,8 +973,17 @@ def _write_readme(out_dir, stem, args, report, fnote):
           f"(-{r['total_reduction_pct']}%)** — levers applied: {r['levers_applied'] or 'none'}.", "",
           "| round | lever | before (ms) | after (ms) | % | misses |", "|--:|--|--:|--:|--:|--:|"]
     for rr in r["rounds"]:
-        md.append(f"| {rr['round']} | +{rr['lever']} | {rr['makespan_before_ms']} | "
-                  f"{rr['makespan_after_ms']} | {rr['pct']} | {rr['deadline_miss']} |")
+        # A round that accepted nothing is recorded too (so its rejections survive), and
+        # it carries no before/after makespan -- there is no accepted candidate to have
+        # one. Render it as the convergence row rather than crashing on the missing key.
+        if not rr.get("lever"):
+            md.append(f"| {rr['round']} | _(none accepted)_ | "
+                      f"{rr.get('score_before_ms', '')} | — | — | — |")
+            continue
+        md.append(f"| {rr['round']} | +{rr['lever']} | "
+                  f"{rr.get('makespan_before_ms', '')} | "
+                  f"{rr.get('makespan_after_ms', '')} | {rr.get('pct', '')} | "
+                  f"{rr.get('deadline_miss', '')} |")
     md += ["", f"Honest note — {fnote}", "",
            "Artifacts: `loop_report.json`, `makespan_vs_round.{png,pdf}`, "
            "`round_<k>_<lever>_gantt.{png,pdf}` (IME dispatches drawn darker + hatched), "
