@@ -276,12 +276,28 @@ def cpsat_schedule(
     if os.environ.get("XPURT_UNIFORM_PACKED_WIDTH", "0") not in ("0", "", "false"):
         _groups = _packed_weight_groups(ops)
         _n_coupled = 0
+        _skipped = []
         for _key, _idxs in sorted(_groups.items()):
             if len(_idxs) < 2:
                 continue
             _widths = sorted({len(combos[k]) for k in range(n_combos)})
+            # A width is only usable by the GROUP if every instance can actually take
+            # it. Without this check a group whose instances have disjoint feasible
+            # widths -- one restricted to 1 core, another to 4, by
+            # `infeasible_combinations` -- makes AddExactlyOne unsatisfiable, and the
+            # solve comes back INFEASIBLE with nothing pointing at the reason. Such a
+            # dispatch is genuinely unbuildable under shard mode, and saying so beats
+            # returning "no solution" for the whole workload.
+            _usable = [
+                _w for _w in _widths
+                if all(any(k not in ops[_i].infeasible_combinations
+                           for k in range(n_combos) if len(combos[k]) == _w)
+                       for _i in _idxs)]
+            if not _usable:
+                _skipped.append(_key)
+                continue
             _w_vars = {}
-            for _w in _widths:
+            for _w in _usable:
                 _ks = [k for k in range(n_combos) if len(combos[k]) == _w]
                 _wv = model.NewBoolVar(f"pw_{_key[0]}_{_key[1]}_{_w}")
                 _w_vars[_w] = _wv
@@ -290,6 +306,11 @@ def cpsat_schedule(
                     model.Add(sum(presence[_i][k] for k in _ks) == _wv)
             model.AddExactlyOne(_w_vars.values())
             _n_coupled += 1
+        if _skipped:
+            print(f"[cpsat] codegen contract: {len(_skipped)} packed-weight "
+                  f"dispatch(es) have NO width every instance can take, so they are "
+                  f"left unconstrained and the schedule will not be buildable: "
+                  f"{_skipped[:4]}")
         if _n_coupled:
             print(f"[cpsat] codegen contract: {_n_coupled} packed-weight dispatch(es) "
                   f"constrained to one width across their instances")
