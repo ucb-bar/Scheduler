@@ -181,8 +181,10 @@ def worst_response_ms(sched_path: str, spec: dict):
         return None
 
 
-def _run(cmd):
-    return subprocess.run(cmd, cwd=REPO, capture_output=True, text=True)
+def _run(cmd, env=None):
+    e = dict(os.environ)
+    e.update(env or {})
+    return subprocess.run(cmd, cwd=REPO, capture_output=True, text=True, env=e)
 
 
 def _rvv_profile(net, variant, hw="rvv_x60"):
@@ -234,7 +236,27 @@ def solve(spec_path, solver="greedy", board_cal=None, time_limit=None):
             cmd += ["--cpsat-time-limit", str(float(time_limit))]
     if board_cal:
         cmd += ["--board-calibration"] + ([board_cal] if isinstance(board_cal, str) else [])
-    r = _run(cmd)
+    # CONSTRAIN RATHER THAN REJECT, where the solver can be constrained. When the
+    # candidate uses shard mode, a packed-weight (convolution) dispatch must take one
+    # core width across its periodic instances or ModelBlaster cannot generate it. CP-SAT
+    # can express that -- a per-(dispatch, width) indicator linked to its
+    # combination-presence variables, so the solver still CHOOSES the width and simply
+    # has to choose one -- and asking for it here is what makes the `shard` lever's
+    # output deployable instead of merely promising.
+    #
+    # Greedy has no combination-selection variable to couple, so for that arm the
+    # contract can only be checked afterwards and the candidate rejected. The asymmetry
+    # is real and is left visible rather than hidden: it understates greedy on exactly
+    # the workloads where sharding is the answer.
+    env = None
+    try:
+        _spec = json.load(open(spec_path))
+        _mode = ((_spec.get("scheduler") or {}).get("machine_combination_mode"))
+        if solver == "cpsat" and _mode == "shard":
+            env = {"XPURT_UNIFORM_PACKED_WIDTH": "1"}
+    except Exception:
+        pass
+    r = _run(cmd, env=env)
     metrics = os.path.join(REPO, "schedules", f"scheduled_{stem}_{sfx}_metrics.json")
     sched = os.path.join(REPO, "schedules", f"scheduled_{stem}_{sfx}.json")
     if not os.path.exists(metrics):

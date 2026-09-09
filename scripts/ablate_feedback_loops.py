@@ -259,7 +259,22 @@ def solve(spec_path, solver, time_limit, calibration, tag, log, cpsat_limit=None
         cmd += ["--cpsat-time-limit", str(float(cpsat_limit or time_limit or 300.0))]
     if calibration:
         cmd += ["--board-calibration", calibration]
-    r = sh(cmd, env=SOLVE_ENV)
+    # THE CELL SOLVES MUST OBEY THE SAME CODEGEN CONTRACT AS THE INNER SEARCH. Cells C
+    # and D re-solve a spec here rather than through run_codesign_loop, so without this
+    # a cell could be scored on a schedule the compiler cannot build while the inner
+    # search that produced its spec was held to the contract -- two different rulesets
+    # inside one row. CP-SAT is the arm that can be constrained rather than merely
+    # checked; greedy has no combination-selection variable to couple, and that
+    # asymmetry is reported rather than papered over.
+    env = dict(SOLVE_ENV)
+    try:
+        _mode = ((json.load(open(spec_path)).get("scheduler") or {})
+                 .get("machine_combination_mode"))
+        if solver == "cpsat" and _mode == "shard":
+            env["XPURT_UNIFORM_PACKED_WIDTH"] = "1"
+    except Exception:
+        pass
+    r = sh(cmd, env=env)
     sched = os.path.join(REPO, "schedules", f"scheduled_{stem}_{sfx}.json")
     if not os.path.exists(sched):
         detail = ((r.stderr or "") + (r.stdout or ""))[-300:]
@@ -672,6 +687,11 @@ def main() -> int:
         "repeats_policy": ("repeat only a CP-SAT solve that did not prove optimality; "
                            "greedy is deterministic"),
         "solve_env": SOLVE_ENV,
+        "codegen_contract": ("cpsat shard solves add XPURT_UNIFORM_PACKED_WIDTH=1 so a "
+                             "packed-weight dispatch takes one width across its "
+                             "instances; greedy cannot be constrained that way and its "
+                             "unbuildable candidates are rejected by the inner search "
+                             "instead"),
         "inner_means": ("AOT co-design with ModelBlaster: graph rewrites and the "
                         "per-dispatch implementation choice, decided offline against "
                         "isolated per-dispatch profiles"),

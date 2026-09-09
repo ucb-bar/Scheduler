@@ -110,12 +110,34 @@ class FairnessSwitchesAreForced(unittest.TestCase):
         that it stops depending on what the shell held.
         """
         import inspect
+        cell = inspect.getsource(abl.solve)
+        # The cell solve builds its env FROM SOLVE_ENV -- it may add to it (the codegen
+        # contract switch is added for cpsat shard solves) but must not replace it.
+        self.assertIn("dict(SOLVE_ENV)", cell,
+                      "the cell solve's env must be derived from SOLVE_ENV")
+        self.assertIn("sh(cmd, env=env)", cell,
+                      "the cell solve must pass that env to the subprocess")
         src = inspect.getsource(abl)
-        # every subprocess helper call that solves must carry env=SOLVE_ENV
-        self.assertIn("r = sh(cmd, env=SOLVE_ENV)", src,
-                      "the cell solve must pass SOLVE_ENV")
         self.assertIn("r = sh(cmd, timeout=args.timeout, env=SOLVE_ENV)", src,
                       "the inner search must pass SOLVE_ENV too")
+
+    def test_the_contract_switch_is_added_only_where_it_can_be_honoured(self):
+        """CP-SAT can be constrained to one width per packed dispatch; greedy cannot.
+
+        Asking greedy for it would be a switch that silently does nothing, which reads
+        in a manifest as though the arm were constrained when it was not. The asymmetry
+        is real -- greedy's unbuildable candidates are rejected by the inner search
+        instead -- and it has to stay visible.
+        """
+        import inspect
+        cell = inspect.getsource(abl.solve)
+        self.assertIn("XPURT_UNIFORM_PACKED_WIDTH", cell)
+        i = cell.index("XPURT_UNIFORM_PACKED_WIDTH")
+        guard = cell[max(0, i - 400):i]
+        self.assertIn('solver == "cpsat"', guard,
+                      "the contract switch must be gated on the arm that honours it")
+        self.assertIn('"shard"', guard,
+                      "and on the mode that can violate the contract")
 
     def test_missing_solver_is_distinguished_from_a_broken_one(self):
         self.assertEqual(abl.classify_failure(
