@@ -1,0 +1,81 @@
+{
+ "w4 \u00b7 4 networks": [
+  {
+   "beat": "baseline\n(no lever)",
+   "by_network": {
+    "ffn_block": 5,
+    "dronet": 5
+   },
+   "total": 10,
+   "cost": "AOT"
+  },
+  {
+   "beat": "AOT optimize\n(inner loop)",
+   "by_network": {
+    "dronet": 5
+   },
+   "total": 5,
+   "cost": "AOT"
+  },
+  {
+   "beat": "board re-cost\n(outer: reveal)",
+   "by_network": {
+    "dronet": 4
+   },
+   "total": 4,
+   "cost": "board"
+  },
+  {
+   "beat": "board re-solve\n(outer: fix)\n[refused: nothing better]",
+   "by_network": {
+    "dronet": 4
+   },
+   "total": 4,
+   "cost": "board"
+  }
+ ],
+ "w5 \u00b7 5 networks": [
+  {
+   "beat": "baseline\n(no lever)",
+   "by_network": {
+    "ffn_block": 5,
+    "dronet": 5,
+    "yolov8_nano_64x96": 1
+   },
+   "total": 11,
+   "cost": "AOT"
+  },
+  {
+   "beat": "AOT optimize\n(inner loop)",
+   "by_network": {
+    "ffn_block": 5,
+    "dronet": 1,
+    "yolov8_nano_64x96": 1
+   },
+   "total": 7,
+   "cost": "AOT"
+  },
+  {
+   "beat": "board re-cost\n(outer: reveal)",
+   "by_network": {
+    "fused_full": 5,
+    "ffn_block": 5,
+    "dronet": 5,
+    "yolov8_nano_64x96": 1
+   },
+   "total": 16,
+   "cost": "board"
+  },
+  {
+   "beat": "board re-solve\n(outer: fix)",
+   "by_network": {
+    "fused_full": 5,
+    "ffn_block": 5,
+    "dronet": 3,
+    "yolov8_nano_64x96": 1
+   },
+   "total": 14,
+   "cost": "board"
+  }
+ ]
+}
