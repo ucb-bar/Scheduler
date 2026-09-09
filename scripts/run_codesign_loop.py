@@ -680,6 +680,22 @@ def main():
 
         winners = [c for c in cands if c["ok"]]
         if not winners:
+            # RECORD THE ROUND THAT ACCEPTED NOTHING. Rejections used to be nested
+            # inside an accepted round's entry, so the one outcome that most needs
+            # explaining -- "levers applied: none" -- discarded every reason. On
+            # w4_ffn_dronet_sensor the report showed an empty lever list and no
+            # rejection at all, which is unreadable: a reader cannot tell whether the
+            # levers were rejected on measurement, failed to solve, or were skipped.
+            rounds.append(dict(round=rnd, lever=None, accepted=False,
+                               metric=metric_name,
+                               score_before_ms=round(cur_score, 3),
+                               accept_rule=args.accept_rule,
+                               why="no candidate was accepted; the loop converged here",
+                               rejected=[dict(lever=c["lever"], why=c.get("why"),
+                                              score_ms=round(c["score"], 3),
+                                              misses=c["miss"],
+                                              kind=c.get("kind", "lever"))
+                                         for c in cands]))
             log(f"round {rnd}: no lever is accepted by the "
                 f"{'nine-term objective' if use_objective else 'legacy two-term'} rule "
                 f"— CONVERGED")
