@@ -112,9 +112,22 @@ AUTO_OUTDIR = os.environ.get("XPURT_EVO_AUTO_OUTDIR", f"{REPO}/results/codesign_
 LOOP_OUT = "results/codesign_loop"          # run_codesign_loop.py default --out-dir
 
 
-def gen_from_loop(solver="cpsat", board_solver="cpsat", objective="lateness"):
-    os.makedirs(AUTO_OUTDIR, exist_ok=True)
-    wl_stem = os.path.splitext(os.path.basename(BASE))[0]
+def gen_from_loop(solver="cpsat", board_solver="cpsat", objective="lateness",
+                  workload=None, stem=None):
+    """Run the loop on `workload` and build the four panels from its trajectory.
+
+    WHY THIS TAKES A WORKLOAD. It used to hardcode one spec, so the figure that
+    demonstrates the loop could only ever demonstrate it on a single taskset -- and
+    "the loop is automatic" is a claim about the loop, not about that spec. Each
+    workload gets its own panel dir and its own output stem so rungs cannot overwrite
+    one another.
+    """
+    base = workload or BASE
+    base = base if os.path.isabs(base) else os.path.join(REPO, base)
+    wl_stem = os.path.splitext(os.path.basename(base))[0]
+    auto_outdir = (AUTO_OUTDIR if workload is None
+                   else f"{REPO}/results/codesign_feedback/evo_{stem or wl_stem}")
+    os.makedirs(auto_outdir, exist_ok=True)
     # bounded CP-SAT workers (a heavy Isaac job may be co-resident); NEVER 0 here.
     env = dict(os.environ)
     env["XPURT_CPSAT_WORKERS"] = os.environ.get("XPURT_CPSAT_WORKERS", "6")
@@ -123,7 +136,7 @@ def gen_from_loop(solver="cpsat", board_solver="cpsat", objective="lateness"):
     # 0-miss assignment, not just a feasible one) — give CP-SAT a generous budget so the
     # recovery beat is robust to CP-SAT's multi-worker non-determinism (≈170 s to optimum here).
     btl = os.environ.get("XPURT_EVO_BOARD_TIME_LIMIT", str(max(int(tl) * 2, 200)))
-    cmd = [PY, "scripts/run_codesign_loop.py", "--workload", BASE,
+    cmd = [PY, "scripts/run_codesign_loop.py", "--workload", base,
            "--solver", solver, "--time-limit", tl, "--objective", objective,
            "--board-calibration", CAL, "--board-solver", board_solver,
            "--board-time-limit", btl]
@@ -149,11 +162,11 @@ def gen_from_loop(solver="cpsat", board_solver="cpsat", objective="lateness"):
     # copy the loop's canonical panel schedules into the auto figure's own dir (self-contained)
     def _copy(stage_key, dst):
         src = _abs(stages[stage_key]["sched"])
-        shutil.copy(src, f"{AUTO_OUTDIR}/{dst}.json")
+        shutil.copy(src, f"{auto_outdir}/{dst}.json")
         ms = src.replace(".json", "_metrics.json")
         if os.path.exists(ms):
-            shutil.copy(ms, f"{AUTO_OUTDIR}/{dst}_metrics.json")
-        return f"{AUTO_OUTDIR}/{dst}.json"
+            shutil.copy(ms, f"{auto_outdir}/{dst}_metrics.json")
+        return f"{auto_outdir}/{dst}.json"
 
     rel = lambda p: os.path.relpath(p, REPO)
     p1 = _copy("baseline", "a1_baseline")
@@ -177,14 +190,16 @@ def gen_from_loop(solver="cpsat", board_solver="cpsat", objective="lateness"):
         panels.append(f"K1-calibrated re-solve|none|{rel(p4)}|re-optimized on board costs")
         tags.append(("4 board-resolve", p4))
 
-    json.dump(panels, open(f"{AUTO_OUTDIR}/panels.json", "w"), indent=1)
+    json.dump(panels, open(f"{auto_outdir}/panels.json", "w"), indent=1)
     print("\nautomatic loop trajectory (instance-miss, the figure's source-of-truth):")
     for s in bf["stages"]:
         print(f"  {s['stage']:16s} [{s['cost']:5s}]  {s['instance_misses']} miss")
-    print(f"\nwrote {AUTO_OUTDIR}/panels.json  ->  rendering schedule_evolution_auto ...")
-    out = f"{REPO}/results/codesign_feedback/schedule_evolution_auto"
-    subprocess.run([PY, "scripts/compose_schedule_evolution.py", "--spec", BASE,
-                    "--panels-json", f"{AUTO_OUTDIR}/panels.json", "--out", out],
+    print(f"\nwrote {auto_outdir}/panels.json  ->  rendering schedule_evolution_auto ...")
+    out = (f"{REPO}/results/codesign_feedback/schedule_evolution_auto"
+           if workload is None else
+           f"{REPO}/results/codesign_feedback/evolution_{stem or wl_stem}")
+    subprocess.run([PY, "scripts/compose_schedule_evolution.py", "--spec", base,
+                    "--panels-json", f"{auto_outdir}/panels.json", "--out", out],
                    cwd=REPO, env=env, check=True)
     print(f"\nrendered {out}.png / {out}.pdf")
 
@@ -192,6 +207,11 @@ def gen_from_loop(solver="cpsat", board_solver="cpsat", objective="lateness"):
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--workload", default=None,
+                    help="spec to run the loop on (default: the sensor shard+IME base). "
+                         "Each workload writes its own panels dir and figure stem.")
+    ap.add_argument("--stem", default=None,
+                    help="output stem override, e.g. w5; default is the spec basename")
     ap.add_argument("--from-loop", action="store_true",
                     help="FULLY-AUTOMATIC mode: run scripts/run_codesign_loop.py (with the board-feedback "
                          "arm) and build the four panels from the loop's ACTUAL trajectory. Renders to "
@@ -207,6 +227,7 @@ if __name__ == "__main__":
                          "deadline even off the makespan critical path).")
     a = ap.parse_args()
     if a.from_loop:
-        gen_from_loop(solver=a.search_solver, board_solver=a.board_solver, objective=a.objective)
+        gen_from_loop(solver=a.search_solver, board_solver=a.board_solver,
+                      objective=a.objective, workload=a.workload, stem=a.stem)
     else:
         gen_hardcoded()
