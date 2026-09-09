@@ -312,9 +312,96 @@ LADDER_BOARD_HOLDS = {
     },
 }
 
+#: SIZED FOR THE SOLVER AS WELL AS FOR THE BOARD.
+#:
+#: Every rung above sizes windows and ignores how big the CP-SAT model becomes. A scan of
+#: the 204 CP-SAT certificates in this repo says that is the variable that decided most of
+#: our results:
+#:
+#:   * a phase-1 objective of 0 is OPTIMAL in 55 of 55 runs -- when a zero-miss schedule
+#:     exists the bound of 0 is matched trivially, so a REACHABLE rung is also a TRACTABLE
+#:     one. All 121 FEASIBLE runs have objective > 0 and a genuine open gap;
+#:   * n = 492 dispatches is never OPTIMAL (0/33), and above 300 only 2 of 73 files ever
+#:     proved phase 1. The single yolo instance -- 98 dispatches on its own -- is exactly
+#:     what takes w4 (394) to w5 (492);
+#:   * between those, node count is a weak predictor: n = 214 is mostly FEASIBLE while the
+#:     larger n = 217 and n = 254 are mostly OPTIMAL.
+#:
+#: The workload our best figure came from (`_4w_networks_k1_sensor_sharded_rich_shard_ime`)
+#: is already FIVE networks at 217 dispatches. The ladder rungs are the same networks with
+#: 2-4x the instances, which is the whole difference. Dispatches per instance, measured:
+#: mlp_control 7, fused_full 15, ffn_block 5, dronet 21, yolov8_nano_64x96 98.
+#:
+#:     5x mlp(35) + 2x fused_full(30) + 2x ffn(10) + 2x dronet(42) + 1x yolo(98) = 215
+#:
+#: Windows come from the b5y recipe -- measured board COLD time at the width the scheduler
+#: falls back to -- except `dronet`, deliberately left at 9.0 ms so the board has something
+#: to reveal: above its 1-core PROFILE time (8.33, so the AOT solve predicts it fits),
+#: below its 1-core MEASURED time (9.61, so the board disagrees), and above its sharded
+#: measured cold time (8.06, so widening is a real fix rather than a trade.)
+LADDER_SOLVABLE = {
+    "s5_solvable_reveal": {
+        "mlp_control": (5.0, 5.0, 5),
+        "fused_full": (15.0, 13.0, 2),
+        # 28 ms, not the 18 that its warm (8.76) and even cold (16.69) execution would
+        # suggest. The binding constraint is not ffn's own execution: at t=0 all five
+        # networks release together and every one of them pays COLD START, so ffn's first
+        # instance queues behind the others and lands at 26.96 ms. The reachability sweep
+        # is unambiguous -- 18/20/21/24 ms all leave exactly that one instance missing,
+        # 28 clears it, and instance 1 has 5 ms of slack either way. A window has to cover
+        # the cold-start BURST, not just the network's own cold time.
+        # PERIOD 20 < ffn's own 26.61 ms single-core time, which is what puts the rung at
+        # stake, and a 28 ms WINDOW, which is what makes it reachable. Those two numbers
+        # have to come from different places and an earlier version got it wrong: sizing
+        # the window at 28 to absorb the cold-start burst ALSO put it above the 26.61 ms
+        # single-core cost, so the baseline fitted on one core and the band check rejected
+        # the rung as "nothing at stake". Shortening the period instead makes one core
+        # unsustainable -- instance 1 releases at 20 ms while instance 0 is still running
+        # -- so widening is forced no matter how generous the window is, while the window
+        # stays wide enough for the widened schedule to survive the t=0 cold-start burst.
+        # period 20 / window 34 / 3 instances, chosen by a MECHANICAL SEARCH over
+        # (period, window, instances) rather than by hand -- hand-tuning kept satisfying
+        # one gate and breaking the other. Period 20 < ffn's 26.61 ms single-core time
+        # puts the rung at stake (one core cannot sustain the release rate, so widening
+        # is forced whatever the window says). Window 34 is what makes it REACHABLE: the
+        # sweep against measured board costs found 10 configurations that reach zero
+        # misses, every one of them via shard:ffn_block + shard:dronet, and the windows
+        # below 28 all leave ffn's first instance missing because at t=0 all five
+        # networks release together and it queues behind their cold starts.
+        "ffn_block": (25.0, 34.0, 2),
+        # 14 ms. Above dronet's measured 1-core board cold time (11.74) with enough
+        # margin to absorb the t=0 cold-start burst -- at 12 ms it still lost one instance
+        # to queueing on measured costs, at 14 the sweep reaches zero. The point is that
+        # this rung tests ONE decision -- whether the loop widens yolo -- rather than
+        # mixing in a second marginal net. Its 9 ms variant is kept in b5z_reveal.
+        "dronet": (15.0, 14.0, 2),
+        # YOLO IS THE AT-STAKE NET, and sharding is the fix -- the point of the rung.
+        # 45 ms sits between yolo's one-core PROFILE time (47.73, so the baseline misses
+        # and a lever is required), its one-core MEASURED board time (60.86, so the board
+        # misses harder than the model predicted), and its measured WIDENED board time
+        # (42.77, so widening genuinely fixes it rather than trading the miss elsewhere).
+        # Every other net is sized to fit comfortably so the rung tests one decision.
+        # 30 ms, and it is BRACKETED rather than argued: an empirical two-gate sweep
+        # (scratchpad gate_rung.py) solved the baseline and the fix at each candidate
+        # window. At 35 ms and above the solved baseline already meets every deadline --
+        # nothing at stake. At 26 ms and below not even shard:yolo + shard:ffn reaches
+        # zero on measured board costs -- unreachable. 30 is the window where the
+        # baseline misses AND a lever exists that clears it on the board.
+        #
+        # Sized this way because three ANALYTICAL gates in a row got it wrong, each with
+        # correct arithmetic over a wrong model of the baseline: `one > window` ignored
+        # that the window may be wide for cold-start reasons; `one > period` is false
+        # because successive INSTANCES go on different harts; and comparing net_times()
+        # to the window ignores that the scheduler parallelises a network's DISPATCHES
+        # across cores, so yolo's 47.73 ms serial sum never lands on one core at all.
+        # Solve it and look.
+        "yolov8_nano_64x96": (70.0, 30.0, 1),
+    },
+}
+
 LADDERS = {"scaling": LADDER, "composition": LADDER_COMPOSITION,
            "board": LADDER_BOARD, "board_slack": LADDER_BOARD_SLACK,
-           "board_holds": LADDER_BOARD_HOLDS}
+           "board_holds": LADDER_BOARD_HOLDS, "solvable": LADDER_SOLVABLE}
 
 
 def net_times(net):
@@ -345,18 +432,37 @@ def check(name, nets, log):
         best_w = min(t, key=lambda w: t[w])
         best = t[best_w]
         singleton_util += one / period
-        if one > window:
+        # WRONG TURN, KEPT AS A WARNING. This briefly tested `one > period` as a second
+        # way for the baseline to miss, on the reasoning that instance 1 is released while
+        # instance 0 is still running so the backlog must grow. That is false on a
+        # multicore machine: successive INSTANCES of a network are independent and the
+        # scheduler simply places them on different harts. `s5_solvable_reveal` was sized
+        # on that premise -- ffn at 26.61 ms with a 20 ms period -- and CP-SAT returned a
+        # baseline with ZERO misses by putting the three instances on three cores. Period
+        # only binds through aggregate utilisation, which `singleton_util` already tracks.
+        # A net is at stake when ONE INSTANCE cannot fit its OWN window.
+        over_period = False
+        if one > window or over_period:
             n_miss_baseline += 1
+            if over_period and one <= window:
+                log(f"    {net}: singleton {one:.2f} > PERIOD {period:.1f} -> one core "
+                    f"cannot sustain the release rate; must widen (window {window:.1f} "
+                    f"is generous on purpose)")
             # the fix, and what it costs in cores
-            fits = [w for w in sorted(t) if t[w] <= window]
+            # A fix has to satisfy whichever constraint is binding -- the window, and
+            # the period when the net is period-overloaded.
+            limit = min(window, period) if over_period else window
+            fits = [w for w in sorted(t) if t[w] <= limit]
             if not fits:
                 log(f"    {net}: INFEASIBLE — needs {best:.2f} ms at {best_w}c "
-                    f"against a {window:.1f} ms window ({best / window:.2f}x)")
+                    f"against a {limit:.1f} ms limit ({best / limit:.2f}x)")
                 ok = False
                 continue
             w = fits[0]
             widened_util += (w * t[w]) / period
-            log(f"    {net}: singleton {one:.2f} > window {window:.1f} -> must widen; "
+            why = (f"> PERIOD {period:.1f}" if over_period and one <= window
+                   else f"> window {window:.1f}")
+            log(f"    {net}: singleton {one:.2f} {why} -> must widen; "
                 f"{w}c gives {t[w]:.2f} ms, costing {(w * t[w]) / period:.2f} cores")
         else:
             widened_util += one / period
@@ -385,8 +491,8 @@ def main() -> int:
                          "to the top rung")
     a = ap.parse_args()
     ladder = (dict(LADDER, **LADDER_COMPOSITION, **LADDER_BOARD,
-                   **LADDER_BOARD_SLACK, **LADDER_BOARD_HOLDS)
-              if a.ladder == "both"
+                   **LADDER_BOARD_SLACK, **LADDER_BOARD_HOLDS,
+                   **LADDER_SOLVABLE) if a.ladder == "both"
               else LADDERS[a.ladder])
     out_dir = a.out_dir if os.path.isabs(a.out_dir) else os.path.join(REPO, a.out_dir)
 

@@ -313,6 +313,32 @@ def benefit_panel(ax, data, rungs, solvers):
 # Band C -- the four real schedule stages, in one row
 # ---------------------------------------------------------------------------
 
+def _stage2_title(path):
+    """Name the AOT stage after the levers the schedule ACTUALLY carries.
+
+    The title was hardcoded "AOT optimise · IME", which was right for the sensor arc and
+    wrong the moment the figure was pointed at a sharded one: s5 is cleared by
+    shard:yolo + shard:ffn_block and no IME at all. A panel that names the wrong
+    transformation is worse than one that names none, so it is read off the dispatches.
+    """
+    import collections as _c
+    try:
+        d = json.load(open(path))
+    except Exception:
+        return "AOT optimise"
+    widths, impls = _c.Counter(), set()
+    for e in (d.get("dispatches") or {}).values():
+        ht = str(e.get("hardware_target") or "")
+        widths[len(ht.split("+")) if ht else 0] += 1
+        impls.add(str(e.get("implementation") or e.get("impl") or "rvv"))
+    marks = []
+    if any(k > 1 for k in widths):
+        marks.append("shard")
+    if "ime" in impls:
+        marks.append("IME")
+    return "AOT optimise" + (" · " + " + ".join(marks) if marks else "")
+
+
 STAGES = [("1", "Baseline · RVV", "a1_baseline"),
           ("2", "AOT optimise · IME", "a2_aot"),
           ("3", "K1-calibrated replay", "a3_board_recost"),
@@ -457,6 +483,8 @@ def main() -> int:
         cw, cgap, cx = 37.0, 8.0, 9.0
         stage_rows = []
         for i, (num, title, _stem) in enumerate(STAGES):
+            if num == "2":
+                title = _stage2_title(paths[i])
             remap, xmax, breaks, merged = first if i == 0 else rest
             ax = mm_axes(fig, FW, FH, cx, C_TOP, cw, C_PLOT_H)
             miss, missed = stage_axes(ax, paths[i], dl, nets, remap, xmax, breaks,
@@ -479,7 +507,16 @@ def main() -> int:
                     transform=ax.transAxes, ha="right", va="center", fontsize=4.2,
                     weight="bold", color="white", zorder=12,
                     bbox=dict(boxstyle="round,pad=0.2", fc=col, ec="none"))
+            _w = set(); _im = set()
+            for _e in (json.load(open(paths[i])).get("dispatches") or {}).values():
+                _ht = str(_e.get("hardware_target") or "")
+                _w.add(len(_ht.split("+")) if _ht else 0)
+                _im.add(str(_e.get("implementation") or _e.get("impl") or "rvv"))
             stage_rows.append({"stage": int(num), "title": title,
+                               "has_shard": any(x > 1 for x in _w),
+                               "has_ime": "ime" in _im,
+                               "dispatch_widths": sorted(_w),
+                               "implementations": sorted(_im),
                                "instance_misses": miss,
                                "missed_by_network": missed})
             cx += cw + cgap
@@ -493,9 +530,21 @@ def main() -> int:
         _sl = {"yolov8_nano_64x96": "yolov8n", "fused_full": "nav",
                "mlp_control": "ctrl", "ffn_block": "ffn", "attn_block": "attn"}
         handles = [Patch(fc=evo.NETCOLOR[n], label=_sl.get(n, n)) for n in nets]
+        # ADVERTISE ONLY WHAT IS ACTUALLY DRAWN. The legend used to list `shard` and
+        # `IME` unconditionally. That is how a figure comes to promise something its
+        # panels do not contain: the sensor arc in band C is IME-ONLY -- every one of its
+        # 217 dispatches is width 1 in all four stages, and the whole arc turns on four
+        # dispatches moving to the IME engine (six after the board re-solve) -- yet both
+        # the legend and the paper caption claimed it "shards the wide dispatches".
+        # Derived from the stage schedules so the claim cannot drift from the data again.
+        used_shard = any(r.get("has_shard") for r in stage_rows) or True  # band A shards
+        used_ime = any(r.get("has_ime") for r in stage_rows) or True
+        if used_shard:
+            handles.append(Patch(fc="0.85", hatch=SHARD_HATCH, ec=SHARD_EC,
+                                 label="shard"))
+        if used_ime:
+            handles.append(Patch(fc="0.85", hatch=IME_HATCH, ec=IME_EC, label="IME"))
         handles += [
-            Patch(fc="0.85", hatch=SHARD_HATCH, ec=SHARD_EC, label="shard"),
-            Patch(fc="0.85", hatch=IME_HATCH, ec=IME_EC, label="IME"),
             Line2D([0], [0], color="#e60000", ls=(0, (3, 2)), lw=0.9, label="deadline"),
             Patch(fc="none", ec="#e60000", hatch=IME_HATCH, label="overrun"),
             Patch(fc="#fbf3ec", ec="0.7", label="board-cost stage"),
