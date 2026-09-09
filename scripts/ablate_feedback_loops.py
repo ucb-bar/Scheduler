@@ -387,8 +387,24 @@ def main() -> int:
     ap.add_argument("--objective", default="auto")
     ap.add_argument("--time-limit", type=float, default=None)
     ap.add_argument("--max-rounds", type=int, default=3)
-    ap.add_argument("--replay", action="store_true", default=True,
-                    help="(default) run the inner search deterministically")
+    # DEFAULT OFF, and this is a fairness fix rather than a preference. --replay makes
+    # run_codesign_loop pin XPURT_CPSAT_WORKERS=1 for bit-exact reruns, while the CELL
+    # solves here run at SOLVE_ENV's 4 workers. That put two different CP-SAT
+    # configurations inside ONE row: cell B (inner only) came from a 1-worker search and
+    # cells C/D from 4-worker re-solves, so inner-vs-outer was partly a comparison of
+    # worker counts. The gap is not subtle -- on w3's shard spec at the same 300 s
+    # budget, 1 worker gave 86.4 ms / 72 dispatch misses where 4 gave 72.3 ms / 4 -- so
+    # with replay on, the inner arm was handicapped into rejecting the very lever that
+    # halves misses, and the figure would have reported that as the inner loop failing.
+    #
+    # The repo's position is already written down: the CP-SAT experiment is reproducible,
+    # its result is not, and the published numbers use more than one worker. Repeats with
+    # a reported spread are how that is handled here.
+    ap.add_argument("--replay", action="store_true", default=False,
+                    help="pin the inner search to 1 CP-SAT worker for bit-exact reruns. "
+                         "Off by default: the cell solves use XPURT_CPSAT_WORKERS (4), "
+                         "and mixing the two inside one row confounds inner-vs-outer "
+                         "with worker count.")
     ap.add_argument("--no-replay", dest="replay", action="store_false")
     ap.add_argument("--timeout", type=float, default=1800)
     ap.add_argument("--out-dir", default="results/loop_ablation")
@@ -687,6 +703,14 @@ def main() -> int:
         "repeats_policy": ("repeat only a CP-SAT solve that did not prove optimality; "
                            "greedy is deterministic"),
         "solve_env": SOLVE_ENV,
+        "cpsat_workers": {
+            "cells": SOLVE_ENV.get("XPURT_CPSAT_WORKERS"),
+            "inner_search": ("1 (--replay pins it)" if args.replay
+                             else SOLVE_ENV.get("XPURT_CPSAT_WORKERS")),
+            "why_recorded": ("these were once different -- 1 for the inner search under "
+                             "--replay, 4 for the cells -- which made cell B and cells "
+                             "C/D two different CP-SAT configurations inside one row"),
+        },
         "codegen_contract": ("cpsat shard solves add XPURT_UNIFORM_PACKED_WIDTH=1 so a "
                              "packed-weight dispatch takes one width across its "
                              "instances; greedy cannot be constrained that way and its "

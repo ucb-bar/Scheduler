@@ -121,6 +121,27 @@ class FairnessSwitchesAreForced(unittest.TestCase):
         self.assertIn("r = sh(cmd, timeout=args.timeout, env=SOLVE_ENV)", src,
                       "the inner search must pass SOLVE_ENV too")
 
+    def test_the_inner_search_and_the_cells_use_the_same_cpsat_worker_count(self):
+        """One row must not contain two CP-SAT configurations.
+
+        `--replay` pins the inner search to 1 worker for bit-exact reruns while the cell
+        solves run at SOLVE_ENV's count. With replay on by default, cell B came from a
+        1-worker search and cells C/D from 4-worker re-solves -- so inner-vs-outer was
+        partly a comparison of worker counts. On w3's shard spec at the same 300 s
+        budget, 1 worker gave 86.4 ms / 72 dispatch misses where 4 gave 72.3 ms / 4, so
+        the handicap was large enough to make the inner arm reject the lever that halves
+        misses.
+        """
+        import argparse
+        import inspect
+        src = inspect.getsource(abl)
+        self.assertIn('"--replay", action="store_true", default=False', src,
+                      "--replay must not default on: it silently drops the inner "
+                      "search to 1 CP-SAT worker while the cells use 4")
+        # and the manifest has to carry both, so the asymmetry cannot go unnoticed again
+        self.assertIn('"cpsat_workers"', src)
+        self.assertIn('"inner_search"', src)
+
     def test_the_contract_switch_is_added_only_where_it_can_be_honoured(self):
         """CP-SAT can be constrained to one width per packed dispatch; greedy cannot.
 
@@ -154,7 +175,6 @@ class CellsMeanWhatTheySay(unittest.TestCase):
         got = {name: (inner, outer) for name, inner, outer, _label in abl.CELLS}
         self.assertEqual(got, {"A": (False, False), "B": (True, False),
                                "C": (False, True), "D": (True, True)})
-
 
 if __name__ == "__main__":
     unittest.main()
