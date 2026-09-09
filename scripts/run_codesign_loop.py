@@ -618,6 +618,13 @@ def main():
                 return m
         return op_miss
 
+    # THE TWO COUNTERS DISAGREE AND MUST BE NAMED. guard_miss returns instance-level
+    # misses only for the lateness/misses objectives; on the makespan and worst-response
+    # paths it returns the scheduler's DISPATCH count. Printing either as "instance-miss"
+    # made a 22-instance workload report "72 instance-miss", which is impossible and sent
+    # a reader hunting for a work-count bug that was not there.
+    miss_unit = "instance-miss" if instance_guard else "dispatch-miss"
+
     base_score = score(sched, working, mk)
     base_gmiss = guard_miss(sched, working, miss)
     backend = None
@@ -641,7 +648,7 @@ def main():
         log("WARNING: candidate_objective unavailable; falling back to the legacy two-term rule")
     base_out = outcome_of("baseline", sched, working, critical, heavy) if use_objective else None
     log(f"round 0 · baseline: {metric_name} {base_score:.3f} "
-        f"(makespan {mk:.1f} ms), {base_gmiss} instance-miss")
+        f"(makespan {mk:.1f} ms), {base_gmiss} {miss_unit}")
     if use_objective:
         log(f"accept rule: candidate_objective.accept() · critical={list(critical)} "
             f"heavy={heavy}")
@@ -703,7 +710,8 @@ def main():
                 why = (f"legacy rule: misses {cur_miss}->{cgmiss}, "
                        f"{metric_name} delta {delta:+.3f} vs EPS {EPS}")
             log(f"round {rnd} · try {lever}: {metric_name} {cur_score:.3f} -> {csc:.3f} "
-                f"({pct:+.1f}%), {cgmiss} instance-miss -> {'ACCEPTABLE' if ok else 'reject'}")
+                f"({pct:+.1f}%), {cgmiss} {miss_unit} -> "
+                f"{'ACCEPTABLE' if ok else 'reject'}")
             log(f"round {rnd} · try {lever}: {why}")
             cands.append(dict(lever=lever, mk=cmk, score=csc, miss=cgmiss, sched=csched,
                               spec=cspec, spec_path=cpath, ok=ok, why=why, out=cout))
@@ -777,7 +785,7 @@ def main():
                     ok = (cgmiss <= cur_miss) and ((cur_score - csc) > EPS)
                     why = "legacy rule"
                 log(f"round {rnd} · rewrite {label}: {metric_name} {cur_score:.3f} -> "
-                    f"{csc:.3f}, {cgmiss} instance-miss (MEASURED on "
+                    f"{csc:.3f}, {cgmiss} {miss_unit} (MEASURED on "
                     f"{meas['runner']}) -> {'ACCEPTABLE' if ok else 'reject'}")
                 log(f"round {rnd} · rewrite {label}: {why}")
                 cands.append(dict(lever=label, mk=cmk, score=csc, miss=cgmiss,
