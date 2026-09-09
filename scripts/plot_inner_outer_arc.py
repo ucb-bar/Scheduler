@@ -90,6 +90,31 @@ def arc(report_path, spec_path):
     return out, (bf.get("stages") or [{}])[1].get("levers") or []
 
 
+#: Networks with only ONE measured core width: no wider implementation exists, so a
+#: miss on them cannot be scheduled away and no shard lever can touch them. Measured,
+#: not assumed -- `make_scaling_workloads.net_times` reports the widths that have board
+#: profiles: fused_full {1}, mlp_control {1}, against ffn_block/dronet/yolo {1,2,4,8}.
+SINGLE_WIDTH_NETS = ("fused_full", "mlp_control")
+
+
+def attribution(rows, nets):
+    """Split the last beat's residual into what a scheduler could still fix and what it
+    cannot, so the figure says WHY misses remain instead of only how many.
+
+    This is the outer loop's second contribution and the one that survives w5's weak
+    fix: of the 16 misses the board reveals, five are `fused_full`, which has a single
+    measured width and a 5 ms window against a 3.62 ms singleton -- board inflation of
+    ~1.5x puts it over, and no schedule can widen what has no wider kernel. Those five
+    are a ModelBlaster gap. The rest are core-budget contention, which is schedulable.
+    """
+    last = next((r for r in reversed(rows) if r[2] is not None), None)
+    if not last:
+        return None
+    by = last[1] or {}
+    unfixable = sum(v for k, v in by.items() if k in SINGLE_WIDTH_NETS)
+    return unfixable, (last[2] or 0) - unfixable
+
+
 def panel(ax, rows, levers, title, nets):
     xs = range(len(rows))
     bottoms = [0.0] * len(rows)
@@ -119,6 +144,13 @@ def panel(ax, rows, levers, title, nets):
     ax.set_ylabel("deadline misses (instances)")
     ax.set_title(f"{title}\nlevers: {', '.join(levers) or 'none'}", fontsize=6)
     ax.set_ylim(0, max(bottoms) * 1.30 or 1)
+    att = attribution(rows, nets)
+    if att and att[0]:
+        ax.text(0.5, 0.97,
+                f"residual: {att[0]} unschedulable (single-width net) + "
+                f"{att[1]} contention",
+                transform=ax.transAxes, ha="center", va="top", fontsize=4.4,
+                color="#444444")
     ax.grid(axis="y", lw=0.3, color="#dddddd", zorder=0)
     figstyle.despine(ax)
 
