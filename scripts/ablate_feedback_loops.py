@@ -245,7 +245,12 @@ def inner_search(workload, args, solver, out_dir, log):
         cmd += ["--rewrite-arm", "--runner", args.runner]
         for spec in args.ir:
             cmd += ["--ir", spec]
-    r = sh(cmd, timeout=args.timeout)
+    # SAME ENV AS THE CELLS. The inner search solves too, and a search run under
+    # different switches than the cells it feeds is a different experiment -- it was
+    # inheriting the ambient environment while only the cell solves got SOLVE_ENV.
+    # Harmless while XPURT_COMPACT is unset (compaction defaults off), but the point of
+    # forcing a switch is that it does not depend on what the shell happened to hold.
+    r = sh(cmd, timeout=args.timeout, env=SOLVE_ENV)
     rep_paths = glob.glob(os.path.join(loop_out, "*", "loop_report.json"))
     if not rep_paths:
         log(f"    inner search produced no report "

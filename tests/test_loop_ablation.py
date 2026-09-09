@@ -101,6 +101,22 @@ class FairnessSwitchesAreForced(unittest.TestCase):
     def test_cpsat_workers_are_pinned_for_the_run(self):
         self.assertIn("XPURT_CPSAT_WORKERS", abl.SOLVE_ENV)
 
+    def test_both_solve_paths_pass_the_forced_env(self):
+        """The cells and the inner search must run under the SAME switches.
+
+        They did not: only the cell solves passed SOLVE_ENV while the inner search
+        inherited the ambient environment. Harmless while XPURT_COMPACT happens to be
+        unset, which is exactly why it needs a test -- the point of forcing a switch is
+        that it stops depending on what the shell held.
+        """
+        import inspect
+        src = inspect.getsource(abl)
+        # every subprocess helper call that solves must carry env=SOLVE_ENV
+        self.assertIn("r = sh(cmd, env=SOLVE_ENV)", src,
+                      "the cell solve must pass SOLVE_ENV")
+        self.assertIn("r = sh(cmd, timeout=args.timeout, env=SOLVE_ENV)", src,
+                      "the inner search must pass SOLVE_ENV too")
+
     def test_missing_solver_is_distinguished_from_a_broken_one(self):
         self.assertEqual(abl.classify_failure(
             "ModuleNotFoundError: No module named 'ortools'"), "unavailable")
