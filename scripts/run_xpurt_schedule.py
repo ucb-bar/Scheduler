@@ -11,6 +11,7 @@ import os
 import pathlib
 import json
 import argparse
+import re
 import functools
 import numpy as np
 
@@ -486,6 +487,13 @@ def schedule_iree_networks(
                 if kind:
                     op.op_kind = str(kind)
                     op.op_network = net
+                    # OC too, for the divisibility half of the contract. It is only in
+                    # the module name -- the profile record has no OC field -- so parse
+                    # it from there rather than inferring it from the op kind.
+                    mod = str((rec or {}).get("module_name") or "")
+                    m = re.search(r"[x_]OC(\d+)", mod)
+                    if m:
+                        op.op_oc = int(m.group(1))
                     break
 
     def _build_workload():

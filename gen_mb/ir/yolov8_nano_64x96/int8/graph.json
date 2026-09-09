@@ -39,7 +39,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.34940794696958044,
+        "scale": 0.36040295578363374,
         "zero_point": 0
       }
     },
@@ -52,7 +52,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.6917152104415293,
+        "scale": 0.6162402535986713,
         "zero_point": 0
       }
     },
@@ -65,7 +65,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.15034161965678058,
+        "scale": 0.17036265275609774,
         "zero_point": 0
       }
     },
@@ -78,7 +78,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.15034161965678058,
+        "scale": 0.17036265275609774,
         "zero_point": 0
       }
     },
@@ -91,7 +91,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.07627981291042538,
+        "scale": 0.11254966916061762,
         "zero_point": 0
       }
     },
@@ -104,7 +104,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.12718980143389363,
+        "scale": 0.1240182260828694,
         "zero_point": 0
       }
     },
@@ -117,7 +117,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.11651938731276144,
+        "scale": 0.10796229294904573,
         "zero_point": 0
       }
     },
@@ -130,7 +130,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.13362394918606976,
+        "scale": 0.16144539239838368,
         "zero_point": 0
       }
     },
@@ -143,7 +143,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.15034161965678058,
+        "scale": 0.17036265275609774,
         "zero_point": 0
       }
     },
@@ -156,7 +156,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.08486464643102931,
+        "scale": 0.061546194271778494,
         "zero_point": 0
       }
     },
@@ -169,7 +169,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.04001463492085615,
+        "scale": 0.043420690251147656,
         "zero_point": 0
       }
     },
@@ -182,7 +182,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.040926456451416016,
+        "scale": 0.03727549455297275,
         "zero_point": 0
       }
     },
@@ -195,7 +195,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.040926456451416016,
+        "scale": 0.03727549455297275,
         "zero_point": 0
       }
     },
@@ -208,7 +208,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.02305207477779839,
+        "scale": 0.024097170416764388,
         "zero_point": 0
       }
     },
@@ -221,7 +221,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.026433950334083377,
+        "scale": 0.01979013878529466,
         "zero_point": 0
       }
     },
@@ -234,7 +234,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.02538186170923428,
+        "scale": 0.025300682999017672,
         "zero_point": 0
       }
     },
@@ -247,7 +247,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.04007818567471241,
+        "scale": 0.030301501431803064,
         "zero_point": 0
       }
     },
@@ -260,7 +260,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.016053025178083286,
+        "scale": 0.013153524849358507,
         "zero_point": 0
       }
     },
@@ -273,7 +273,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.044453692248487095,
+        "scale": 0.03088135418929453,
         "zero_point": 0
       }
     },
@@ -286,7 +286,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.058866876316821484,
+        "scale": 0.05124773941640779,
         "zero_point": 0
       }
     },
@@ -299,7 +299,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.058866876316821484,
+        "scale": 0.05124773941640779,
         "zero_point": 0
       }
     },
@@ -312,7 +312,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03380688719862089,
+        "scale": 0.02433371731615442,
         "zero_point": 0
       }
     },
@@ -325,7 +325,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.02382944324823815,
+        "scale": 0.025986226524893692,
         "zero_point": 0
       }
     },
@@ -338,7 +338,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.045542536758062406,
+        "scale": 0.03927999781811331,
         "zero_point": 0
       }
     },
@@ -351,7 +351,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.045542536758062406,
+        "scale": 0.03927999781811331,
         "zero_point": 0
       }
     },
@@ -364,7 +364,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.018311215197946144,
+        "scale": 0.020471411427174967,
         "zero_point": 0
       }
     },
@@ -377,7 +377,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.02574980165076068,
+        "scale": 0.021963136402640755,
         "zero_point": 0
       }
     },
@@ -390,7 +390,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.02637514730138103,
+        "scale": 0.02890134796382874,
         "zero_point": 0
       }
     },
@@ -403,7 +403,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03382169918751153,
+        "scale": 0.034917557333398054,
         "zero_point": 0
       }
     },
@@ -416,7 +416,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.02278605596287044,
+        "scale": 0.019209578281312478,
         "zero_point": 0
       }
     },
@@ -429,7 +429,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.0375662338076614,
+        "scale": 0.03678424339594803,
         "zero_point": 0
       }
     },
@@ -442,7 +442,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.04825182036152036,
+        "scale": 0.044390160267747295,
         "zero_point": 0
       }
     },
@@ -455,7 +455,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.04825182036152036,
+        "scale": 0.044390160267747295,
         "zero_point": 0
       }
     },
@@ -468,7 +468,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.02508577399366484,
+        "scale": 0.03589155918031227,
         "zero_point": 0
       }
     },
@@ -481,7 +481,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.025789307797048973,
+        "scale": 0.05871939846849817,
         "zero_point": 0
       }
     },
@@ -494,7 +494,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03954239717618687,
+        "scale": 0.061274956530473365,
         "zero_point": 0
       }
     },
@@ -507,7 +507,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03954239717618687,
+        "scale": 0.061274956530473365,
         "zero_point": 0
       }
     },
@@ -520,7 +520,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.0247972612305889,
+        "scale": 0.03301525115966797,
         "zero_point": 0
       }
     },
@@ -533,7 +533,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.020445206033901906,
+        "scale": 0.0422814136415016,
         "zero_point": 0
       }
     },
@@ -546,7 +546,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03911902585367518,
+        "scale": 0.06725933044914185,
         "zero_point": 0
       }
     },
@@ -559,7 +559,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.038600125650721274,
+        "scale": 0.06569724946510135,
         "zero_point": 0
       }
     },
@@ -572,7 +572,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03954239717618687,
+        "scale": 0.06569724946510135,
         "zero_point": 0
       }
     },
@@ -585,7 +585,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.028627213530653103,
+        "scale": 0.049403047937107834,
         "zero_point": 0
       }
     },
@@ -598,7 +598,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.04122505788728008,
+        "scale": 0.060449682821439005,
         "zero_point": 0
       }
     },
@@ -611,7 +611,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.04122505788728008,
+        "scale": 0.060449682821439005,
         "zero_point": 0
       }
     },
@@ -624,7 +624,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.04122505788728008,
+        "scale": 0.060449682821439005,
         "zero_point": 0
       }
     },
@@ -637,7 +637,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.04122505788728008,
+        "scale": 0.060449682821439005,
         "zero_point": 0
       }
     },
@@ -650,7 +650,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.04122505788728008,
+        "scale": 0.060449682821439005,
         "zero_point": 0
       }
     },
@@ -663,7 +663,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.019159921510951725,
+        "scale": 0.03727999259167769,
         "zero_point": 0
       }
     },
@@ -676,7 +676,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.019159921510951725,
+        "scale": 0.03727999259167769,
         "zero_point": 0
       }
     },
@@ -689,7 +689,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.02508577399366484,
+        "scale": 0.03727999259167769,
         "zero_point": 0
       }
     },
@@ -702,7 +702,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.030222731312428874,
+        "scale": 0.03920473639420637,
         "zero_point": 0
       }
     },
@@ -715,7 +715,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.020995457341351848,
+        "scale": 0.03920473639420637,
         "zero_point": 0
       }
     },
@@ -728,7 +728,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.030222731312428874,
+        "scale": 0.032620771663395436,
         "zero_point": 0
       }
     },
@@ -741,7 +741,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.01912820996261957,
+        "scale": 0.027873249504509874,
         "zero_point": 0
       }
     },
@@ -754,7 +754,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.034499870510551874,
+        "scale": 0.024651358446736975,
         "zero_point": 0
       }
     },
@@ -767,7 +767,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.034499870510551874,
+        "scale": 0.03920473639420637,
         "zero_point": 0
       }
     },
@@ -780,7 +780,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.020749538902222642,
+        "scale": 0.018864038422351747,
         "zero_point": 0
       }
     },
@@ -793,7 +793,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.020749538902222642,
+        "scale": 0.018864038422351747,
         "zero_point": 0
       }
     },
@@ -806,7 +806,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03380688719862089,
+        "scale": 0.02433371731615442,
         "zero_point": 0
       }
     },
@@ -819,7 +819,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.022942719497079923,
+        "scale": 0.017858197369913415,
         "zero_point": 0
       }
     },
@@ -832,7 +832,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.019757788951002705,
+        "scale": 0.016001847785288893,
         "zero_point": 0
       }
     },
@@ -845,7 +845,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.022942719497079923,
+        "scale": 0.017858197369913415,
         "zero_point": 0
       }
     },
@@ -858,7 +858,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.017087911996315784,
+        "scale": 0.015085536663926492,
         "zero_point": 0
       }
     },
@@ -871,7 +871,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.040136427391232465,
+        "scale": 0.027799427978635775,
         "zero_point": 0
       }
     },
@@ -884,7 +884,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.040136427391232465,
+        "scale": 0.027799427978635775,
         "zero_point": 0
       }
     },
@@ -897,7 +897,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03128895984859917,
+        "scale": 0.017831393114225134,
         "zero_point": 0
       }
     },
@@ -910,7 +910,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03221036880973756,
+        "scale": 0.014032389235308789,
         "zero_point": 0
       }
     },
@@ -923,7 +923,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03221036880973756,
+        "scale": 0.018864038422351747,
         "zero_point": 0
       }
     },
@@ -936,7 +936,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03454801979966051,
+        "scale": 0.021686287376824327,
         "zero_point": 0
       }
     },
@@ -949,7 +949,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03454801979966051,
+        "scale": 0.021686287376824327,
         "zero_point": 0
       }
     },
@@ -962,7 +962,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03372653075090543,
+        "scale": 0.01980915032033845,
         "zero_point": 0
       }
     },
@@ -975,7 +975,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.019774639700341413,
+        "scale": 0.014856302832055279,
         "zero_point": 0
       }
     },
@@ -988,7 +988,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.04252865183071827,
+        "scale": 0.029708321638933315,
         "zero_point": 0
       }
     },
@@ -1001,7 +1001,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.04252865183071827,
+        "scale": 0.029708321638933315,
         "zero_point": 0
       }
     },
@@ -1014,7 +1014,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03098987782095361,
+        "scale": 0.030658376498485174,
         "zero_point": 0
       }
     },
@@ -1027,7 +1027,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.028446379608995334,
+        "scale": 0.018456682445496086,
         "zero_point": 0
       }
     },
@@ -1040,7 +1040,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.028446379608995334,
+        "scale": 0.03727999259167769,
         "zero_point": 0
       }
     },
@@ -1053,7 +1053,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.036444896788109006,
+        "scale": 0.03045918997817152,
         "zero_point": 0
       }
     },
@@ -1066,7 +1066,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.026580429452610767,
+        "scale": 0.03045918997817152,
         "zero_point": 0
       }
     },
@@ -1079,7 +1079,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.036444896788109006,
+        "scale": 0.02932746203865592,
         "zero_point": 0
       }
     },
@@ -1092,7 +1092,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.037913615309347316,
+        "scale": 0.041149773935633384,
         "zero_point": 0
       }
     },
@@ -1105,7 +1105,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.035860782533180056,
+        "scale": 0.08394516171432856,
         "zero_point": 0
       }
     },
@@ -1118,7 +1118,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.036444896788109006,
+        "scale": 0.08394516171432856,
         "zero_point": 0
       }
     },
@@ -1131,7 +1131,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03601657687209722,
+        "scale": 0.08449114401509443,
         "zero_point": 0
       }
     },
@@ -1144,7 +1144,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03288462030606007,
+        "scale": 0.019562952161773922,
         "zero_point": 0
       }
     },
@@ -1157,7 +1157,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.2189400590310885,
+        "scale": 0.09710293867456632,
         "zero_point": 0
       }
     },
@@ -1170,59 +1170,59 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.10040427380659449,
+        "scale": 0.07774109727754368,
         "zero_point": 0
       }
     },
     "detect_cv3_0_0_act": {
       "shape": [
         1,
-        80,
+        64,
         8,
         12
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.021845280654787077,
+        "scale": 0.02326381488109198,
         "zero_point": 0
       }
     },
     "detect_cv3_0_1_act": {
       "shape": [
         1,
-        80,
+        64,
         8,
         12
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.2007139611431933,
+        "scale": 0.0295975865341547,
         "zero_point": 0
       }
     },
     "detect_cv3_0_2": {
       "shape": [
         1,
-        80,
+        2,
         8,
         12
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.1663844491553119,
+        "scale": 0.11606457477479469,
         "zero_point": 0
       }
     },
     "cat_13": {
       "shape": [
         1,
-        144,
+        66,
         8,
         12
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.1663844491553119,
+        "scale": 0.11606457477479469,
         "zero_point": 0
       }
     },
@@ -1235,7 +1235,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.04994913161270262,
+        "scale": 0.031113309184397298,
         "zero_point": 0
       }
     },
@@ -1248,7 +1248,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.12971854022168738,
+        "scale": 0.12654624398299089,
         "zero_point": 0
       }
     },
@@ -1261,59 +1261,59 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.08293416180948573,
+        "scale": 0.07688656003456416,
         "zero_point": 0
       }
     },
     "detect_cv3_1_0_act": {
       "shape": [
         1,
-        80,
+        64,
         4,
         6
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.03246754173218735,
+        "scale": 0.022653844412856214,
         "zero_point": 0
       }
     },
     "detect_cv3_1_1_act": {
       "shape": [
         1,
-        80,
+        64,
         4,
         6
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.44598556878998524,
+        "scale": 0.023965752969576617,
         "zero_point": 0
       }
     },
     "detect_cv3_1_2": {
       "shape": [
         1,
-        80,
+        2,
         4,
         6
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.18563333646518979,
+        "scale": 0.10850778714878352,
         "zero_point": 0
       }
     },
     "cat_14": {
       "shape": [
         1,
-        144,
+        66,
         4,
         6
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.18563333646518979,
+        "scale": 0.10850778714878352,
         "zero_point": 0
       }
     },
@@ -1326,7 +1326,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.05334396812859483,
+        "scale": 0.08022849766288216,
         "zero_point": 0
       }
     },
@@ -1339,7 +1339,7 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.09753964641901451,
+        "scale": 0.11033958525169553,
         "zero_point": 0
       }
     },
@@ -1352,59 +1352,59 @@
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.08294143076018086,
+        "scale": 0.0652593928059255,
         "zero_point": 0
       }
     },
     "detect_cv3_2_0_act": {
       "shape": [
         1,
-        80,
+        64,
         2,
         3
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.052129647863192824,
+        "scale": 0.0459833971158726,
         "zero_point": 0
       }
     },
     "detect_cv3_2_1_act": {
       "shape": [
         1,
-        80,
+        64,
         2,
         3
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.152163092545637,
+        "scale": 0.05449451611736628,
         "zero_point": 0
       }
     },
     "detect_cv3_2_2": {
       "shape": [
         1,
-        80,
+        2,
         2,
         3
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.10271050610880214,
+        "scale": 0.08832426897184116,
         "zero_point": 0
       }
     },
     "cat_15": {
       "shape": [
         1,
-        144,
+        66,
         2,
         3
       ],
       "dtype": "i8",
       "quant": {
-        "scale": 0.10271050610880214,
+        "scale": 0.08832426897184116,
         "zero_point": 0
       }
     }
@@ -1450,7 +1450,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1962557732,
+            "output_multiplier": 1945796334,
             "output_shift": 9,
             "activation_min": -128,
             "activation_max": 127
@@ -1474,8 +1474,8 @@
             "W": 48
           },
           "quant": {
-            "scale_in": 0.017740737734817144,
-            "scale_out": 0.34940794696958044,
+            "scale_in": 0.01770538607920249,
+            "scale_out": 0.36040295578363374,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -1493,8 +1493,8 @@
             "n": 24576
           },
           "quant": {
-            "scale_in": 0.34940794696958044,
-            "scale_out": 0.34940794696958044,
+            "scale_in": 0.36040295578363374,
+            "scale_out": 0.36040295578363374,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -1544,8 +1544,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1154641346,
-            "output_shift": 6,
+            "output_multiplier": 2092674928,
+            "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -1568,8 +1568,8 @@
             "W": 24
           },
           "quant": {
-            "scale_in": 0.1768548469843827,
-            "scale_out": 0.7592658696212168,
+            "scale_in": 0.1900173397514764,
+            "scale_out": 0.6162402535986713,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -1587,8 +1587,8 @@
             "n": 12288
           },
           "quant": {
-            "scale_in": 0.7592658696212168,
-            "scale_out": 0.6917152104415293,
+            "scale_in": 0.6162402535986713,
+            "scale_out": 0.6162402535986713,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -1640,7 +1640,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1247323205,
+            "output_multiplier": 1233133820,
             "output_shift": 6,
             "activation_min": -128,
             "activation_max": 127
@@ -1664,8 +1664,8 @@
             "W": 24
           },
           "quant": {
-            "scale_in": 0.3422688161294291,
-            "scale_out": 0.4494585352619802,
+            "scale_in": 0.2989251444658895,
+            "scale_out": 0.38335175401582494,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -1683,8 +1683,8 @@
             "n": 12288
           },
           "quant": {
-            "scale_in": 0.4494585352619802,
-            "scale_out": 0.15034161965678058,
+            "scale_in": 0.38335175401582494,
+            "scale_out": 0.17036265275609774,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -1759,7 +1759,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1755854253,
+            "output_multiplier": 2083919385,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -1783,8 +1783,8 @@
             "W": 24
           },
           "quant": {
-            "scale_in": 0.04728948037455401,
-            "scale_out": 0.25423043919360544,
+            "scale_in": 0.06118771785826195,
+            "scale_out": 0.17176845880943958,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -1802,8 +1802,8 @@
             "n": 6144
           },
           "quant": {
-            "scale_in": 0.25423043919360544,
-            "scale_out": 0.12718980143389363,
+            "scale_in": 0.17176845880943958,
+            "scale_out": 0.1240182260828694,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -1855,7 +1855,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1602986484,
+            "output_multiplier": 1393153021,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -1879,8 +1879,8 @@
             "W": 24
           },
           "quant": {
-            "scale_in": 0.07219909307524913,
-            "scale_out": 0.14796782666303981,
+            "scale_in": 0.08382442053847426,
+            "scale_out": 0.12993253873089167,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -1898,8 +1898,8 @@
             "n": 6144
           },
           "quant": {
-            "scale_in": 0.14796782666303981,
-            "scale_out": 0.11651938731276144,
+            "scale_in": 0.12993253873089167,
+            "scale_out": 0.10796229294904573,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -1925,9 +1925,9 @@
         "n": 6144
       },
       "quant": {
-        "scale_a": 0.07627981291042538,
-        "scale_b": 0.11651938731276144,
-        "scale_out": 0.13362394918606976,
+        "scale_a": 0.11254966916061762,
+        "scale_b": 0.10796229294904573,
+        "scale_out": 0.16144539239838368,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -1962,11 +1962,11 @@
       },
       "quant": {
         "scales_in": [
-          0.15034161965678058,
-          0.07627981291042538,
-          0.13362394918606976
+          0.17036265275609774,
+          0.11254966916061762,
+          0.16144539239838368
         ],
-        "scale_out": 0.15034161965678058,
+        "scale_out": 0.17036265275609774,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -2017,8 +2017,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1151928923,
-            "output_shift": 6,
+            "output_multiplier": 2136667117,
+            "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2041,8 +2041,8 @@
             "W": 24
           },
           "quant": {
-            "scale_in": 0.06444793611060916,
-            "scale_out": 0.18946249653973918,
+            "scale_in": 0.07562722183587983,
+            "scale_out": 0.16279858867014488,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2060,8 +2060,8 @@
             "n": 12288
           },
           "quant": {
-            "scale_in": 0.18946249653973918,
-            "scale_out": 0.08486464643102931,
+            "scale_in": 0.16279858867014488,
+            "scale_out": 0.061546194271778494,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2113,8 +2113,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1107612085,
-            "output_shift": 7,
+            "output_multiplier": 1182427248,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2137,8 +2137,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.043604467797467086,
-            "scale_out": 0.06191104979026975,
+            "scale_in": 0.0650205161627822,
+            "scale_out": 0.044236126847154514,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2156,8 +2156,8 @@
             "n": 6144
           },
           "quant": {
-            "scale_in": 0.06191104979026975,
-            "scale_out": 0.04001463492085615,
+            "scale_in": 0.044236126847154514,
+            "scale_out": 0.043420690251147656,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2209,7 +2209,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1705948325,
+            "output_multiplier": 2085048946,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -2233,8 +2233,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.01577820364884504,
-            "scale_out": 0.06256285990317037,
+            "scale_in": 0.014899623675609198,
+            "scale_out": 0.04962736039649783,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2252,8 +2252,8 @@
             "n": 6144
           },
           "quant": {
-            "scale_in": 0.06256285990317037,
-            "scale_out": 0.040926456451416016,
+            "scale_in": 0.04962736039649783,
+            "scale_out": 0.03727549455297275,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2328,8 +2328,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1777042629,
-            "output_shift": 8,
+            "output_multiplier": 1097608389,
+            "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2352,8 +2352,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.016862557628961997,
-            "scale_out": 0.042145023195762334,
+            "scale_in": 0.015707731246948242,
+            "scale_out": 0.04221191931897261,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2371,8 +2371,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.042145023195762334,
-            "scale_out": 0.026433950334083377,
+            "scale_in": 0.04221191931897261,
+            "scale_out": 0.01979013878529466,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2424,7 +2424,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1513815271,
+            "output_multiplier": 1107315095,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -2448,8 +2448,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.010159040060568982,
-            "scale_out": 0.035668331807053935,
+            "scale_in": 0.011464958115825503,
+            "scale_out": 0.02996784120094119,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2467,8 +2467,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.035668331807053935,
-            "scale_out": 0.02538186170923428,
+            "scale_in": 0.02996784120094119,
+            "scale_out": 0.025300682999017672,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2494,9 +2494,9 @@
         "n": 3072
       },
       "quant": {
-        "scale_a": 0.02305207477779839,
-        "scale_b": 0.02538186170923428,
-        "scale_out": 0.04007818567471241,
+        "scale_a": 0.024097170416764388,
+        "scale_b": 0.025300682999017672,
+        "scale_out": 0.030301501431803064,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -2547,8 +2547,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1195194478,
-            "output_shift": 7,
+            "output_multiplier": 1587984795,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2571,8 +2571,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.01809136698565145,
-            "scale_out": 0.03763490962231253,
+            "scale_in": 0.021981152962511918,
+            "scale_out": 0.030675677802619032,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2590,8 +2590,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.03763490962231253,
-            "scale_out": 0.016053025178083286,
+            "scale_in": 0.030675677802619032,
+            "scale_out": 0.013153524849358507,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2643,8 +2643,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1548167227,
-            "output_shift": 7,
+            "output_multiplier": 1898336652,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2667,8 +2667,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.005087414125757893,
-            "scale_out": 0.0511445360859548,
+            "scale_in": 0.007059145161486048,
+            "scale_out": 0.0419265792125792,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2686,8 +2686,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.0511445360859548,
-            "scale_out": 0.044453692248487095,
+            "scale_in": 0.0419265792125792,
+            "scale_out": 0.03088135418929453,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2713,9 +2713,9 @@
         "n": 3072
       },
       "quant": {
-        "scale_a": 0.04007818567471241,
-        "scale_b": 0.044453692248487095,
-        "scale_out": 0.058866876316821484,
+        "scale_a": 0.030301501431803064,
+        "scale_b": 0.03088135418929453,
+        "scale_out": 0.05124773941640779,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -2752,12 +2752,12 @@
       },
       "quant": {
         "scales_in": [
-          0.040926456451416016,
-          0.02305207477779839,
-          0.04007818567471241,
-          0.058866876316821484
+          0.03727549455297275,
+          0.024097170416764388,
+          0.030301501431803064,
+          0.05124773941640779
         ],
-        "scale_out": 0.058866876316821484,
+        "scale_out": 0.05124773941640779,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -2809,7 +2809,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1443006087,
+            "output_multiplier": 1486870905,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -2833,8 +2833,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.02565227906534991,
-            "scale_out": 0.047294459005040444,
+            "scale_in": 0.025807590935173937,
+            "scale_out": 0.03909356575312577,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2852,8 +2852,8 @@
             "n": 6144
           },
           "quant": {
-            "scale_in": 0.047294459005040444,
-            "scale_out": 0.03380688719862089,
+            "scale_in": 0.03909356575312577,
+            "scale_out": 0.02433371731615442,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2905,7 +2905,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1271286677,
+            "output_multiplier": 1411885785,
             "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
@@ -2929,8 +2929,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.02275017302805983,
-            "scale_out": 0.04271165967926266,
+            "scale_in": 0.019106913739302026,
+            "scale_out": 0.050117650369959556,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -2948,8 +2948,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.04271165967926266,
-            "scale_out": 0.02382944324823815,
+            "scale_in": 0.050117650369959556,
+            "scale_out": 0.025986226524893692,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3001,7 +3001,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1457185677,
+            "output_multiplier": 1338925881,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -3025,8 +3025,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.008783802272766594,
-            "scale_out": 0.07260809169979546,
+            "scale_in": 0.010353070544445609,
+            "scale_out": 0.07412931487316221,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3044,8 +3044,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.07260809169979546,
-            "scale_out": 0.045542536758062406,
+            "scale_in": 0.07412931487316221,
+            "scale_out": 0.03927999781811331,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3120,7 +3120,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1796680775,
+            "output_multiplier": 1642870818,
             "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
@@ -3144,8 +3144,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.010367001135518231,
-            "scale_out": 0.052715140064870276,
+            "scale_in": 0.013511323553370678,
+            "scale_out": 0.03759014324879083,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3163,8 +3163,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.052715140064870276,
-            "scale_out": 0.02574980165076068,
+            "scale_in": 0.03759014324879083,
+            "scale_out": 0.021963136402640755,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3216,8 +3216,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1413359130,
-            "output_shift": 7,
+            "output_multiplier": 1880877645,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3240,8 +3240,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.008317853522112988,
-            "scale_out": 0.028080990933996484,
+            "scale_in": 0.011698988478953443,
+            "scale_out": 0.030363717417078693,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3259,8 +3259,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.028080990933996484,
-            "scale_out": 0.02637514730138103,
+            "scale_in": 0.030363717417078693,
+            "scale_out": 0.02890134796382874,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3286,9 +3286,9 @@
         "n": 1536
       },
       "quant": {
-        "scale_a": 0.018311215197946144,
-        "scale_b": 0.02637514730138103,
-        "scale_out": 0.03382169918751153,
+        "scale_a": 0.020471411427174967,
+        "scale_b": 0.02890134796382874,
+        "scale_out": 0.034917557333398054,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -3339,8 +3339,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1344264936,
-            "output_shift": 7,
+            "output_multiplier": 1650892199,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3363,8 +3363,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.010596075395899495,
-            "scale_out": 0.04217717028039647,
+            "scale_in": 0.019815728420347678,
+            "scale_out": 0.0375700635234202,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3382,8 +3382,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.04217717028039647,
-            "scale_out": 0.02278605596287044,
+            "scale_in": 0.0375700635234202,
+            "scale_out": 0.019209578281312478,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3435,8 +3435,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1166456910,
-            "output_shift": 7,
+            "output_multiplier": 1621547175,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3459,8 +3459,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.007736566498523622,
-            "scale_out": 0.042561091775969256,
+            "scale_in": 0.009101832006859966,
+            "scale_out": 0.037114312329630215,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3478,8 +3478,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.042561091775969256,
-            "scale_out": 0.0375662338076614,
+            "scale_in": 0.037114312329630215,
+            "scale_out": 0.03678424339594803,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3505,9 +3505,9 @@
         "n": 1536
       },
       "quant": {
-        "scale_a": 0.03382169918751153,
-        "scale_b": 0.0375662338076614,
-        "scale_out": 0.04825182036152036,
+        "scale_a": 0.034917557333398054,
+        "scale_b": 0.03678424339594803,
+        "scale_out": 0.044390160267747295,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -3544,12 +3544,12 @@
       },
       "quant": {
         "scales_in": [
-          0.045542536758062406,
-          0.018311215197946144,
-          0.03382169918751153,
-          0.04825182036152036
+          0.03927999781811331,
+          0.020471411427174967,
+          0.034917557333398054,
+          0.044390160267747295
         ],
-        "scale_out": 0.04825182036152036,
+        "scale_out": 0.044390160267747295,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -3601,8 +3601,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1124865014,
-            "output_shift": 7,
+            "output_multiplier": 1830925635,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3625,8 +3625,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.021306755035880982,
-            "scale_out": 0.03794991876196673,
+            "scale_in": 0.02409799831120048,
+            "scale_out": 0.04103791995311347,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3644,8 +3644,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.03794991876196673,
-            "scale_out": 0.02508577399366484,
+            "scale_in": 0.04103791995311347,
+            "scale_out": 0.03589155918031227,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3697,7 +3697,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1545023886,
+            "output_multiplier": 1267126528,
             "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
@@ -3721,8 +3721,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.008948552326893244,
-            "scale_out": 0.03932569533821166,
+            "scale_in": 0.01625467660858875,
+            "scale_out": 0.0587531450226551,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3740,8 +3740,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.03932569533821166,
-            "scale_out": 0.025789307797048973,
+            "scale_in": 0.0587531450226551,
+            "scale_out": 0.05871939846849817,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3793,7 +3793,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1980360379,
+            "output_multiplier": 1774565880,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -3817,8 +3817,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.005838798256370965,
-            "scale_out": 0.050648816927211494,
+            "scale_in": 0.014678657524229035,
+            "scale_out": 0.07123417741670383,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3836,8 +3836,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.050648816927211494,
-            "scale_out": 0.03954239717618687,
+            "scale_in": 0.07123417741670383,
+            "scale_out": 0.061274956530473365,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3912,7 +3912,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1395998216,
+            "output_multiplier": 1164878919,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -3936,8 +3936,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.00488088262362743,
-            "scale_out": 0.035377160770686596,
+            "scale_in": 0.008244556704844077,
+            "scale_out": 0.0562145503487174,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -3955,8 +3955,8 @@
             "n": 768
           },
           "quant": {
-            "scale_in": 0.035377160770686596,
-            "scale_out": 0.020445206033901906,
+            "scale_in": 0.0562145503487174,
+            "scale_out": 0.0422814136415016,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4008,7 +4008,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1336404851,
+            "output_multiplier": 1392510481,
             "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
@@ -4032,8 +4032,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.010565868512851986,
-            "scale_out": 0.040018543483704094,
+            "scale_in": 0.021018343647633952,
+            "scale_out": 0.07938899393156758,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4051,8 +4051,8 @@
             "n": 768
           },
           "quant": {
-            "scale_in": 0.040018543483704094,
-            "scale_out": 0.03911902585367518,
+            "scale_in": 0.07938899393156758,
+            "scale_out": 0.06725933044914185,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4078,9 +4078,9 @@
         "n": 768
       },
       "quant": {
-        "scale_a": 0.0247972612305889,
-        "scale_b": 0.03911902585367518,
-        "scale_out": 0.038600125650721274,
+        "scale_a": 0.03301525115966797,
+        "scale_b": 0.06725933044914185,
+        "scale_out": 0.06569724946510135,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -4115,11 +4115,11 @@
       },
       "quant": {
         "scales_in": [
-          0.03954239717618687,
-          0.0247972612305889,
-          0.038600125650721274
+          0.061274956530473365,
+          0.03301525115966797,
+          0.06569724946510135
         ],
-        "scale_out": 0.03954239717618687,
+        "scale_out": 0.06569724946510135,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -4170,8 +4170,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1552602540,
-            "output_shift": 7,
+            "output_multiplier": 2120407190,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4194,8 +4194,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.010389536384522445,
-            "scale_out": 0.04205799853707862,
+            "scale_in": 0.02575329532773476,
+            "scale_out": 0.06123666312750869,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4213,8 +4213,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.04205799853707862,
-            "scale_out": 0.028627213530653103,
+            "scale_in": 0.06123666312750869,
+            "scale_out": 0.049403047937107834,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4266,8 +4266,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1137682364,
-            "output_shift": 6,
+            "output_multiplier": 1436578411,
+            "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4290,8 +4290,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.006987260551903192,
-            "scale_out": 0.04143865465179203,
+            "scale_in": 0.020679633448443074,
+            "scale_out": 0.06047759093637541,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4309,8 +4309,8 @@
             "n": 768
           },
           "quant": {
-            "scale_in": 0.04143865465179203,
-            "scale_out": 0.04122505788728008,
+            "scale_in": 0.06047759093637541,
+            "scale_out": 0.060449682821439005,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4441,12 +4441,12 @@
       },
       "quant": {
         "scales_in": [
-          0.04122505788728008,
-          0.04122505788728008,
-          0.04122505788728008,
-          0.04122505788728008
+          0.060449682821439005,
+          0.060449682821439005,
+          0.060449682821439005,
+          0.060449682821439005
         ],
-        "scale_out": 0.04122505788728008,
+        "scale_out": 0.060449682821439005,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -4499,8 +4499,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1677970791,
-            "output_shift": 8,
+            "output_multiplier": 1707586115,
+            "output_shift": 9,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4523,8 +4523,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.02204401662030558,
-            "scale_out": 0.039328049487016334,
+            "scale_in": 0.06453668789600762,
+            "scale_out": 0.06406602333849809,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4542,8 +4542,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.039328049487016334,
-            "scale_out": 0.019159921510951725,
+            "scale_in": 0.06406602333849809,
+            "scale_out": 0.03727999259167769,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4599,10 +4599,10 @@
       },
       "quant": {
         "scales_in": [
-          0.019159921510951725,
-          0.02508577399366484
+          0.03727999259167769,
+          0.03589155918031227
         ],
-        "scale_out": 0.02508577399366484,
+        "scale_out": 0.03727999259167769,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -4653,7 +4653,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1238973458,
+            "output_multiplier": 1186489850,
             "output_shift": 6,
             "activation_min": -128,
             "activation_max": 127
@@ -4677,8 +4677,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.007339488333604467,
-            "scale_out": 0.03952174674807571,
+            "scale_in": 0.013025095143656093,
+            "scale_out": 0.0627505159753514,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4696,8 +4696,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.03952174674807571,
-            "scale_out": 0.030222731312428874,
+            "scale_in": 0.0627505159753514,
+            "scale_out": 0.03920473639420637,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4772,8 +4772,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1336767328,
-            "output_shift": 7,
+            "output_multiplier": 1887289367,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4796,8 +4796,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.010638685676995226,
-            "scale_out": 0.029808669578372023,
+            "scale_in": 0.02056838959220826,
+            "scale_out": 0.0513566685473825,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4815,8 +4815,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.029808669578372023,
-            "scale_out": 0.01912820996261957,
+            "scale_in": 0.0513566685473825,
+            "scale_out": 0.027873249504509874,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4868,7 +4868,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1841728623,
+            "output_multiplier": 1858978594,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -4892,8 +4892,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.0058997461176294045,
-            "scale_out": 0.034909481138694944,
+            "scale_in": 0.011781493509848287,
+            "scale_out": 0.027486818043265755,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4911,8 +4911,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.034909481138694944,
-            "scale_out": 0.034499870510551874,
+            "scale_in": 0.027486818043265755,
+            "scale_out": 0.024651358446736975,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -4948,11 +4948,11 @@
       },
       "quant": {
         "scales_in": [
-          0.020995457341351848,
-          0.030222731312428874,
-          0.034499870510551874
+          0.03920473639420637,
+          0.032620771663395436,
+          0.024651358446736975
         ],
-        "scale_out": 0.034499870510551874,
+        "scale_out": 0.03920473639420637,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -5003,7 +5003,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 2129260634,
+            "output_multiplier": 1339962571,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -5027,8 +5027,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.007427356843873272,
-            "scale_out": 0.04149202286727785,
+            "scale_in": 0.015893339172122985,
+            "scale_out": 0.04358944554967204,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5046,8 +5046,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.04149202286727785,
-            "scale_out": 0.020749538902222642,
+            "scale_in": 0.04358944554967204,
+            "scale_out": 0.018864038422351747,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5103,10 +5103,10 @@
       },
       "quant": {
         "scales_in": [
-          0.020749538902222642,
-          0.03380688719862089
+          0.018864038422351747,
+          0.02433371731615442
         ],
-        "scale_out": 0.03380688719862089,
+        "scale_out": 0.02433371731615442,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -5157,7 +5157,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1815054850,
+            "output_multiplier": 1241015569,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -5181,8 +5181,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.010590192839855284,
-            "scale_out": 0.05678062363872378,
+            "scale_in": 0.012122529698169137,
+            "scale_out": 0.04583366273895023,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5200,8 +5200,8 @@
             "n": 6144
           },
           "quant": {
-            "scale_in": 0.05678062363872378,
-            "scale_out": 0.022942719497079923,
+            "scale_in": 0.04583366273895023,
+            "scale_out": 0.017858197369913415,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5276,7 +5276,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1939151123,
+            "output_multiplier": 1921646577,
             "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
@@ -5300,8 +5300,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.009640371705603413,
-            "scale_out": 0.030410973105843613,
+            "scale_in": 0.01016507561751238,
+            "scale_out": 0.023928890078086552,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5319,8 +5319,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.030410973105843613,
-            "scale_out": 0.017087911996315784,
+            "scale_in": 0.023928890078086552,
+            "scale_out": 0.015085536663926492,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5372,8 +5372,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1939392266,
-            "output_shift": 8,
+            "output_multiplier": 1692803661,
+            "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5396,8 +5396,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.00745868072735043,
-            "scale_out": 0.040374478017251324,
+            "scale_in": 0.004949177813342237,
+            "scale_out": 0.028540519278819166,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5415,8 +5415,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.040374478017251324,
-            "scale_out": 0.040136427391232465,
+            "scale_in": 0.028540519278819166,
+            "scale_out": 0.027799427978635775,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5452,11 +5452,11 @@
       },
       "quant": {
         "scales_in": [
-          0.019757788951002705,
-          0.022942719497079923,
-          0.040136427391232465
+          0.016001847785288893,
+          0.017858197369913415,
+          0.027799427978635775
         ],
-        "scale_out": 0.040136427391232465,
+        "scale_out": 0.027799427978635775,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -5507,7 +5507,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1901275441,
+            "output_multiplier": 2011454330,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -5531,8 +5531,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.010457818902383639,
-            "scale_out": 0.04239610236460768,
+            "scale_in": 0.008551823811268244,
+            "scale_out": 0.033339421580156944,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5550,8 +5550,8 @@
             "n": 6144
           },
           "quant": {
-            "scale_in": 0.04239610236460768,
-            "scale_out": 0.03128895984859917,
+            "scale_in": 0.033339421580156944,
+            "scale_out": 0.017831393114225134,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5603,8 +5603,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1839753870,
-            "output_shift": 8,
+            "output_multiplier": 1256922125,
+            "output_shift": 9,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5627,8 +5627,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.010604484813419853,
-            "scale_out": 0.04019176678394708,
+            "scale_in": 0.021619633426816446,
+            "scale_out": 0.028066040024044007,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5646,8 +5646,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.04019176678394708,
-            "scale_out": 0.03221036880973756,
+            "scale_in": 0.028066040024044007,
+            "scale_out": 0.014032389235308789,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5681,10 +5681,10 @@
       },
       "quant": {
         "scales_in": [
-          0.03221036880973756,
-          0.020749538902222642
+          0.014032389235308789,
+          0.018864038422351747
         ],
-        "scale_out": 0.03221036880973756,
+        "scale_out": 0.018864038422351747,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -5735,7 +5735,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1622365553,
+            "output_multiplier": 1128223792,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -5759,8 +5759,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.008025730688740887,
-            "scale_out": 0.04917042274174728,
+            "scale_in": 0.010054439071595199,
+            "scale_out": 0.03972120735588975,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5778,8 +5778,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.04917042274174728,
-            "scale_out": 0.03454801979966051,
+            "scale_in": 0.03972120735588975,
+            "scale_out": 0.021686287376824327,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5854,8 +5854,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1494480586,
-            "output_shift": 7,
+            "output_multiplier": 1498973774,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5878,8 +5878,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.010672854626272607,
-            "scale_out": 0.03670271926038847,
+            "scale_in": 0.015376776222168929,
+            "scale_out": 0.019808780489944097,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5897,8 +5897,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.03670271926038847,
-            "scale_out": 0.019774639700341413,
+            "scale_in": 0.019808780489944097,
+            "scale_out": 0.014856302832055279,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5950,8 +5950,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1526457996,
-            "output_shift": 7,
+            "output_multiplier": 1666878040,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5974,8 +5974,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.005743304575522115,
-            "scale_out": 0.06953174110472672,
+            "scale_in": 0.00952750022017111,
+            "scale_out": 0.049265805191881076,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -5993,8 +5993,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.06953174110472672,
-            "scale_out": 0.04252865183071827,
+            "scale_in": 0.049265805191881076,
+            "scale_out": 0.029708321638933315,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6030,11 +6030,11 @@
       },
       "quant": {
         "scales_in": [
-          0.03454801979966051,
-          0.03372653075090543,
-          0.04252865183071827
+          0.021686287376824327,
+          0.01980915032033845,
+          0.029708321638933315
         ],
-        "scale_out": 0.04252865183071827,
+        "scale_out": 0.029708321638933315,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -6085,7 +6085,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 2035986264,
+            "output_multiplier": 1600275346,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -6109,8 +6109,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.009845727071987363,
-            "scale_out": 0.06670613176240696,
+            "scale_in": 0.010153129344850074,
+            "scale_out": 0.052652550494577004,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6128,8 +6128,8 @@
             "n": 3072
           },
           "quant": {
-            "scale_in": 0.06670613176240696,
-            "scale_out": 0.03098987782095361,
+            "scale_in": 0.052652550494577004,
+            "scale_out": 0.030658376498485174,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6181,7 +6181,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1855431842,
+            "output_multiplier": 1782806724,
             "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
@@ -6205,8 +6205,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.00703411308799203,
-            "scale_out": 0.04259843901386411,
+            "scale_in": 0.007060607587258647,
+            "scale_out": 0.06828328380434531,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6224,8 +6224,8 @@
             "n": 768
           },
           "quant": {
-            "scale_in": 0.04259843901386411,
-            "scale_out": 0.028446379608995334,
+            "scale_in": 0.06828328380434531,
+            "scale_out": 0.018456682445496086,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6259,10 +6259,10 @@
       },
       "quant": {
         "scales_in": [
-          0.028446379608995334,
-          0.019159921510951725
+          0.018456682445496086,
+          0.03727999259167769
         ],
-        "scale_out": 0.028446379608995334,
+        "scale_out": 0.03727999259167769,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -6313,8 +6313,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1311534278,
-            "output_shift": 6,
+            "output_multiplier": 1311027336,
+            "output_shift": 5,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6337,8 +6337,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.005650286130079134,
-            "scale_out": 0.042346184647928074,
+            "scale_in": 0.0036738303702647294,
+            "scale_out": 0.07270999968521238,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6356,8 +6356,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.042346184647928074,
-            "scale_out": 0.036444896788109006,
+            "scale_in": 0.07270999968521238,
+            "scale_out": 0.03045918997817152,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6432,8 +6432,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1688193215,
-            "output_shift": 7,
+            "output_multiplier": 1833972706,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6456,8 +6456,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.0070783580382039225,
-            "scale_out": 0.047147138850895436,
+            "scale_in": 0.010461125786848895,
+            "scale_out": 0.07451981071412093,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6475,8 +6475,8 @@
             "n": 768
           },
           "quant": {
-            "scale_in": 0.047147138850895436,
-            "scale_out": 0.037913615309347316,
+            "scale_in": 0.07451981071412093,
+            "scale_out": 0.041149773935633384,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6528,8 +6528,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1957594184,
-            "output_shift": 7,
+            "output_multiplier": 1494316623,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6552,8 +6552,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.006073924969500444,
-            "scale_out": 0.054776439516563115,
+            "scale_in": 0.017417873923234115,
+            "scale_out": 0.12229645346093365,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6571,8 +6571,8 @@
             "n": 768
           },
           "quant": {
-            "scale_in": 0.054776439516563115,
-            "scale_out": 0.035860782533180056,
+            "scale_in": 0.12229645346093365,
+            "scale_out": 0.08394516171432856,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6608,11 +6608,11 @@
       },
       "quant": {
         "scales_in": [
-          0.026580429452610767,
-          0.036444896788109006,
-          0.035860782533180056
+          0.03045918997817152,
+          0.02932746203865592,
+          0.08394516171432856
         ],
-        "scale_out": 0.036444896788109006,
+        "scale_out": 0.08394516171432856,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -6663,7 +6663,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1260842017,
+            "output_multiplier": 1591078484,
             "output_shift": 6,
             "activation_min": -128,
             "activation_max": 127
@@ -6687,8 +6687,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.006900020471708042,
-            "scale_out": 0.05523156744288647,
+            "scale_in": 0.012671094241104727,
+            "scale_out": 0.08564090728759766,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6706,8 +6706,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.05523156744288647,
-            "scale_out": 0.03601657687209722,
+            "scale_in": 0.08564090728759766,
+            "scale_out": 0.08449114401509443,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6759,8 +6759,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1323400088,
-            "output_shift": 7,
+            "output_multiplier": 1260951499,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6783,8 +6783,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.00957609161617249,
-            "scale_out": 0.07242535418412817,
+            "scale_in": 0.019518041235255443,
+            "scale_out": 0.033902723958173134,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6802,8 +6802,8 @@
             "n": 6144
           },
           "quant": {
-            "scale_in": 0.07242535418412817,
-            "scale_out": 0.03288462030606007,
+            "scale_in": 0.033902723958173134,
+            "scale_out": 0.019562952161773922,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6855,7 +6855,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1311027351,
+            "output_multiplier": 1251316692,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -6879,8 +6879,8 @@
             "W": 12
           },
           "quant": {
-            "scale_in": 0.011067351957005778,
-            "scale_out": 0.2189400590310885,
+            "scale_in": 0.01259007416372224,
+            "scale_out": 0.09710336670162172,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6898,8 +6898,8 @@
             "n": 6144
           },
           "quant": {
-            "scale_in": 0.2189400590310885,
-            "scale_out": 0.2189400590310885,
+            "scale_in": 0.09710336670162172,
+            "scale_out": 0.09710293867456632,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -6941,7 +6941,7 @@
         "input_offset": 0,
         "filter_offset": 0,
         "output_offset": 0,
-        "output_multiplier": 1457604577,
+        "output_multiplier": 1577450625,
         "output_shift": 7,
         "activation_min": -128,
         "activation_max": 127
@@ -6978,7 +6978,7 @@
             "IC": 64,
             "IH": 8,
             "IW": 12,
-            "OC": 80,
+            "OC": 64,
             "OH": 8,
             "OW": 12,
             "KH": 3,
@@ -6992,8 +6992,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1947691560,
-            "output_shift": 8,
+            "output_multiplier": 1791458280,
+            "output_shift": 9,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7011,13 +7011,13 @@
           "bias": "detect.cv3_0_0.bn.bias_fused",
           "shape": {
             "N": 1,
-            "C": 80,
+            "C": 64,
             "H": 8,
             "W": 12
           },
           "quant": {
-            "scale_in": 0.009295253303107313,
-            "scale_out": 0.04711187542892817,
+            "scale_in": 0.021543422083216388,
+            "scale_out": 0.02432335455586591,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7032,11 +7032,11 @@
             "detect_cv3_0_0_act"
           ],
           "shape": {
-            "n": 7680
+            "n": 6144
           },
           "quant": {
-            "scale_in": 0.04711187542892817,
-            "scale_out": 0.021845280654787077,
+            "scale_in": 0.02432335455586591,
+            "scale_out": 0.02326381488109198,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7071,10 +7071,10 @@
           "bias": "detect.cv3_0_1.conv.bias_q",
           "shape": {
             "N": 1,
-            "IC": 80,
+            "IC": 64,
             "IH": 8,
             "IW": 12,
-            "OC": 80,
+            "OC": 64,
             "OH": 8,
             "OW": 12,
             "KH": 3,
@@ -7088,8 +7088,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1799730768,
-            "output_shift": 8,
+            "output_multiplier": 1534874762,
+            "output_shift": 9,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7107,13 +7107,13 @@
           "bias": "detect.cv3_0_1.bn.bias_fused",
           "shape": {
             "N": 1,
-            "C": 80,
+            "C": 64,
             "H": 8,
             "W": 12
           },
           "quant": {
-            "scale_in": 0.00800462219658799,
-            "scale_out": 0.36786315197081076,
+            "scale_in": 0.03693800648366372,
+            "scale_out": 0.030233931353711708,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7128,11 +7128,11 @@
             "detect_cv3_0_1_act"
           ],
           "shape": {
-            "n": 7680
+            "n": 6144
           },
           "quant": {
-            "scale_in": 0.36786315197081076,
-            "scale_out": 0.2007139611431933,
+            "scale_in": 0.030233931353711708,
+            "scale_out": 0.0295975865341547,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7157,10 +7157,10 @@
       "bias": "detect.cv3_0_2.bias_q",
       "shape": {
         "N": 1,
-        "IC": 80,
+        "IC": 64,
         "IH": 8,
         "IW": 12,
-        "OC": 80,
+        "OC": 2,
         "OH": 8,
         "OW": 12,
         "KH": 1,
@@ -7174,8 +7174,8 @@
         "input_offset": 0,
         "filter_offset": 0,
         "output_offset": 0,
-        "output_multiplier": 1248749856,
-        "output_shift": 8,
+        "output_multiplier": 1883283375,
+        "output_shift": 10,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -7201,16 +7201,16 @@
         "W": 12,
         "C_inputs": [
           64,
-          80
+          2
         ],
-        "C_total": 144
+        "C_total": 66
       },
       "quant": {
         "scales_in": [
-          0.10040427380659449,
-          0.1663844491553119
+          0.07774109727754368,
+          0.11606457477479469
         ],
-        "scale_out": 0.1663844491553119,
+        "scale_out": 0.11606457477479469,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -7261,8 +7261,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1364090580,
-            "output_shift": 7,
+            "output_multiplier": 1799754292,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7285,8 +7285,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.00881148041702631,
-            "scale_out": 0.0763970322496309,
+            "scale_in": 0.01702172737421952,
+            "scale_out": 0.03167067174836406,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7304,8 +7304,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.0763970322496309,
-            "scale_out": 0.04994913161270262,
+            "scale_in": 0.03167067174836406,
+            "scale_out": 0.031113309184397298,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7357,8 +7357,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1975109382,
-            "output_shift": 7,
+            "output_multiplier": 1775934248,
+            "output_shift": 9,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7381,8 +7381,8 @@
             "W": 6
           },
           "quant": {
-            "scale_in": 0.012581524886484221,
-            "scale_out": 0.1644161104217289,
+            "scale_in": 0.05802624619851901,
+            "scale_out": 0.12654625900148406,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7400,8 +7400,8 @@
             "n": 1536
           },
           "quant": {
-            "scale_in": 0.1644161104217289,
-            "scale_out": 0.12971854022168738,
+            "scale_in": 0.12654625900148406,
+            "scale_out": 0.12654624398299089,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7443,7 +7443,7 @@
         "input_offset": 0,
         "filter_offset": 0,
         "output_offset": 0,
-        "output_multiplier": 1129830447,
+        "output_multiplier": 2104700775,
         "output_shift": 7,
         "activation_min": -128,
         "activation_max": 127
@@ -7480,7 +7480,7 @@
             "IC": 128,
             "IH": 4,
             "IW": 6,
-            "OC": 80,
+            "OC": 64,
             "OH": 4,
             "OW": 6,
             "KH": 3,
@@ -7494,8 +7494,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1338371927,
-            "output_shift": 7,
+            "output_multiplier": 1304831984,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7513,13 +7513,13 @@
           "bias": "detect.cv3_1_0.bn.bias_fused",
           "shape": {
             "N": 1,
-            "C": 80,
+            "C": 64,
             "H": 4,
             "W": 6
           },
           "quant": {
-            "scale_in": 0.008277267921627977,
-            "scale_out": 0.058176018121674306,
+            "scale_in": 0.025601144850723387,
+            "scale_out": 0.02376186378358856,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7534,11 +7534,11 @@
             "detect_cv3_1_0_act"
           ],
           "shape": {
-            "n": 1920
+            "n": 1536
           },
           "quant": {
-            "scale_in": 0.058176018121674306,
-            "scale_out": 0.03246754173218735,
+            "scale_in": 0.02376186378358856,
+            "scale_out": 0.022653844412856214,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7573,10 +7573,10 @@
           "bias": "detect.cv3_1_1.conv.bias_q",
           "shape": {
             "N": 1,
-            "IC": 80,
+            "IC": 64,
             "IH": 4,
             "IW": 6,
-            "OC": 80,
+            "OC": 64,
             "OH": 4,
             "OW": 6,
             "KH": 3,
@@ -7590,8 +7590,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1334331455,
-            "output_shift": 7,
+            "output_multiplier": 1756213611,
+            "output_shift": 9,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7609,13 +7609,13 @@
           "bias": "detect.cv3_1_1.bn.bias_fused",
           "shape": {
             "N": 1,
-            "C": 80,
+            "C": 64,
             "H": 4,
             "W": 6
           },
           "quant": {
-            "scale_in": 0.009643243053766687,
-            "scale_out": 0.44598556878998524,
+            "scale_in": 0.025260745071050687,
+            "scale_out": 0.02497106649744229,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7630,11 +7630,11 @@
             "detect_cv3_1_1_act"
           ],
           "shape": {
-            "n": 1920
+            "n": 1536
           },
           "quant": {
-            "scale_in": 0.44598556878998524,
-            "scale_out": 0.44598556878998524,
+            "scale_in": 0.02497106649744229,
+            "scale_out": 0.023965752969576617,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7659,10 +7659,10 @@
       "bias": "detect.cv3_1_2.bias_q",
       "shape": {
         "N": 1,
-        "IC": 80,
+        "IC": 64,
         "IH": 4,
         "IW": 6,
-        "OC": 80,
+        "OC": 2,
         "OH": 4,
         "OW": 6,
         "KH": 1,
@@ -7676,8 +7676,8 @@
         "input_offset": 0,
         "filter_offset": 0,
         "output_offset": 0,
-        "output_multiplier": 1501847191,
-        "output_shift": 7,
+        "output_multiplier": 2018608114,
+        "output_shift": 10,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -7703,16 +7703,16 @@
         "W": 6,
         "C_inputs": [
           64,
-          80
+          2
         ],
-        "C_total": 144
+        "C_total": 66
       },
       "quant": {
         "scales_in": [
-          0.08293416180948573,
-          0.18563333646518979
+          0.07688656003456416,
+          0.10850778714878352
         ],
-        "scale_out": 0.18563333646518979,
+        "scale_out": 0.10850778714878352,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -7763,7 +7763,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1872495978,
+            "output_multiplier": 2136223722,
             "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
@@ -7787,8 +7787,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.010057117056658887,
-            "scale_out": 0.05340443633672759,
+            "scale_in": 0.020638480899840828,
+            "scale_out": 0.0863325839906227,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7806,8 +7806,8 @@
             "n": 384
           },
           "quant": {
-            "scale_in": 0.05340443633672759,
-            "scale_out": 0.05334396812859483,
+            "scale_in": 0.0863325839906227,
+            "scale_out": 0.08022849766288216,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7859,7 +7859,7 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1458936341,
+            "output_multiplier": 1328115307,
             "output_shift": 7,
             "activation_min": -128,
             "activation_max": 127
@@ -7883,8 +7883,8 @@
             "W": 3
           },
           "quant": {
-            "scale_in": 0.015514603749973568,
-            "scale_out": 0.09754005191833015,
+            "scale_in": 0.02544060091334065,
+            "scale_out": 0.1312381263792984,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7902,8 +7902,8 @@
             "n": 384
           },
           "quant": {
-            "scale_in": 0.09754005191833015,
-            "scale_out": 0.09753964641901451,
+            "scale_in": 0.1312381263792984,
+            "scale_out": 0.11033958525169553,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -7945,8 +7945,8 @@
         "input_offset": 0,
         "filter_offset": 0,
         "output_offset": 0,
-        "output_multiplier": 1626879785,
-        "output_shift": 8,
+        "output_multiplier": 1153428630,
+        "output_shift": 7,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -7982,7 +7982,7 @@
             "IC": 256,
             "IH": 2,
             "IW": 3,
-            "OC": 80,
+            "OC": 64,
             "OH": 2,
             "OW": 3,
             "KH": 3,
@@ -7996,8 +7996,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1260796384,
-            "output_shift": 7,
+            "output_multiplier": 1395440075,
+            "output_shift": 8,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -8015,13 +8015,13 @@
           "bias": "detect.cv3_2_0.bn.bias_fused",
           "shape": {
             "N": 1,
-            "C": 80,
+            "C": 64,
             "H": 2,
             "W": 3
           },
           "quant": {
-            "scale_in": 0.011600521605784498,
-            "scale_out": 0.05219852267287847,
+            "scale_in": 0.01903676423500842,
+            "scale_out": 0.04611495160681056,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -8036,11 +8036,11 @@
             "detect_cv3_2_0_act"
           ],
           "shape": {
-            "n": 480
+            "n": 384
           },
           "quant": {
-            "scale_in": 0.05219852267287847,
-            "scale_out": 0.052129647863192824,
+            "scale_in": 0.04611495160681056,
+            "scale_out": 0.0459833971158726,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -8075,10 +8075,10 @@
           "bias": "detect.cv3_2_1.conv.bias_q",
           "shape": {
             "N": 1,
-            "IC": 80,
+            "IC": 64,
             "IH": 2,
             "IW": 3,
-            "OC": 80,
+            "OC": 64,
             "OH": 2,
             "OW": 3,
             "KH": 3,
@@ -8092,8 +8092,8 @@
             "input_offset": 0,
             "filter_offset": 0,
             "output_offset": 0,
-            "output_multiplier": 1250597999,
-            "output_shift": 6,
+            "output_multiplier": 1450132675,
+            "output_shift": 9,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -8111,13 +8111,13 @@
           "bias": "detect.cv3_2_1.bn.bias_fused",
           "shape": {
             "N": 1,
-            "C": 80,
+            "C": 64,
             "H": 2,
             "W": 3
           },
           "quant": {
-            "scale_in": 0.008458131880272092,
-            "scale_out": 0.152163092545637,
+            "scale_in": 0.03991271191694605,
+            "scale_out": 0.05851990782369779,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -8132,11 +8132,11 @@
             "detect_cv3_2_1_act"
           ],
           "shape": {
-            "n": 480
+            "n": 384
           },
           "quant": {
-            "scale_in": 0.152163092545637,
-            "scale_out": 0.152163092545637,
+            "scale_in": 0.05851990782369779,
+            "scale_out": 0.05449451611736628,
             "activation_min": -128,
             "activation_max": 127
           }
@@ -8161,10 +8161,10 @@
       "bias": "detect.cv3_2_2.bias_q",
       "shape": {
         "N": 1,
-        "IC": 80,
+        "IC": 64,
         "IH": 2,
         "IW": 3,
-        "OC": 80,
+        "OC": 2,
         "OH": 2,
         "OW": 3,
         "KH": 1,
@@ -8178,8 +8178,8 @@
         "input_offset": 0,
         "filter_offset": 0,
         "output_offset": 0,
-        "output_multiplier": 1189910266,
-        "output_shift": 7,
+        "output_multiplier": 1724012307,
+        "output_shift": 9,
         "activation_min": -128,
         "activation_max": 127
       },
@@ -8205,16 +8205,16 @@
         "W": 3,
         "C_inputs": [
           64,
-          80
+          2
         ],
-        "C_total": 144
+        "C_total": 66
       },
       "quant": {
         "scales_in": [
-          0.08294143076018086,
-          0.10271050610880214
+          0.0652593928059255,
+          0.08832426897184116
         ],
-        "scale_out": 0.10271050610880214,
+        "scale_out": 0.08832426897184116,
         "activation_min": -128,
         "activation_max": 127
       },

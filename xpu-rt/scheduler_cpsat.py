@@ -157,6 +157,33 @@ def cpsat_schedule(
     if transfer is None or len(transfer) == 0:
         transfer = np.zeros((len(machines), len(machines)))
 
+    # ---- CODEGEN CONTRACT: a shard's OC slice cannot have a remainder ---------
+    # A packed convolution's weights are split across shards by output channel, so a
+    # width that does not divide OC has nowhere to put the remainder and ModelBlaster
+    # refuses the schedule: "has OC=2, not divisible by scheduled width 4; codegen would
+    # silently run a serial implementation".
+    #
+    # Excluded BEFORE the duration table is built, so the horizon arithmetic never sees
+    # these combinations. This is the cheapest constraint in the file to satisfy: on the
+    # deployed sensor workload the two offending dispatches are yolo's OC=2 detect-head
+    # convs, and the board measures them SLOWER on four cores than on one (0.0319 vs
+    # 0.0312 ms) -- so the widths being removed were never worth having, and the
+    # schedule that motivated this rule paid 0.17% of yolo's time for them.
+    if os.environ.get("XPURT_UNIFORM_PACKED_WIDTH", "0") not in ("0", "", "false"):
+        _n_oc = 0
+        for op in ops:
+            oc = getattr(op, "op_oc", None)
+            if not oc:
+                continue
+            bad = {k for k in range(n_combos)
+                   if len(combos[k]) > 1 and oc % len(combos[k])}
+            if bad and not bad >= set(range(n_combos)):
+                op.infeasible_combinations = set(op.infeasible_combinations) | bad
+                _n_oc += 1
+        if _n_oc:
+            print(f"[cpsat] codegen contract: {_n_oc} packed-weight dispatch(es) had "
+                  f"width(s) that do not divide their OC excluded")
+
     # Horizon = sum of max per-op duration across *feasible* combos.
     # Infeasible combos get a placeholder large duration (won't be chosen), but
     # we exclude them from horizon arithmetic so horizon stays tight.
