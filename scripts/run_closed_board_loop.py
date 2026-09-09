@@ -211,13 +211,15 @@ def solve_for_board(spec_path, out_dir, solver, time_limit, log):
     return sched
 
 
-def run_on_board(sched, nets, repeats, out_dir, cross, mb_py, log):
+def run_on_board(sched, nets, repeats, out_dir, cross, mb_py, log,
+                 warnings=None):
     """Execute the schedule on the K1 `repeats` times; return the pulled trace paths.
 
     Each repeat's trace is copied out immediately. The runner writes to a path derived
     from the schedule name, so a later repeat overwrites an earlier one -- copying per
     iteration is what makes `--repeats` mean anything.
     """
+    warnings = warnings if warnings is not None else []
     staged = [f"{n}:{NEEDS_STAGED_IR[n]}" for n in nets if n in NEEDS_STAGED_IR]
     models = ",".join(n for n in nets if n not in NEEDS_STAGED_IR)
     cmd = ["bash", "scripts/run_xpurt_k1.sh", "--schedule", os.path.relpath(sched, MB),
@@ -245,13 +247,30 @@ def run_on_board(sched, nets, repeats, out_dir, cross, mb_py, log):
                 f"output above")
             break
         stem = os.path.splitext(os.path.basename(sched))[0]
-        src = os.path.join(MB, "build/k1_xpurt/_gen", stem, f"{stem}_trace.csv")
+        gen = os.path.join(MB, "build/k1_xpurt/_gen", stem)
+        src = os.path.join(gen, f"{stem}_trace.csv")
         if not os.path.exists(src):
             log(f"  board run {i + 1} produced no trace at {src}")
             break
         dst = os.path.join(out_dir, f"board_{i}_trace.csv")
         shutil.copy2(src, dst)
         traces.append(dst)
+        # KEEP THE RUNNER'S OWN STDOUT. It carries the two facts that decide whether a
+        # trace is worth calibrating from and neither is in the CSV: `entries_done`,
+        # which is 0 when every worker refused every entry (a completed run that
+        # executed nothing), and the ingest's profile-database staleness warning.
+        blog = os.path.join(gen, f"{stem}_stdout.txt")
+        if os.path.exists(blog):
+            shutil.copy2(blog, os.path.join(out_dir, f"board_{i}_stdout.txt"))
+            txt = open(blog, errors="replace").read()
+            done = [ln for ln in txt.splitlines() if "entries_done" in ln]
+            if done:
+                log(f"    {done[-1].strip()}")
+            if "entries_done=0" in txt:
+                log("    WARNING: entries_done=0 -- the run completed having executed "
+                    "nothing (core_kind vs backend-tag mismatch); this trace is all "
+                    "zeros and must not be calibrated from")
+                warnings.append(f"run {i}: entries_done=0")
     return traces
 
 
@@ -337,6 +356,7 @@ def main() -> int:
 
     # ---- stage 2: execute it on the board ----------------------------------------
     log(f"\n[2/4] execute that schedule on the K1 x{a.repeats}")
+    board_warnings = []
     traces = sorted(os.path.join(out_dir, f) for f in os.listdir(out_dir)
                     if f.startswith("board_") and f.endswith("_trace.csv"))
     if a.skip_board:
@@ -346,7 +366,7 @@ def main() -> int:
         if sched is None:
             return 1
         traces = run_on_board(sched, nets, a.repeats, out_dir, cross,
-                              mb_py, log)
+                              mb_py, log, board_warnings)
     if not traces:
         log("  no traces -- the loop cannot be closed without them")
         return 1
@@ -401,6 +421,7 @@ def main() -> int:
         generated_at=datetime.datetime.now().isoformat(timespec="seconds"),
         calibration=os.path.relpath(cal_path, REPO),
         calibration_aggregate=cal.get("aggregate_multiplier"),
+        board_warnings=board_warnings,
         nets_measured=sorted(covered), nets_still_extrapolated=uncovered,
         aot=dict(levers=lv, misses_before=mb_, misses_after=mf_,
                  lateness_before_ms=sb, lateness_after_ms=sf),

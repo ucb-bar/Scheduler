@@ -248,6 +248,94 @@ and charging the wait to the op would make the scheduler pay twice for its own p
 
 ---
 
+## 7. The whole loop, with the board in it — **needs the K1**
+
+Sections 5 and 6 still start from a calibration someone measured earlier. This runs the
+arc end to end, so the costs the second AOT search sees were measured from *the schedule
+the first AOT search produced*:
+
+```bash
+$PY scripts/run_closed_board_loop.py \
+    --workload data/toplevel/scaling/w3_ffn_dronet.json \
+    --repeats 10 --solver greedy \
+    --out-dir results/codesign_feedback/closed_w3_n10
+```
+
+Four stages, no hand-editing: AOT search on isolated profiles -> execute the converged
+schedule on the K1 N times -> fit a calibration to those traces -> AOT search again
+scored on it -> report which transformations the measured costs added or dropped.
+
+Stage 3 is what makes stage 4 honest. The calibration covers exactly the networks that
+just ran, and the driver checks the spec's networks against `coverage.nets_exact` and
+names any that are still extrapolated rather than leaving it to a footnote. On this
+workload it prints `every network in this workload is MEASURED — nothing extrapolated`.
+
+### What it found (w3, 10 board runs, 214 dispatches each, SCHED_FIFO 80)
+
+| | AOT-cost search | measured-cost search |
+|---|---|---|
+| transformations | `shard` | `shard` |
+| instance misses | 10 -> 5 | 10 -> 5 |
+| residual lateness | **7.79 ms** | **16.00 ms** (2.05x) |
+
+So the decision is robust on this rung and the *confidence* is not: the isolated profile
+database tells the loop it has 7.79 ms of lateness left where the silicon says 16.00 ms.
+
+### The measurement is repeatable; the calibration is not transferable
+
+Two comparisons, and the first is what licenses the second:
+
+| comparison | shared keys within 10% | median ratio | worst key |
+|---|---|---|---|
+| this workload, 3 runs vs 10 runs | **31 / 33** | 0.994 | 20% |
+| this workload (10 runs) vs the 60-run generic table | **16 / 33** | 0.955 | **119%** |
+
+Three board runs already reproduce ten (`aggregate_multiplier` 1.196 vs 1.2032), so the
+measurement is stable and the disagreement with the generic table is not sampling noise.
+And the generic table is not a stranger to these networks -- `dronet`, `ffn_block` and
+`mlp_control` are all *in* its measurement set; the 15 keys it has that this workload does
+not are `fused_full`, which w3 does not run.
+
+The reason is that a `network/dispatch_id` multiplier is **not a property of the
+network**. It depends on the core width the schedule chose for that dispatch and on what
+was co-resident while it ran. w3's converged schedule shards `ffn_block`; the schedule the
+generic table was fit to did not shard it the same way. Hence `dronet/18` at 2.51x here
+against 1.15x there, and `mlp_control/6` at 1.06x against 1.58x.
+
+**What follows for the outer loop.** Re-solving against a calibration measured from a
+*different* schedule is a systematically wrong cost model, not a slightly stale one. The
+aggregate transfers (1.20 vs 1.26, median key ratio 0.96) and the per-dispatch tier does
+not, which is exactly the tier the solver leans on. Calibrate the schedule you are about
+to run.
+
+### Two things it has to get right, and how you can tell it did
+
+* `entries_done`. A run whose `core_kind` does not match the backend tag completes
+  normally having executed **nothing** -- every worker refuses every entry, and the trace
+  is all zeros. The driver copies each run's stdout beside its trace, sums the per-worker
+  counts, and refuses to calibrate from a run reporting `entries_done=0`. On the w3 runs
+  the counts sum to 214, the schedule's full entry count.
+* `SCHED_FIFO 80`. The same schedule measures **1.35x** under CFS and **0.92x** under
+  FIFO. That difference is preemption, not execution; calibrating on it would teach the
+  solver that its own kernels are slow when what actually happened is that Linux
+  descheduled them. Runs are RT-pinned, and `xpurt: observed_sched_policy` in the copied
+  stdout is where you check it rather than trusting the request.
+
+### If stage 2 cannot start
+
+It needs two things this repo does not carry by default:
+
+* **The GCC 14.3 cross toolchain**, fetched automatically. 13.2 -- what `CROSS` defaults
+  to via chipyard -- miscompiles the RVV intrinsics into a `SIGILL` with no stdout at all.
+* **An interpreter with torch** (and `ultralytics` for the detector), because stage 2 runs
+  ModelBlaster's `extract_graph` and this repo's venv is installed `--no-deps` on
+  purpose. The driver probes for one that has torch **and** resolves `modelblaster`
+  inside this checkout -- both, because there is a second ModelBlaster clone on this
+  machine that some environments import under the same module names -- and prints what it
+  tried when none does. Override with `--board-py` or `MB_PY`.
+
+---
+
 ## Environment
 
 ```bash
