@@ -40,6 +40,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import glob
 import json
 import os
 import shutil
@@ -350,10 +351,24 @@ def run_on_board(sched, nets, repeats, out_dir, cross, mb_py, log,
     return traces
 
 
-def fit_calibration(traces, workload_desc, out_path, log):
+def fit_calibration(traces, workload_desc, out_path, log, schedule=None):
+    """Fit the calibration, ALWAYS telling the emitter which schedule the traces ran.
+
+    Without it the emitter cannot check that a trace's dispatch ids mean the same thing
+    as the schedule's, and they do not whenever a network contains zero-cost ops: the
+    runner records those with `dispatch_id = -1` and numbers the rest from zero, while the
+    schedule numbers all of them. `yolov8_nano_64x96` traces 90 dispatches as 0..89 where
+    the schedule spans 0..97, so 90 per-dispatch keys get applied to the wrong dispatches
+    -- invisibly, because each ratio is right and only its key is wrong.
+    """
     cmd = [PY, os.path.join(REPO, "scripts/emit_board_calibration.py"),
            "--workload", workload_desc, "--out", out_path,
            "--validate-against", "results/codesign_feedback/k1_board_calibration.json"]
+    if schedule:
+        cmd += ["--schedule", schedule]
+    else:
+        log("  no schedule to check dispatch-id alignment against; per-dispatch keys "
+            "will be emitted UNVERIFIED")
     for t in traces:
         cmd += ["--trace", t]
     r = sh(cmd, log=log)
@@ -438,6 +453,7 @@ def main() -> int:
     board_warnings = []
     traces = sorted(os.path.join(out_dir, f) for f in os.listdir(out_dir)
                     if f.startswith("board_") and f.endswith("_trace.csv"))
+    sched = None
     if a.skip_board:
         log(f"  --skip-board: reusing {len(traces)} trace(s) already here")
     else:
@@ -468,7 +484,15 @@ def main() -> int:
     # ---- stage 3: fit the calibration to THIS workload ---------------------------
     log(f"\n[3/4] fit a calibration to this workload's own {len(traces)} run(s)")
     cal_path = os.path.join(out_dir, f"k1_calibration_{stem}.json")
-    cal = fit_calibration(traces, f"{stem}: {'+'.join(nets)}", cal_path, log)
+    # With --skip-board the schedule was solved on an earlier run, and the driver copied
+    # it next to the traces precisely so a refit can still check alignment.
+    if sched is None:
+        _c = sorted(glob.glob(os.path.join(out_dir, "scheduled_*.json")))
+        sched = _c[0] if _c else None
+        if sched:
+            log(f"  alignment will be checked against {os.path.basename(sched)}")
+    cal = fit_calibration(traces, f"{stem}: {'+'.join(nets)}", cal_path, log,
+                          schedule=sched)
     if cal is None:
         return 1
     covered = set(cal["coverage"]["nets_exact"])

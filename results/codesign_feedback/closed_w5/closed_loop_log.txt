@@ -10,11 +10,14 @@ networks: ['mlp_control', 'fused_full', 'ffn_block', 'dronet', 'yolov8_nano_64x9
   --skip-board: reusing 5 trace(s) already here
 
 [3/4] fit a calibration to this workload's own 5 run(s)
-  $ /scratch/agustin/xpurt-dev-sync/.venv/bin/python /scratch/agustin/xpurt-dev-sync/scripts/emit_board_calibration.py --workload w5_ffn_dronet_yolo: mlp_control+fused_full+ffn_block+dronet+yolov8_nano_64x96 --out /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/k1_calibration_w5_ffn_dronet_yolo.json --validate-against results/codesign_feedback/k1_board_calibration.json --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/board_0_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/board_1_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/board_2_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/board_3_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/board_4_trace.csv
+  alignment will be checked against scheduled_w5_ffn_dronet_yolo_r1_ime_greedy_profiled.json
+  $ /scratch/agustin/xpurt-dev-sync/.venv/bin/python /scratch/agustin/xpurt-dev-sync/scripts/emit_board_calibration.py --workload w5_ffn_dronet_yolo: mlp_control+fused_full+ffn_block+dronet+yolov8_nano_64x96 --out /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/k1_calibration_w5_ffn_dronet_yolo.json --validate-against results/codesign_feedback/k1_board_calibration.json --schedule /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/scheduled_w5_ffn_dronet_yolo_r1_ime_greedy_profiled.json --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/board_0_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/board_1_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/board_2_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/board_3_trace.csv --trace /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/board_4_trace.csv
   read 5 trace(s), 2420 dispatch samples
+    MISALIGNED yolov8_nano_64x96: the trace has ids the schedule does not: [3, 11, 22, 33, 48, 56]
+      -> per-dispatch keys for yolov8_nano_64x96 are OMITTED; it is costed by its op kinds, which are keyed by the row's own op and are unaffected
   
   === validate against results/codesign_feedback/k1_board_calibration.json ===
-  per_dispatch_multiplier: 7/48 within 2%   (mine 138, reference 48, 90 new keys)
+  per_dispatch_multiplier: 7/48 within 2%   (mine 48, reference 48)
       dronet/0                   got   1.2334  reference   1.2718  (-3.0%)
       dronet/1                   got   1.0800  reference   1.0565  (+2.2%)
       dronet/10                  got   1.9881  reference   2.5678  (-22.6%)
@@ -36,16 +39,16 @@ networks: ['mlp_control', 'fused_full', 'ffn_block', 'dronet', 'yolov8_nano_64x9
   
   wrote results/codesign_feedback/closed_w5/k1_calibration_w5_ffn_dronet_yolo.json
     aggregate x1.3476 (mean; median 1.1785) from 1200 pooled samples
-    exact keys 138   op-kind keys 10
+    exact keys 48   op-kind keys 10
     nets measured: dronet, ffn_block, fused_full, mlp_control, yolov8_nano_64x96
-  every network in this workload is MEASURED -- nothing extrapolated
+  STILL EXTRAPOLATED: ['yolov8_nano_64x96'] did not appear in the traces, so they are costed by op kind or by the aggregate
 
 [4/4] AOT search again, scored on those measured costs
   $ /scratch/agustin/xpurt-dev-sync/.venv/bin/python -u /scratch/agustin/xpurt-dev-sync/scripts/run_codesign_loop.py --workload data/toplevel/scaling/w5_ffn_dronet_yolo.json --solver greedy --objective lateness --out-dir /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/board --time-limit 90 --search-calibration /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/closed_w5/k1_calibration_w5_ffn_dronet_yolo.json
-  board-honest decided: ['ime']   misses 11.0 -> 11.0   lateness 214.012 -> 186.79 ms
+  board-honest decided: ['ime']   misses 11.0 -> 11.0   lateness 201.617 -> 175.115 ms
 
 === would the board have chosen differently? ===
   AOT-cost search   : ['ime']
   board-cost search : ['ime']
   same transformations either way: the AOT decision is robust to the cost model on this workload
-  residual lateness the AOT view reports: 99.024 ms; measured-cost view: 186.79 ms (1.89x)
+  residual lateness the AOT view reports: 99.024 ms; measured-cost view: 175.115 ms (1.77x)

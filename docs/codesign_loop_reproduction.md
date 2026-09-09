@@ -316,13 +316,26 @@ to run.
 |---|---|---|
 | transformations | `ime` (`shard` refused: not buildable) | `ime` |
 | instance misses | 11 -> 11 | 11 -> 11 |
-| baseline lateness | 109.81 ms | **214.01 ms** |
-| residual lateness | 99.02 ms | **186.79 ms** (1.89x) |
+| baseline lateness | 109.81 ms | **201.62 ms** |
+| residual lateness | 99.02 ms | **175.12 ms** (1.77x) |
 
 This is the honest negative, and it is worth as much as w2's clean win. Nothing clears a
 deadline on this rung. What the board adds is *why*: the isolated profile database
-understates the baseline by 1.95x and the residual by 1.89x, so an AOT-only loop would
+understates the baseline by 1.84x and the residual by 1.77x, so an AOT-only loop would
 report itself much closer to feasible than it is.
+
+**yolo is costed by its op kinds here, not per dispatch, and that is deliberate.** The
+runner records zero-cost ops (`chunk`, `split`, `slice`) with `dispatch_id = -1` and
+numbers the remaining dispatches from zero, while the schedule numbers all of them. So
+`yolov8_nano_64x96` traces 90 dispatches as 0..89 where the schedule spans 0..97, and a
+per-dispatch key would be applied to a *different* dispatch. Nothing about that is visible
+in the emitted table -- every ratio is computed inside one trace row and is correct, so
+the multipliers look plausible and the file validates -- which is why
+`emit_board_calibration.py` takes `--schedule`, checks the two numberings, and **drops a
+misaligned network's per-dispatch keys** rather than keeping wrong ones that look right.
+It cost a first pass at these numbers: with the offset keys this rung read 214.01 /
+186.79 ms (1.89x). The four networks with no zero-cost ops are aligned and keep their
+48 exact keys; w3's three are aligned too, so nothing there moves.
 
 **The calibration is what makes this rung sayable at all.** `conv2d_batchnorm2d_silu_s8`
 is 94.2% of yolo's runtime and is **absent from the generic table's op tier**, so every

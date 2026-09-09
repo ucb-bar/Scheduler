@@ -7,12 +7,12 @@ measure each → accept the largest measured makespan win with 0 added misses �
 scripts/run_codesign_loop.py --workload data/toplevel/scaling/w5_ffn_dronet_yolo.json --max-rounds 4
 ```
 
-**Baseline → final: 86.5 → 83.2 ms (-12.7%)** — levers applied: ['ime'].
+**Baseline → final: 85.2 → 73.4 ms (-13.1%)** — levers applied: ['ime'].
 
 | round | lever | before (ms) | after (ms) | % | misses |
 |--:|--|--:|--:|--:|--:|
-| 1 | +ime | 86.5 | 83.2 | -12.7 | 11 |
-| 2 | _(none accepted)_ | 186.79 | — | — | — |
+| 1 | +ime | 85.2 | 73.4 | -13.1 | 11 |
+| 2 | _(none accepted)_ | 175.115 | — | — | — |
 
 Honest note — fuse: NOT applied — roofline decision-aid says the stack is compute-bound (max fusible-epilogue ceiling 16% on dronet); fusion collapses dispatches (scheduling) but is measured ~+0.85% on cycles, so the loop does not credit a makespan gain it cannot measure.
 

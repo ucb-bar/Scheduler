@@ -122,6 +122,65 @@ def read_trace(path):
     return out, None
 
 
+def schedule_real_ids(sched_path):
+    """`{network: {dispatch_id}}` for the dispatches a schedule actually costs.
+
+    Zero-cost dispatches are included here: whether they appear is exactly what the
+    alignment check has to see.
+    """
+    sched = json.load(open(sched_path))
+    per = collections.defaultdict(set)
+    for e in (sched.get("dispatches") or {}).values():
+        mod = str(e.get("module_name") or "")
+        net = (mod.split("$", 1)[0] if "$" in mod
+               else str(e.get("job_name", "")).rstrip("0123456789"))
+        per[net].add(int(e["id"]))
+    return per
+
+
+def aligned_networks(rows, sched_path, log):
+    """Networks whose TRACE dispatch ids match the SCHEDULE's, so a per-dispatch key means
+    what `profile_loader._board_calibration_mult` will look up.
+
+    WHY THIS IS NOT PARANOIA. The runner renumbers: it records zero-cost ops (`chunk`,
+    `split`, `slice`) with `dispatch_id = -1` and numbers the REMAINING dispatches from
+    zero, while the schedule numbers every dispatch including those. So on a network
+    containing zero-cost ops the two numberings diverge after the first one --
+    `yolov8_nano_64x96` traces 90 ids as 0..89 where the schedule spans 0..97.
+
+    Nothing about that is visible in the emitted table. Every ratio is computed within one
+    trace row and is correct; only the KEY is wrong, so the multipliers are plausible,
+    the file validates, and the solver silently costs each yolo dispatch with a different
+    dispatch's measurement. The op tier is unaffected -- it is keyed by the row's own `op`
+    -- which is why a misaligned network is better served by dropping its per-dispatch
+    keys than by keeping them.
+    """
+    trace_ids = collections.defaultdict(set)
+    for net, did, _op, _p, _a in rows:
+        trace_ids[net].add(did)
+    sched_ids = schedule_real_ids(sched_path)
+    ok, bad = set(), {}
+    for net, tids in sorted(trace_ids.items()):
+        sids = sched_ids.get(net)
+        if sids is None:
+            bad[net] = "the schedule has no dispatches for this network"
+        elif tids == sids:
+            ok.add(net)
+        elif tids <= sids:
+            bad[net] = (f"the trace numbers {len(tids)} dispatches 0..{max(tids)} while "
+                        f"the schedule spans 0..{max(sids)} ({len(sids)} dispatches); "
+                        f"the runner renumbers around zero-cost ops, so a per-dispatch "
+                        f"key would be applied to a different dispatch")
+        else:
+            bad[net] = (f"the trace has ids the schedule does not: "
+                        f"{sorted(tids - sids)[:6]}")
+    for net, why in bad.items():
+        log(f"  MISALIGNED {net}: {why}")
+        log(f"    -> per-dispatch keys for {net} are OMITTED; it is costed by its op "
+            f"kinds, which are keyed by the row's own op and are unaffected")
+    return ok, bad
+
+
 def compare(got, want, tol):
     """`(n_common, n_off, [(key, got, want)])` -- how well two tiers agree."""
     common = [k for k in want if k in got]
@@ -146,6 +205,13 @@ def main() -> int:
                          "below it the dispatch falls back to its op kind")
     ap.add_argument("--workload", default=None,
                     help="human description; defaults to the nets actually measured")
+    ap.add_argument("--schedule", default=None,
+                    help="the schedule these traces were run from. Supply it: the runner "
+                         "renumbers dispatches around zero-cost ops, so without a "
+                         "schedule to check against, a per-dispatch key can be applied "
+                         "to a DIFFERENT dispatch and nothing about the table looks "
+                         "wrong. Networks that fail the check keep their op-kind "
+                         "multipliers and lose their per-dispatch ones.")
     ap.add_argument("--validate-against", default=None,
                     help="an existing calibration json to diff the result against")
     ap.add_argument("--tol", type=float, default=0.02,
@@ -193,8 +259,18 @@ def main() -> int:
             if op:
                 per_op[op].append(ratio)
 
+    if a.schedule:
+        ok_nets, bad_nets = aligned_networks(rows, a.schedule, log)
+        if not bad_nets:
+            log(f"  dispatch ids align with {os.path.basename(a.schedule)} for every "
+                f"network")
+    else:
+        ok_nets, bad_nets = set(nets), {}
+        log("  no --schedule given: per-dispatch key alignment is UNVERIFIED. If any "
+            "network here contains zero-cost ops (chunk/split/slice) its keys are "
+            "probably offset -- pass --schedule.")
     exact = {k: round(stat(v), 4) for k, v in sorted(per_key.items())
-             if len(v) >= a.min_samples}
+             if len(v) >= a.min_samples and k.rsplit("/", 1)[0] in ok_nets}
     opk = {k: round(stat(v), 4) for k, v in sorted(per_op.items())}
     if not pooled:
         log(f"every sample is below --min-pred-ms {a.min_pred_ms}; "
@@ -225,8 +301,22 @@ def main() -> int:
         "aggregate_mean": round(statistics.fmean(pooled), 4),
         "primary_key": "network/dispatch_id (exact, for the measured workload)",
         "fallback_key": "op (generalizing; EXTRAPOLATED for nets not in coverage.nets_exact)",
+        "alignment": {
+            "schedule": a.schedule,
+            "verified": bool(a.schedule),
+            "networks_aligned": sorted(ok_nets),
+            "networks_omitted_from_exact_tier": bad_nets,
+            "note": ("the runner records zero-cost ops with dispatch_id -1 and numbers "
+                     "the rest from zero, while the schedule numbers all of them, so on "
+                     "a network with zero-cost ops the two numberings diverge. Ratios "
+                     "are computed within a row and are always right; only the KEY can "
+                     "be wrong, which is invisible in the emitted table -- hence the "
+                     "check, and hence dropping a misaligned network's per-dispatch "
+                     "keys rather than keeping plausible-looking wrong ones."),
+        },
         "coverage": {
-            "nets_exact": sorted(nets),
+            "nets_exact": sorted(ok_nets),
+            "nets_measured": sorted(nets),
             "n_exact_dispatch_keys": len(exact),
             "n_op_kind_keys": len(opk),
             "note": ("a net absent from nets_exact is costed by its op kinds or by the "

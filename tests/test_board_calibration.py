@@ -200,3 +200,83 @@ class TheRealTableReproduces(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class KeyAlignmentIsVerified(unittest.TestCase):
+    """A per-dispatch key must name the dispatch the solver will look it up for.
+
+    The runner records zero-cost ops (chunk/split/slice) with `dispatch_id = -1` and
+    numbers the REMAINING dispatches from zero, while the schedule numbers all of them.
+    So on a network containing zero-cost ops the two numberings diverge after the first
+    one -- `yolov8_nano_64x96` traces 90 dispatches as 0..89 where the schedule spans
+    0..97.
+
+    Nothing about that is visible in the emitted table: every ratio is computed inside one
+    trace row and is correct, so the multipliers are plausible, the file validates, and
+    the solver silently costs each dispatch with a different dispatch's measurement.
+    Hence checking, and hence dropping a misaligned network's per-dispatch keys rather
+    than keeping wrong ones that look right.
+    """
+
+    def _sched(self, path, entries):
+        import json as _json
+        d = {"dispatches": {}}
+        for net, did in entries:
+            d["dispatches"][f"{net}0_dispatch_{did}"] = {
+                "id": did, "job_name": f"{net}0",
+                "module_name": f"{net}$dispatch_{did}_rvv_x60_conv2d_s8_N1xOC32",
+                "hardware_target": "CPU_P#0",
+            }
+        _json.dump(d, open(path, "w"))
+
+    def test_a_renumbered_network_loses_its_per_dispatch_keys_only(self):
+        with tempfile.TemporaryDirectory() as d:
+            t = os.path.join(d, "t_trace.csv")
+            # trace numbers the two real dispatches 0,1; the schedule calls them 0,2
+            write_trace(t, [("yolo9", 0, 0, "conv2d_s8", 2.0, 3.0, 0.0),
+                            ("yolo9", 0, 1, "conv2d_s8", 2.0, 3.0, 0.0),
+                            ("dronet", 0, 0, "conv2d_s8", 2.0, 2.4, 0.0)])
+            sp = os.path.join(d, "sched.json")
+            self._sched(sp, [("yolo9", 0), ("yolo9", 2), ("dronet", 0)])
+            out = os.path.join(d, "cal.json")
+            r = subprocess.run([sys.executable, _SCRIPT, "--trace", t, "--out", out,
+                                "--schedule", sp], capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+            got = json.load(open(out))
+            keys = list(got["per_dispatch_multiplier"])
+            self.assertEqual(keys, ["dronet/0"],
+                             "the misaligned network must lose its per-dispatch keys")
+            self.assertIn("yolo9", got["alignment"]["networks_omitted_from_exact_tier"])
+            # ... and keep its op-kind coverage, which is keyed by the row's own op
+            self.assertIn("conv2d_s8", got["per_op_multiplier"])
+            self.assertIn("yolo9", got["coverage"]["nets_measured"])
+            self.assertNotIn("yolo9", got["coverage"]["nets_exact"])
+
+    def test_an_aligned_schedule_keeps_every_key(self):
+        with tempfile.TemporaryDirectory() as d:
+            t = os.path.join(d, "t_trace.csv")
+            write_trace(t, [("dronet", 0, 0, "conv2d_s8", 2.0, 2.4, 0.0),
+                            ("dronet", 0, 1, "conv2d_s8", 2.0, 2.4, 0.0)])
+            sp = os.path.join(d, "sched.json")
+            self._sched(sp, [("dronet", 0), ("dronet", 1)])
+            out = os.path.join(d, "cal.json")
+            r = subprocess.run([sys.executable, _SCRIPT, "--trace", t, "--out", out,
+                                "--schedule", sp], capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+            got = json.load(open(out))
+            self.assertEqual(sorted(got["per_dispatch_multiplier"]),
+                             ["dronet/0", "dronet/1"])
+            self.assertTrue(got["alignment"]["verified"])
+            self.assertEqual(got["alignment"]["networks_omitted_from_exact_tier"], {})
+
+    def test_without_a_schedule_the_table_says_alignment_is_unverified(self):
+        with tempfile.TemporaryDirectory() as d:
+            t = os.path.join(d, "t_trace.csv")
+            write_trace(t, [("dronet", 0, 0, "conv2d_s8", 2.0, 2.4, 0.0)])
+            out = os.path.join(d, "cal.json")
+            r = subprocess.run([sys.executable, _SCRIPT, "--trace", t, "--out", out],
+                               capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+            got = json.load(open(out))
+            self.assertFalse(got["alignment"]["verified"])
+            self.assertIn("UNVERIFIED", r.stdout)

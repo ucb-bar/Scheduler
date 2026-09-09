@@ -110,6 +110,20 @@ def width_of(entry) -> int:
 
 
 def net_of(entry) -> str:
+    """The NETWORK an entry belongs to, taken from `module_name` where possible.
+
+    `job_name` is `<net><instance>`, and trimming trailing digits off it is wrong
+    whenever the network's own name ends in a digit: `yolov8_nano_64x960` (instance 0 of
+    `yolov8_nano_64x96`) becomes `yolov8_nano_64x`. That is not hypothetical -- it is the
+    name this very checker reported violations under until it was fixed, and the same
+    hazard bit the calibration emitter and the board runner's ingest.
+
+    `module_name` carries the authoritative network name before the `$`, so use it and
+    fall back to the digit trim only when the entry has no module name.
+    """
+    mod = str(entry.get("module_name") or "")
+    if "$" in mod:
+        return mod.split("$", 1)[0]
     job = str(entry.get("job_name", ""))
     return job.rstrip("0123456789") or job
 
