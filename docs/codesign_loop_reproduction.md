@@ -336,6 +336,89 @@ It needs two things this repo does not carry by default:
 
 ---
 
+## 8. The codegen contract: what the scheduler is allowed to recommend
+
+The scheduler's option space was wider than the compiler's, and nothing connected the
+two. `shard` machine-combination mode lets every periodic **instance** of a dispatch pick
+its own aligned core block. For a convolution that cannot be generated: the packed weight
+array is materialised per shard while emitting the skeleton, so the width has to be one
+value per dispatch. The solver did not know, so it produced schedules that were valid for
+the runtime and impossible for the compiler.
+
+That is not a theoretical concern. It cost a board build, and it retracted a result.
+
+**`ModelBlaster/cores/codegen_contract.json`** states the compiler's constraints as data,
+each with its evidence and where it is enforced. It is the sibling of
+`cores/spacemit_k1.json`, and the two are not interchangeable: that file says what the
+**hardware can execute** (which ops a core runs, and that `smt.vmadot` traps outside
+cluster 0), this one says what the **compiler can generate**.
+
+| rule | severity | statement |
+|---|---|---|
+| `uniform_width_across_instances` | refuse | packed-weight (conv family) dispatches take one width across all instances |
+| `width_divides_output_channels` | refuse | the width must divide OC exactly |
+| `runtime_sliceable_ops` | none | `linear_s8`, `matmul_s8` may vary width freely — row-major weights are sliced at runtime |
+| `linear_split_axis` | refuse | a linear splits on M; an N-split is refused when M > 1 |
+| `ime` | refuse | int8 only, cluster 0 only — `smt.vmadot` does not degrade off-cluster, it dies |
+| `machine_combinations` | refuse | one core kind per combination, as an aligned block |
+| `staged_ir_networks` | refuse | `yolov8_nano_64x96` cannot be extracted by name |
+
+`ModelBlaster/pipeline/schedule_shards.py` takes its packed-weight op list **from the
+contract** rather than keeping a second copy — two lists in two languages would be free
+to drift, and the drift fails in the worst direction: the scheduler believes an op is
+unconstrained and the build refuses the result. A test asserts they agree.
+
+### Two ways to use it, and the first is better
+
+```bash
+# check a solved schedule -- milliseconds, names the dispatch
+$PY xpu-rt/codegen_contract.py schedules/scheduled_*.json
+```
+
+**Reject afterwards.** `run_codesign_loop.py` gates every candidate, lever and graph
+rewrite alike, because *a lever that wins on paper and cannot be compiled is not a win*.
+This is what retracted the w5 result: `shard` was credited with 11 → 5 instance misses on
+a schedule where `dronet` dispatch 0 takes width 2 in one instance and 4 in another.
+Gated, w5 converges on `ime` alone at 11 → 11. The previously reported halving on that
+rung was never deployable. (Reassuringly, scored on measured board costs the nine-term
+rule rejects the same lever independently, on worst deadline lateness 38.62 → 40.38 ms —
+so the gate is not merely pessimistic.)
+
+**Constrain beforehand**, which is better, because rejecting the solver's answer
+understates what co-design can do:
+
+```bash
+XPURT_UNIFORM_PACKED_WIDTH=1 $PY scripts/run_xpurt_schedule.py --networks-json <spec> \
+    --profiled --solver milp --scheduler cpsat
+# [cpsat] codegen contract: 10 packed-weight dispatch(es) constrained to one width
+#         across their instances
+```
+
+CP-SAT gets a per-(dispatch, width) indicator linked to its combination-presence
+variables, so the solver **still chooses** the width — it just has to choose one. Pinning
+a width instead would trade a correctness constraint for a policy decision, and the whole
+point of shard mode is that the right width depends on what else is running. Off by
+default so no existing result moves.
+
+The op kind is not available from a dispatch graph — that carries only ids and
+dependencies, so `operation_name` is `<net-instance>_dispatch_<id>` and names no op at
+all. `run_xpurt_schedule._annotate_op_kinds` attaches it from the profile database, and
+looks the base network up **by membership, never by trimming trailing digits**:
+`yolov8_nano_64x96` ends in a digit, so a blind strip yields `yolov8_nano_64x` and every
+one of its dispatches silently loses its op kind. That hazard bit three separate places
+in one afternoon — this driver, the calibration emitter, and the board runner's ingest.
+
+### Adding a rule
+
+Edit the json. Both sides read it, `tests/test_codegen_contract.py` checks the two agree,
+and a rule whose `checkable_from` is `"schedule"` is enforced automatically by
+`violations()`. A missing contract degrades to **ungated and says so** — refusing every
+candidate because a submodule is absent would be worse than not checking — but an empty
+or unreadable one is an error, because a silently empty ruleset passes everything and the
+build still fails.
+
+---
+
 ## Environment
 
 ```bash

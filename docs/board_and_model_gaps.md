@@ -108,3 +108,48 @@ So it needs a homogeneity guard (same `profile_hw` for every kind in the combina
 threaded through both builders, and it must be opt-in. `aligned_core_blocks` itself needs
 nothing: pooled over 8 cores it already yields `[0..7]` and keeps the alignment property
 that makes `combinations_overlap` honest.
+
+---
+
+## 3. The scheduler could recommend what the compiler cannot build
+
+Found by the loop, and it retracted one of the loop's own results.
+
+XPU-RT's `shard` mode lets every periodic **instance** of a dispatch choose its own
+aligned core block. For a convolution that is unbuildable: the packed weight array is
+materialised per shard while emitting the skeleton, so the width must be one value per
+dispatch. Nothing told the scheduler, so it produced valid schedules the compiler
+refused. On the ladder's 5-net rung, greedy gave `dronet` dispatches 0, 3, 8 and 9 two or
+three different widths across five instances, and the board build died at stage 1 of 5 --
+after extracting and generating sources for every model -- with a `ValueError` raised
+from inside a shell script.
+
+**What it cost, concretely.** The `shard` lever was credited with **11 -> 5 instance
+misses** on `w5_ffn_dronet_yolo` using a schedule that cannot be compiled. Any table or
+figure carrying that halving is carrying a number that was never deployable. Gated, w5
+converges on `ime` alone at 11 -> 11.
+
+**Mostly closed.** `ModelBlaster/cores/codegen_contract.json` now declares the compiler's
+constraints as data; `xpu-rt/codegen_contract.py` checks a schedule against them in
+milliseconds; the loop rejects an unbuildable candidate; and with
+`XPURT_UNIFORM_PACKED_WIDTH=1` CP-SAT is *constrained* instead, so the solver still picks
+the width and simply has to pick one. See `docs/codesign_loop_reproduction.md` section 8.
+
+**What is still open.** Only CP-SAT can be constrained. The greedy family bypasses the
+registry and has no combination-selection variable to couple, so a greedy sharded
+schedule can only be checked and rejected, never repaired -- which understates greedy on
+exactly the workloads where sharding is the answer. Two ways forward, neither done here:
+
+1. a post-solve repair that re-places the deviating instances onto the majority width and
+   re-costs, with the schedule re-validated afterwards (cheap, but it can fail to find a
+   placement and must then say so rather than emit an invalid schedule);
+2. per-width packed weight variants in the generated model, which removes the constraint
+   instead of satisfying it -- the right fix, and a codegen change rather than a
+   scheduling one.
+
+A third, narrower gap sits underneath: `parse_infeasible_combinations` maps a dispatch's
+`infeasible_machines` to indices in the **machines** list, and in `shard` mode a
+combination index is a block rather than a core, so the two index spaces disagree. It is
+harmless while nothing sets `infeasible_machines` on a sharded workload -- the ladder does
+not -- but it means the one existing per-dispatch exclusion mechanism cannot currently be
+used to express a width restriction.
