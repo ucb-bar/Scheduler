@@ -149,6 +149,105 @@ failures.
 
 ---
 
+## 6. Closing the loop the rest of the way: board costs inside the AOT search
+
+Until now the outer loop could only ever **re-solve a decision the inner loop had already
+committed to**. `--board-calibration` re-costs and re-schedules a fixed spec; the lever
+and rewrite search that chose that spec always ran on the isolated profile database. So
+the board could fix a placement, never a transformation.
+
+`--search-calibration` runs the inner search itself against measured board costs:
+
+```bash
+$PY scripts/run_codesign_loop.py --workload data/toplevel/scaling/w5_ffn_dronet_yolo.json \
+    --solver greedy --objective lateness --max-rounds 3 \
+    --search-calibration results/codesign_feedback/k1_board_calibration.json \
+    --out-dir results/codesign_feedback/search_board
+```
+
+Every lever, every graph rewrite and the baseline they are compared against are scored on
+board costs. `loop_report.json` records `search_costs` so a board-honest run cannot later
+be mistaken for an isolated-profile one -- the two are not comparable, and the driver says
+so in its first line of output.
+
+### It changes which transformations the loop adopts
+
+Same workloads, same solver (greedy), same budget; only the costs the search sees differ:
+
+| rung | AOT-cost search | board-cost search |
+|---|---|---|
+| `w2_ffn_tight` | `shard`, 5 -> **0** misses, lateness 83.05 -> 0 | `shard`, 5 -> **0** misses, lateness 99.74 -> 0 |
+| `w3_ffn_dronet` | `shard`, 10 -> 5, lateness 88.06 -> **7.79** | `shard`, 10 -> 5, lateness 113.15 -> **35.64** |
+| `w5_ffn_dronet_yolo` | `ime` **+ `shard`**, 11 -> **5** | `ime` only (**shard rejected**), 11 -> **11** |
+
+Three different things to read off it:
+
+1. **On w2 the decision is robust.** Sharding clears every deadline whichever cost model
+   is used, so the AOT loop was right for the right reason.
+2. **On w3 the lever is right and the confidence is not.** Both searches pick `shard` and
+   both land on 5 misses, but the AOT view reports 7.79 ms of residual lateness where the
+   board reports 35.64 ms -- **4.6x** more. A loop reading only the AOT number would
+   report itself nearly finished.
+3. **On w5 the decision flips.** The AOT search credits `shard` with halving the misses
+   (11 -> 5) and deploys it. Under board costs `shard` is *rejected twice*, because it
+   makes the deciding term worse: worst deadline lateness 38.62 -> 40.38 ms and misses
+   11 -> 12. That is a transformation the inner loop would ship and the silicon would
+   punish, and only a search that can see board costs declines it.
+
+**The honesty limit on point 3.** `w5` is the rung containing `yolov8_nano_64x96`, and
+the calibration in the repo has **no yolo in its measurement set** -- yolo dispatches are
+costed by the op-kind fallback, i.e. extrapolated, and yolo dominates this rung. So the
+*direction* of the flip is credible (the board inflates exactly the ops `shard` widens)
+but its magnitude is not measured for this workload. Fixing that needs yolo board runs
+and then a calibration built from them, which is now a command rather than a lost script:
+
+```bash
+$PY scripts/emit_board_calibration.py \
+    --trace-glob 'results/<your run>/*_trace.csv' \
+    --workload 'w5 ladder rung' --out results/codesign_feedback/k1_cal_w5.json
+```
+
+### Where the calibration comes from, and what could not be recovered
+
+`results/codesign_feedback/k1_board_calibration.json` was an **orphaned output**: the
+script that produced it was never committed, so the table could be consumed and never
+regenerated -- which is the whole reason its `fallback_key` has to admit "EXTRAPOLATED
+for nets not in calibration set, e.g. yolo".
+
+`scripts/emit_board_calibration.py` rebuilds it from the traces and is checked against
+the committed table rather than merely resembling it:
+
+```bash
+$PY scripts/emit_board_calibration.py \
+    --trace-glob 'results/k1_feedback_exact/board_runs*/original_*_trace.csv' \
+    --trace-glob 'results/k1_feedback_exact/board_runs*/feedback_*_trace.csv' \
+    --validate-against results/codesign_feedback/k1_board_calibration.json \
+    --out /tmp/cal.json
+```
+
+which reports **the same 48 per-dispatch keys, 40 of them within 2%**, and 7 of 11 op
+keys within 2%. The recipe it recovered is: `actual/predicted` per dispatch, where
+`actual` is `(end-start)` rdtime ticks at `k1_trace.K1_RDTIME_HZ` and `predicted` is the
+`predicted_duration_ms` the runner stamps into the trace; arithmetic **mean** of
+per-sample ratios; all 60 traces (both schedules, all three run directories); a 0.1 ms
+floor on the pooled op tier so timer granularity cannot inflate it. Every alternative
+tried is markedly worse -- RT traces only gives 25/48, dropping the cold first instance
+13/48, trimming each key's top decile 9/48 -- which is the evidence that this is the
+original recipe and not a coincidence.
+
+Two things did not come back. Eight `dronet` keys sit 2-14% high, and the v1
+`aggregate_multiplier` of 1.2608 matches no single statistic over these traces (mean
+1.3348 under the floor, median 1.1647, mean unfloored 1.6858), so the original applied a
+trim that went with the script. Both are recorded in the emitted table's `validation`
+block instead of being smoothed over.
+
+It needs no schedule, no IR and no join -- `op` and `predicted_duration_ms` are columns
+the runner already writes -- so it runs on any workload's board traces, which is the
+point. Queue delay is excluded: a dispatch that waited is not a dispatch that ran slowly,
+and charging the wait to the op would make the scheduler pay twice for its own placement.
+
+---
+
 ## Environment
 
 ```bash
