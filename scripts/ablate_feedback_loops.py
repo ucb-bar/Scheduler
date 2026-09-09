@@ -45,6 +45,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import csv
 import glob
 import json
 import os
@@ -124,6 +125,71 @@ def classify_failure(text: str) -> str:
     if "timeout" in low or "timed out" in low:
         return "timeout"
     return "unavailable" if any(m in low for m in UNAVAILABLE_MARKERS) else "error"
+
+
+def net_core_times(net: str) -> dict:
+    """`{n_cores: whole-net ms}` measured on the board, from the committed profiles."""
+    out = {}
+    for c in glob.glob(os.path.join(
+            REPO, f"gen/profile_mb/*/spacemit_x60/{net}/*/*/topo_*/results.csv")):
+        width = len(os.path.basename(os.path.dirname(c)).split("_")) - 1
+        try:
+            t = sum(float(r["mean_time"] or 0)
+                    for r in csv.DictReader(open(c)))
+        except Exception:
+            continue
+        if t > 0:
+            out[width] = min(out.get(width, 9e9), t)
+    return out
+
+
+def feasibility(spec_obj: dict) -> dict:
+    """Which of this workload's nets can meet their window AT ALL, and which cannot.
+
+    WHY THIS IS A FIRST-CLASS OUTPUT. Scoring the loop on a deadline no schedule can
+    meet measures the wrong thing. On the existing corpus 44 of the 50 residual misses
+    were of this kind: yolov8_nano_64x96 needs 23.95 ms at 8 cores against a 22 ms
+    window and its scaling has saturated (4->8 cores buys 1.6%), so no lever, solver or
+    loop can clear it. Reporting that as a loop failure is a category error -- it is a
+    COMPILER gap (yolo's fused convs do not parallelise past ~2x), and the honest claim
+    is "the loop clears what is clearable".
+
+    A net is infeasible-by-construction when its FASTEST measured implementation, across
+    every profiled core width, still exceeds its window.
+    """
+    out = {}
+    for net, info in (spec_obj.get("networks") or {}).items():
+        window = float(info.get("window_duration") or 0)
+        t = net_core_times(net)
+        if not t or window <= 0:
+            out[net] = {"verdict": "unknown", "window_ms": window or None}
+            continue
+        best_w = min(t, key=lambda w: t[w])
+        best = t[best_w]
+        out[net] = {
+            "window_ms": round(window, 3),
+            "best_ms": round(best, 3), "best_cores": best_w,
+            "singleton_ms": round(t.get(1, best), 3),
+            "verdict": "infeasible" if best > window else "achievable",
+            "needs_ratio": round(best / window, 3) if window else None,
+        }
+    return out
+
+
+def split_misses(cell: dict, feas: dict) -> dict:
+    """Attribute a cell's misses to nets that COULD have met their deadline and nets
+    that could not, so the loop's scorecard is not charged for the impossible."""
+    ach = inf = unk = 0
+    for net, n in (cell.get("misses_by_network") or {}).items():
+        v = (feas.get(net) or {}).get("verdict")
+        if v == "infeasible":
+            inf += n
+        elif v == "achievable":
+            ach += n
+        else:
+            unk += n
+    return {"achievable_misses": ach, "infeasible_misses": inf,
+            "unknown_misses": unk}
 
 
 def comparability_of(cells: dict) -> dict:
@@ -358,6 +424,7 @@ def main() -> int:
                 continue
             log(f"    inner (AOT) search: levers {levers or '(none)'}")
             spec_for = {False: base_spec, True: opt_spec}
+            feas = feasibility(json.load(open(base_spec)))
             cells = {}
             for name, inner, outer, label in CELLS:
                 sp = spec_for[inner]
@@ -403,6 +470,7 @@ def main() -> int:
                 # Comparability: every cell of a workload must schedule the same amount
                 # of work, or the comparison is between two workloads.
                 cell["instances"] = instances_per_model(scored, spec_obj)
+                cell.update(split_misses(cell, feas))
                 if needs_repeat and a.repeats > 1:
                     misses = [cell["instance_misses"]]
                     lates = [cell["worst_lateness_ms"]]
@@ -451,6 +519,7 @@ def main() -> int:
             if verdict["status"] == "REFUSED":
                 log(f"    !! {solver}: COMPARABILITY REFUSED — {verdict['per_cell']}")
         rows.append({"workload": w, "family": family_of(stem),
+                     "feasibility": feasibility(json.load(open(base_spec))),
                      "solvers": per_solver})
 
     # ---- aggregate -----------------------------------------------------------
@@ -553,6 +622,21 @@ def main() -> int:
                 out.append(v)
         return out
 
+    # The loop's REAL scorecard: misses it could have cleared. An infeasible miss is a
+    # compiler gap (an op that does not parallelise far enough), not a scheduling one.
+    agg_achievable = {}
+    for solver in solvers:
+        agg_achievable[solver] = {}
+        for name, inner, outer, label in CELLS:
+            ach = agg_over(at_stake, solver, name, "achievable_misses")
+            inf = agg_over(at_stake, solver, name, "infeasible_misses")
+            agg_achievable[solver][name] = {
+                "label": label, "n": len(ach),
+                "total_achievable_misses": sum(ach),
+                "total_infeasible_misses": sum(inf),
+                "workloads_with_zero_achievable_misses": sum(1 for x in ach if x == 0),
+            }
+
     agg_at_stake = {}
     for solver in solvers:
         agg_at_stake[solver] = {}
@@ -579,6 +663,11 @@ def main() -> int:
                      "that return bit-identical results; the family is the unit"),
         },
         "aggregate_at_stake_only": agg_at_stake,
+        "aggregate_achievable_only": agg_achievable,
+        "achievable_means": ("a miss is ACHIEVABLE when the net's fastest measured "
+                             "implementation fits its window; otherwise no schedule "
+                             "can meet that deadline and the miss is a compiler gap, "
+                             "not a scheduling one"),
         "cpsat_time_limit_s": a.cpsat_time_limit,
         "repeats_policy": ("repeat only a CP-SAT solve that did not prove optimality; "
                            "greedy is deterministic"),
@@ -636,6 +725,16 @@ def main() -> int:
                 f"{str(g['workloads_with_zero_misses']) + '/' + str(g['n']):<9}"
                 f"{g['total_instance_misses']:<10}"
                 f"{(g['median_worst_lateness_ms'] or 0):<16.3f}")
+    log(f"\n=== THE LOOP'S REAL SCORECARD (achievable misses only) ===")
+    for solver in solvers:
+        log(f"\n[{solver}] achievable-only")
+        log(f"  {'cell':<5}{'inner':<7}{'outer':<7}{'0-achv':<9}"
+            f"{'achievable':<12}{'infeasible':<12}")
+        for name, inner, outer, label in CELLS:
+            g = agg_achievable[solver][name]
+            log(f"  {name:<5}{str(inner):<7}{str(outer):<7}"
+                f"{str(g['workloads_with_zero_achievable_misses']) + '/' + str(g['n']):<9}"
+                f"{g['total_achievable_misses']:<12}{g['total_infeasible_misses']:<12}")
     log(f"\nnothing at stake: "
         f"{[k for k, v in strata.items() if v == 'nothing_at_stake']}")
     log(f"\nsummary: {os.path.relpath(os.path.join(out_dir, 'ablation_summary.json'), REPO)}")
