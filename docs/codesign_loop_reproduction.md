@@ -424,6 +424,20 @@ a width instead would trade a correctness constraint for a policy decision, and 
 point of shard mode is that the right width depends on what else is running. Off by
 default so no existing result moves.
 
+**What constraining costs.** Same spec (`w5_ffn_dronet_yolo`, shard mode), same 300 s
+CP-SAT budget, 4 workers, one env var apart:
+
+| | makespan | dispatch misses | contract |
+|---|---|---|---|
+| unconstrained | 93.81 ms | 210 | **refused** — 6 conv dispatches take 2–3 widths each |
+| constrained (16 dispatches coupled) | 93.21 ms | 200 | **passes** |
+
+Nothing measurable. The constrained solve came out marginally ahead, which at 4 workers
+under a time limit is inside CP-SAT's own nondeterminism — the honest reading is that the
+constraint is free here, not that it helps. What matters is the last column: the
+unconstrained schedule is not a result at all, and rejecting it costs the whole candidate,
+which on w5 is the difference between reporting `shard` and reporting nothing.
+
 The op kind is not available from a dispatch graph — that carries only ids and
 dependencies, so `operation_name` is `<net-instance>_dispatch_<id>` and names no op at
 all. `run_xpurt_schedule._annotate_op_kinds` attaches it from the profile database, and

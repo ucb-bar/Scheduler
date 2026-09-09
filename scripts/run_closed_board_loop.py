@@ -232,48 +232,30 @@ def solve_for_board(spec_path, out_dir, solver, time_limit, log):
     return sched
 
 
-#: Ops whose weights are PACKED PER SHARD at codegen time, so one generated model
-#: cannot carry two layouts for one dispatch. Mirrors
-#: `ModelBlaster/pipeline/schedule_shards._PACKED_WEIGHT_SHARD_OPS`; a linear is absent
-#: because its row-major weights are sliced at runtime from the entry's own pool width.
-PACKED_WEIGHT_OPS = {"conv2d_s8", "conv2d_batchnorm2d_s8",
-                     "conv2d_batchnorm2d_silu_s8", "conv2d_silu_s8"}
-
-
 def undeployable_widths(sched_path, log):
-    """`{net: {dispatch_id: [widths]}}` a ModelBlaster build cannot express.
+    """Contract violations that would kill the board build, from the ONE contract.
 
-    WHY THIS IS CHECKED HERE. XPU-RT's `shard` mode lets every periodic INSTANCE of a
-    dispatch pick its own aligned core block, and for a convolution that is not
-    buildable: the packed weight array is materialized per shard while generating the
-    skeleton, so the width has to be one value per dispatch. The scheduler does not know
-    that constraint, so it produces schedules that are valid for the runtime and
-    impossible for the compiler -- on the 5-net rung, `dronet` dispatches 0, 3, 8 and 9
-    each take two or three different widths across their five instances.
+    This used to keep its own copy of the packed-weight op list, which is the drift the
+    contract exists to prevent: a third list, free to disagree with the two that matter.
+    It now asks `xpu-rt/codegen_contract.py`, which reads ModelBlaster's declaration.
 
-    Discovering it inside the board build costs the whole build: it dies at stage 1 of 5,
-    after extracting and generating for every model, with an error raised from a shell
-    script. Checking the schedule first costs milliseconds and names the dispatches.
+    Checked here because discovering it inside the build costs the whole build: it dies at
+    stage 1 of 5, after extracting and generating sources for every model, with an error
+    raised from a shell script. Checking the schedule first costs milliseconds and names
+    the dispatch.
     """
-    sched = json.load(open(sched_path))
-    packed, widths = {}, {}
-    for e in (sched.get("dispatches") or {}).values():
-        job = str(e.get("job_name", ""))
-        net = job.rstrip("0123456789") or job
-        did = int(e["id"])
-        # The op is not its own field; it is embedded in `module_name`, shaped
-        # `<net>$dispatch_<id>_<backend>_<op>_<SHAPE>` -- so match the op name
-        # delimited by underscores rather than trying to split the whole thing. The
-        # packed names do not prefix one another (`conv2d_batchnorm2d_s8` does not
-        # contain `conv2d_s8`), so a delimited substring test is exact here.
-        mod = str(e.get("module_name") or "")
-        packed[(net, did)] = any(f"_{op}_" in mod for op in PACKED_WEIGHT_OPS)
-        n = len([x for x in str(e.get("hardware_target", "")).split("+") if x.strip()])
-        widths.setdefault((net, did), set()).add(n)
+    sys.path.insert(0, os.path.join(REPO, "xpu-rt"))
+    try:
+        import codegen_contract
+        vs = [v for v in codegen_contract.violations(sched_path)
+              if v.get("severity") == "refuse"]
+    except Exception as e:
+        log(f"  codegen contract unavailable ({type(e).__name__}: {e}) -- the board "
+            f"build is NOT pre-checked, and will refuse the schedule itself if it must")
+        return {}
     bad = {}
-    for (net, did), ws in sorted(widths.items()):
-        if len(ws) > 1 and packed.get((net, did)):
-            bad.setdefault(net, {})[did] = sorted(ws)
+    for v in vs:
+        bad.setdefault(v["network"], {})[v["dispatch_id"]] = v["detail"]
     return bad
 
 
@@ -464,12 +446,10 @@ def main() -> int:
             return 1
         bad = undeployable_widths(sched, log)
         if bad:
-            log("  NOT DEPLOYABLE: this schedule gives a packed-weight (convolution) "
-                "dispatch different core widths in different periodic instances, and "
-                "one generated model cannot encode two packed layouts for one dispatch:")
+            log("  NOT DEPLOYABLE: the codegen contract refuses this schedule --")
             for net, dids in bad.items():
-                for did, ws in dids.items():
-                    log(f"    {net} dispatch {did}: widths {ws}")
+                for did, detail in sorted(dids.items()):
+                    log(f"    {net} dispatch {did}: {detail}")
             log("  This is a scheduler/compiler mismatch, not a bad schedule: XPU-RT's "
                 "shard mode lets every INSTANCE pick its own aligned block and does not "
                 "know the codegen constraint. Re-run restricting the levers to ones "
