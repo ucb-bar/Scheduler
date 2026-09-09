@@ -612,6 +612,24 @@ def cpsat_schedule(
                         if not _alt:
                             continue  # nothing legal to hint; leave this op unhinted
                         k = _alt[0]
+                # AND NEVER HINT AN EXCLUDED COMBINATION, whatever excluded it. HEFT runs
+                # in `cpsat_with_heft_warm_start` BEFORE this function, so it never sees
+                # the exclusions made here -- `restrict_shard_to_networks` prices out
+                # every multi-core combination for networks the loop chose not to widen,
+                # and HEFT will happily have placed one there. The projection above only
+                # covers packed-weight groups, so the w5 board re-solve still handed
+                # CP-SAT an infeasible starting point and came back with NO SCHEDULE at
+                # 400 s ("SOLVE FAILED"), which the loop then reported as a re-solve that
+                # found nothing. One feasibility check on the way out covers every
+                # exclusion source at once.
+                if k in ops[i].infeasible_combinations:
+                    _ok = [kk for kk in range(n_combos)
+                           if kk not in ops[i].infeasible_combinations]
+                    if not _ok:
+                        continue
+                    # Prefer the cheapest legal combination, so the hint is not merely
+                    # feasible but a reasonable place to start.
+                    k = min(_ok, key=lambda kk: durations_int[i][kk])
                 model.AddHint(presence[i][k], 1)
                 model.AddHint(chosen_start[i], _to_int_us(float(ws_t[i])))
         except Exception:
