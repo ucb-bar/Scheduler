@@ -50,10 +50,10 @@ sys.path.insert(0, os.path.join(
 import figstyle  # noqa: E402
 from schedule_eval import summary  # noqa: E402
 
-BEAT = [("baseline", "baseline\n(no lever)", "AOT"),
-        ("aot-optimized", "AOT optimize\n(inner loop)", "AOT"),
-        ("board-recost", "board re-cost\n(outer: reveal)", "board"),
-        ("board-resolve", "board re-solve\n(outer: fix)", "board")]
+BEAT = [("baseline", "baseline", "AOT"),
+        ("aot-optimized", "AOT\n(inner)", "AOT"),
+        ("board-recost", "re-cost\n(outer:\nreveal)", "board"),
+        ("board-resolve", "re-solve\n(outer:\nfix)", "board")]
 
 
 def arc(report_path, spec_path):
@@ -142,15 +142,14 @@ def panel(ax, rows, levers, title, nets, attrib=None):
     ax.axvline(0.5, color="#cccccc", lw=0.5, ls=":", zorder=1)
     ax.axvline(1.5, color=figstyle.BLACK, lw=0.7, zorder=1)
     ax.set_xticks(list(xs))
-    ax.set_xticklabels([r[0] for r in rows], fontsize=4.6)
+    ax.set_xticklabels([r[0] for r in rows], fontsize=4.2)
     ax.set_ylabel("deadline misses (instances)")
     ax.set_title(f"{title}\nlevers: {', '.join(levers) or 'none'}", fontsize=6)
     ax.set_ylim(0, max(bottoms) * 1.30 or 1)
     att = attribution(rows, nets, attrib)
     if att and att[0]:
         ax.text(0.5, 0.97,
-                f"residual: {att[0]} execution-bound (window unmeetable on the board) "
-                f"+ {att[1]} queueing",
+                f"residual: {att[0]} exec-bound + {att[1]} queueing",
                 transform=ax.transAxes, ha="center", va="top", fontsize=4.4,
                 color="#444444")
     ax.grid(axis="y", lw=0.3, color="#dddddd", zorder=0)
@@ -183,8 +182,11 @@ def main() -> int:
                 if k not in nets:
                     nets.append(k)
 
+    # Three panels do not fit a double column at the two-panel label sizes; give the
+    # row the full width and let the shortened beat labels carry the meaning.
     fig, axes = plt.subplots(1, len(rungs), figsize=(
-        figstyle.DOUBLE_COL * min(1.0, 0.42 * len(rungs) + 0.16), 66 * figstyle.MM))
+        figstyle.DOUBLE_COL * min(1.0, 0.40 * len(rungs) + 0.20), 68 * figstyle.MM))
+    fig.subplots_adjust(wspace=0.42)
     axes = [axes] if len(rungs) == 1 else list(axes)
     for i, ((name, rows, levers), ax) in enumerate(zip(rungs, axes)):
         panel(ax, rows, levers, name, nets, attribs.get(name))

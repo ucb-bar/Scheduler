@@ -6,15 +6,35 @@ limit. This is what they actually do, why they looked flat, and how to reproduce
 
 ## Result
 
-Instance-level deadline misses, on the accept rule's own counter.
+Instance-level deadline misses, on the accept rule's own counter. Greedy; two independent
+runs of every row are bit-identical.
 
 | rung | baseline | inner (AOT) | board re-cost | board re-solve | levers found |
 |------|---------:|------------:|--------------:|---------------:|--------------|
-| w4 · 4 nets | 10 | **5** | 4 | 4 (refused) | `shard:ffn_block` |
-| w5 · 5 nets | 11 | **7** | **16** | 14 | `shard:ffn_block`, `shard:dronet`, `ime` |
+| w4 · 4 nets, profile-sized | 10 | **5** | 4 | 4 (refused) | `shard:ffn_block` |
+| w5 · 5 nets, profile-sized | 11 | **7** | **16** | 14 | `shard:ffn_block`, `shard:dronet`, `ime` |
+| b4 · 4 nets, board-sized | 10 | **3** | 4 | 4 (refused) | `shard` |
+| b5 · 5 nets, board-sized | 10 | **6** | — | — | `shard:dronet`, `shard:ffn_block`, … |
 
-Bars 1–2 are predicted costs; 3–4 are measured by executing bar 2's schedule on a real
-K1. Figure: `results/codesign_feedback/inner_outer_arc.png`.
+Both profile-sized rungs used to report 10 → 10 and 11 → 11. Figure:
+`results/codesign_feedback/inner_outer_arc.png`.
+
+Four defects were between the loop and these numbers, and **none of them was scheduling**.
+Two are described below; the other two were in the accept path:
+
+* **A measurement tolerance was applied to a deterministic count.** `miss_rate_frac` is
+  8% because seven repeated *board runs* of one schedule gave MLP 7–9 misses of 38 — real
+  execution jitter. The AOT search is not a measurement: a candidate's misses are computed
+  from a solved schedule against fixed costs, deterministic to the last digit. On b4, 34
+  instances put the term-1 tolerance at **2.72 misses**, so `shard:dronet` — which takes
+  misses 5 → 3 and clears dronet entirely — was called "indistinguishable on every term"
+  and the decision fell through to p99, where it loses. `DETERMINISTIC_TOLERANCES` zeroes
+  the miss tolerance and keeps the continuous ones, which guard real CP-SAT nondeterminism.
+* **The winner was ranked by makespan** — the term the rule places *seventh*. The code read
+  `min(winners, key=(c["score"], c["mk"]))` and its comment claimed it minimised "the
+  objective first", but `score` *is* the makespan metric. Fixing the tolerance exposed it:
+  with more candidates accepted per round, w5's final went from 7 misses to **nine**, a
+  hill-climb steered by the seventh term.
 
 ## Why they looked flat: two defects, neither of them scheduling
 
@@ -68,16 +88,48 @@ cannot:
 That also explains the weak fix: the greedy re-solve recovers 2 of the 9 revealed misses
 because five of the nine were never recoverable by any scheduler.
 
+## The windows were not achievable, and that is why the profile-sized rungs stall
+
+The ladder's premise is that a schedule meeting every deadline *exists* using
+implementations already measured on the board. That was verified against **profile**
+times, and the board disagrees. Warm execution per instance, summed from the trace's own
+cycles (`scripts/attribute_board_misses.py`):
+
+| net | profile @ best width | measured warm | window | board/profile |
+|---|---:|---:|---:|---:|
+| ffn_block | 7.72 ms (8c) | **10.03–10.34** | 10.0 | 1.34× |
+| yolov8_nano_64x96 | 23.95 ms (8c) | **42.77** | 26.0 | 1.79× |
+| dronet | 6.05 ms (2c) | 6.02 | 7.0 | 1.00× |
+| fused_full | 3.62 ms (1c) | 4.42 | 5.0 | 1.22× |
+
+So `ffn_block` misses its 10 ms window at its *fastest measured width*, and yolo misses
+its 26 ms window by 1.64×. yolo's multi-hart time had never been measured before this
+work — 42.77 ms is the first one, against a profile that promised 23.95. Three of five ffn
+instances and the yolo instance are over window **by execution alone**, which no scheduler
+recovers, and the earlier "0 infeasible misses" classification says otherwise only because
+it trusts profiles.
+
+`b4`/`b5` (`LADDER_BOARD`) size windows from these measurements with ~15% slack. On b4 the
+board then confirms it: `ffn_block` fits (warm 8.40 ms in a 12 ms window, **zero**
+instances over), and the only execution-bound misses left are **two cold-start**
+instances — the first instance of a network runs 2.74× its warm median for `fused_full`
+and 1.34× for `dronet`, which the warm steady-state profile models not at all.
+
 ## Known limits
 
 * **w4 has no reveal.** Its board re-cost is 5 → 4: the AOT model was already right
   there, and the greedy re-solve makes it worse (4 → 8) and is correctly refused. Bar 4
   is drawn as the beat it kept, marked `[refused: nothing better]` — an empty bar there
   would read as zero misses, the opposite of the truth.
-* **A list scheduler is the wrong re-solver.** It does not optimise deadline misses, so
-  re-solving it against better costs moves the schedule without aiming at the metric.
-  Two independent checks agree: board-aware greedy *search* gives 10 → 8 on w4 and
-  11 → 12 on w5, both worse than solving blind and measuring afterwards.
+* **A list scheduler is the wrong re-solver, but CP-SAT is the worse solver here.**
+  Greedy does not optimise deadline misses, so re-solving it against better costs moves
+  the schedule without aiming at the metric — board-aware greedy *search* gives 10 → 8 on
+  w4 and 11 → 12 on w5, worse than solving blind and measuring afterwards. CP-SAT is
+  indeed the better *re-optimiser*: on w5 its board re-solve recovers **9** misses
+  (29 → 20) where greedy recovers 2 (16 → 14). But its own AOT solve of the same spec is
+  far worse — 25 misses against greedy's 7 at a 400 s budget on 492 dispatches — so its
+  arc ends at 20 against greedy's 14. Greedy wins end to end on these rungs; the exact
+  solver wins only the beat where the metric is already the objective.
 * **The w5 board run excludes the `ime` lever.** The harness is built one backend per
   core kind, and the converged schedule's IME dispatches need an `ime_x60` backend that
   the RVV build lacks (`FATAL entry 0 of ffn_block asks for impl 'ime'`). The measured
