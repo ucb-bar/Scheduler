@@ -105,6 +105,65 @@ LADDER = {
 }
 
 
+#: THE SECOND LADDER, and why the first one needs a companion.
+#:
+#: `LADDER` above scales by ADDING networks, and it introduces `dronet` at rung 3. That
+#: turned out to confound the experiment: `dronet`'s conv dispatches take different core
+#: widths across their instances, so the `shard` lever -- the only lever in the whole
+#: ablation that ever clears a deadline -- was refused as unbuildable on w4 and w5 (all
+#: ten contract violations were dronet). The ladder therefore varied two things at once,
+#: "more networks" and "contains the network that blocks our best lever", and the flat
+#: w4/w5 rungs were read as a scaling limit when the evidence pointed at codegen.
+#:
+#: This ladder varies one thing. Every rung up to c5 is built from networks whose shard
+#: is buildable, and `dronet` appears in exactly ONE rung, at the top, so its effect is
+#: isolated to a single row instead of contaminating three.
+#:
+#: THE SIZING PROBLEM IT HAS TO SOLVE. Of the six measured networks only `ffn_block`,
+#: `dronet` and `yolov8_nano_64x96` are heavy enough to put anything at stake, and yolo
+#: needs 23.95 ms at 8 cores against its 22 ms window -- infeasible by construction, so
+#: it cannot carry a rung whose point is that a schedule EXISTS. With dronet held back
+#: and yolo excluded, adding a net means adding a LIGHT net, which on its own would
+#: leave the rung trivially met. So each rung also tightens `ffn_block`'s window: the
+#: light nets fragment availability, and the tighter window keeps the singleton baseline
+#: missing. Load, not just net count, is what climbs.
+LADDER_COMPOSITION = {
+    # 2 nets: the known-good composition. This is w2_ffn_tight under another name, and
+    # it is the rung where the loop demonstrably clears every deadline (5 -> 0 misses).
+    "c2_ffn": {
+        "mlp_control": (5.0, 5.0, 12),
+        "ffn_block": (12.0, 10.0, 5),
+    },
+    # 3 nets: fused_full is 0.72 cores of continuous work at a 5 ms period. It does not
+    # need to widen; it makes the cores ffn wants to widen ONTO intermittently busy.
+    "c3_ffn_sensor": {
+        "mlp_control": (5.0, 5.0, 12),
+        "fused_full": (5.0, 5.0, 12),
+        "ffn_block": (12.0, 9.5, 5),
+    },
+    # 4 nets: attn_block adds a fourth periodic release train, so the solver has more
+    # release instants to fit ffn's shards between, with the window tightened again.
+    "c4_ffn_sensor_attn": {
+        "mlp_control": (5.0, 5.0, 12),
+        "fused_full": (5.0, 5.0, 12),
+        "attn_block": (5.0, 5.0, 12),
+        "ffn_block": (12.0, 9.0, 5),
+    },
+    # 5 nets: dronet enters, and ONLY here. A difference between c4 and c5 is a
+    # statement about dronet; a difference between c2 and c4 is a statement about scale.
+    # That separation is the entire reason this ladder exists.
+    "c5_ffn_sensor_attn_dronet": {
+        "mlp_control": (5.0, 5.0, 12),
+        "fused_full": (5.0, 5.0, 12),
+        "attn_block": (5.0, 5.0, 12),
+        "ffn_block": (12.0, 9.0, 5),
+        "dronet": (12.0, 7.0, 5),
+    },
+}
+
+LADDERS = {"scaling": LADDER, "composition": LADDER_COMPOSITION}
+
+
 def net_times(net):
     """`{n_cores: whole-net ms}` measured on the board, from the committed profiles."""
     out = {}
@@ -166,14 +225,21 @@ def main() -> int:
     ap.add_argument("--out-dir", default="data/toplevel/scaling")
     ap.add_argument("--check", action="store_true",
                     help="only report the feasibility band analysis; write nothing")
+    ap.add_argument("--ladder", default="scaling",
+                    choices=sorted(LADDERS) + ["both"],
+                    help="'scaling' adds a network per rung (introduces dronet at rung "
+                         "3); 'composition' holds the buildable set and isolates dronet "
+                         "to the top rung")
     a = ap.parse_args()
+    ladder = (dict(LADDER, **LADDER_COMPOSITION) if a.ladder == "both"
+              else LADDERS[a.ladder])
     out_dir = a.out_dir if os.path.isabs(a.out_dir) else os.path.join(REPO, a.out_dir)
 
     def log(s):
         print(s, flush=True)
 
     written, bad = [], []
-    for name, nets in LADDER.items():
+    for name, nets in ladder.items():
         log(f"== {name} ({len(nets)} nets)")
         good = check(name, nets, log)
         if not good:
@@ -203,7 +269,7 @@ def main() -> int:
             log(f"    -> wrote {os.path.relpath(p, REPO)}")
         else:
             log("    -> in the band (--check: not written)")
-    log(f"\n{len(LADDER) - len(bad)}/{len(LADDER)} rungs in the band"
+    log(f"\n{len(ladder) - len(bad)}/{len(ladder)} rungs in the band"
         + (f"; rejected {bad}" if bad else ""))
     for p in written:
         log(f"  {p}")
