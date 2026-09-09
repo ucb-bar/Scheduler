@@ -113,7 +113,7 @@ LOOP_OUT = "results/codesign_loop"          # run_codesign_loop.py default --out
 
 
 def gen_from_loop(solver="cpsat", board_solver="cpsat", objective="lateness",
-                  workload=None, stem=None):
+                  workload=None, stem=None, replay=False):
     """Run the loop on `workload` and build the four panels from its trajectory.
 
     WHY THIS TAKES A WORKLOAD. It used to hardcode one spec, so the figure that
@@ -130,7 +130,14 @@ def gen_from_loop(solver="cpsat", board_solver="cpsat", objective="lateness",
     os.makedirs(auto_outdir, exist_ok=True)
     # bounded CP-SAT workers (a heavy Isaac job may be co-resident); NEVER 0 here.
     env = dict(os.environ)
-    env["XPURT_CPSAT_WORKERS"] = os.environ.get("XPURT_CPSAT_WORKERS", "6")
+    # DETERMINISM VS SPEED, made explicit. A published figure should be an artifact
+    # someone can regenerate. It is not, at >1 CP-SAT worker under a time limit: two
+    # runs of w3_ffn_dronet gave AOT stages of 1 and 5 misses, and on w4 even the
+    # BASELINE moved (18 vs 26 misses for the identical spec), because the baseline is
+    # itself a CP-SAT solve. --replay pins one worker and seed 42 so the figure is
+    # reproducible; the default keeps the faster multi-worker search.
+    env["XPURT_CPSAT_WORKERS"] = ("1" if replay
+                                  else os.environ.get("XPURT_CPSAT_WORKERS", "6"))
     tl = os.environ.get("XPURT_EVO_TIME_LIMIT", "45")
     # the board-calibrated re-solve is the hard solve (it must actually FIND the recovered
     # 0-miss assignment, not just a feasible one) — give CP-SAT a generous budget so the
@@ -140,6 +147,8 @@ def gen_from_loop(solver="cpsat", board_solver="cpsat", objective="lateness",
            "--solver", solver, "--time-limit", tl, "--objective", objective,
            "--board-calibration", CAL, "--board-solver", board_solver,
            "--board-time-limit", btl]
+    if replay:
+        cmd.append("--replay")
     print("running the automatic loop (predicted search + board arm):\n  " + " ".join(cmd))
     subprocess.run(cmd, cwd=REPO, env=env, check=True)
 
@@ -212,6 +221,11 @@ if __name__ == "__main__":
                          "Each workload writes its own panels dir and figure stem.")
     ap.add_argument("--stem", default=None,
                     help="output stem override, e.g. w5; default is the spec basename")
+    ap.add_argument("--replay", action="store_true",
+                    help="generate the figure DETERMINISTICALLY: one CP-SAT worker, "
+                         "seed 42, so the same inputs redraw the same figure. Slower, "
+                         "and the honest setting for a published artifact -- at 4-6 "
+                         "workers the arc moves between runs.")
     ap.add_argument("--from-loop", action="store_true",
                     help="FULLY-AUTOMATIC mode: run scripts/run_codesign_loop.py (with the board-feedback "
                          "arm) and build the four panels from the loop's ACTUAL trajectory. Renders to "
@@ -228,6 +242,7 @@ if __name__ == "__main__":
     a = ap.parse_args()
     if a.from_loop:
         gen_from_loop(solver=a.search_solver, board_solver=a.board_solver,
-                      objective=a.objective, workload=a.workload, stem=a.stem)
+                      objective=a.objective, workload=a.workload, stem=a.stem,
+                      replay=a.replay)
     else:
         gen_hardcoded()
