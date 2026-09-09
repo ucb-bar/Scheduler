@@ -90,32 +90,34 @@ def arc(report_path, spec_path):
     return out, (bf.get("stages") or [{}])[1].get("levers") or []
 
 
-#: Networks with only ONE measured core width: no wider implementation exists, so a
-#: miss on them cannot be scheduled away and no shard lever can touch them. Measured,
-#: not assumed -- `make_scaling_workloads.net_times` reports the widths that have board
-#: profiles: fused_full {1}, mlp_control {1}, against ffn_block/dronet/yolo {1,2,4,8}.
-SINGLE_WIDTH_NETS = ("fused_full", "mlp_control")
+def attribution(rows, nets, attrib_path=None):
+    """`(execution_bound, queueing)` for the last beat, from a MEASURED attribution file.
 
+    CORRECTED. This used to attribute the residual to networks with a single measured
+    core width, on the reasoning that a miss on a net with no wider kernel cannot be
+    scheduled away. The reasoning was sound and the diagnosis was wrong: summing the
+    trace's own cycles per instance (`scripts/attribute_board_misses.py`) says
+    `fused_full`'s misses are almost all COLD START and queueing -- its warm execution is
+    4.47 ms inside a 5 ms window, and only its first instance, at 2.70x warm, is over.
 
-def attribution(rows, nets):
-    """Split the last beat's residual into what a scheduler could still fix and what it
-    cannot, so the figure says WHY misses remain instead of only how many.
+    What is actually execution-bound is `ffn_block`: warm execution 10.34 ms against a
+    10.0 ms window, at the width the loop chose and its fastest measured one. The ladder
+    was sized from a profile reading 7.72 ms at 8 cores, so the board is 34% slower than
+    the number that declared the rung feasible. Three of five instances are over window
+    by execution alone, and no scheduler recovers them.
 
-    This is the outer loop's second contribution and the one that survives w5's weak
-    fix: of the 16 misses the board reveals, five are `fused_full`, which has a single
-    measured width and a 5 ms window against a 3.62 ms singleton -- board inflation of
-    ~1.5x puts it over, and no schedule can widen what has no wider kernel. Those five
-    are a ModelBlaster gap. The rest are core-budget contention, which is schedulable.
+    The count is read from the attribution JSON rather than inferred from network names,
+    so the figure cannot drift from the measurement again.
     """
     last = next((r for r in reversed(rows) if r[2] is not None), None)
-    if not last:
+    if not last or not attrib_path or not os.path.exists(attrib_path):
         return None
-    by = last[1] or {}
-    unfixable = sum(v for k, v in by.items() if k in SINGLE_WIDTH_NETS)
-    return unfixable, (last[2] or 0) - unfixable
+    d = json.load(open(attrib_path))
+    ex = int(d.get("execution_bound_instances") or 0)
+    return ex, max(0, (last[2] or 0) - ex)
 
 
-def panel(ax, rows, levers, title, nets):
+def panel(ax, rows, levers, title, nets, attrib=None):
     xs = range(len(rows))
     bottoms = [0.0] * len(rows)
     for net in nets:
@@ -144,11 +146,11 @@ def panel(ax, rows, levers, title, nets):
     ax.set_ylabel("deadline misses (instances)")
     ax.set_title(f"{title}\nlevers: {', '.join(levers) or 'none'}", fontsize=6)
     ax.set_ylim(0, max(bottoms) * 1.30 or 1)
-    att = attribution(rows, nets)
+    att = attribution(rows, nets, attrib)
     if att and att[0]:
         ax.text(0.5, 0.97,
-                f"residual: {att[0]} unschedulable (single-width net) + "
-                f"{att[1]} contention",
+                f"residual: {att[0]} execution-bound (window unmeetable on the board) "
+                f"+ {att[1]} queueing",
                 transform=ax.transAxes, ha="center", va="top", fontsize=4.4,
                 color="#444444")
     ax.grid(axis="y", lw=0.3, color="#dddddd", zorder=0)
@@ -158,16 +160,19 @@ def panel(ax, rows, levers, title, nets):
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--rung", action="append", required=True,
-                    metavar="NAME=REPORT.json=SPEC.json",
+                    metavar="NAME=REPORT.json=SPEC.json[=ATTRIBUTION.json]",
                     help="repeatable: display name, loop_report.json, workload spec")
     ap.add_argument("--stem", default="inner_outer_arc")
     ap.add_argument("--out-dir", default=None)
     a = ap.parse_args()
 
     figstyle.use()
-    rungs = []
+    rungs, attribs = [], {}
     for spec in a.rung:
-        name, report, wl = spec.split("=", 2)
+        parts = spec.split("=")
+        name, report, wl = parts[0], parts[1], parts[2]
+        if len(parts) > 3:
+            attribs[name] = parts[3]
         rows, levers = arc(report, wl)
         rungs.append((name, rows, levers))
 
@@ -182,7 +187,7 @@ def main() -> int:
         figstyle.DOUBLE_COL * min(1.0, 0.42 * len(rungs) + 0.16), 66 * figstyle.MM))
     axes = [axes] if len(rungs) == 1 else list(axes)
     for i, ((name, rows, levers), ax) in enumerate(zip(rungs, axes)):
-        panel(ax, rows, levers, name, nets)
+        panel(ax, rows, levers, name, nets, attribs.get(name))
         figstyle.panel_label(ax, "abcd"[i], x=-0.17, y=1.12)
     axes[0].legend(handles=[Patch(facecolor=figstyle.model_color(n), label=n)
                             for n in nets],
