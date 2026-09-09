@@ -167,3 +167,42 @@ scripts/plot_inner_outer_arc.py \
 entries regardless of how many networks are in the schedule. Graph extraction needs
 torch, which the solver venv does not have, so board runs reuse built IR via
 `--staged-ir` / `MB_IR` rather than re-extracting.
+
+## The five-network cases, and what "suggest the transformation / apply CP-SAT" actually buys
+
+**`b5y_board_holds` — the clean one. `3 → 0 → 0 → 0`, verified on a K1.** Baseline
+misses, the AOT search clears every deadline with `shard:ffn_block`, the board re-cost
+agrees at zero, the re-solve has nothing to do, and `attribute_board_misses.py` reports
+**0 execution-bound instances**: every network fits its window, cold start included.
+
+It is the only rung of its kind because it is the only one whose windows were sized from
+**board** measurements at the width the scheduler actually falls back to. Two earlier
+attempts show what that sentence is worth:
+
+| rung | outcome | why |
+|---|---|---|
+| `b5_board_sized` | 6 misses | ffn window **equals** its period → execution fits, no slack for queueing |
+| `b5x_board_slack` | 0 predicted, fails on board | windows sized from *widened* dronet/yolo (6.03, 42.77 ms), but the loop widened only ffn and left them at one core, where the board gives 9.56 and 60.02 against 9.0 and 50.0 |
+| `b5y_board_holds` | **0, holds** | every window exceeds the measured **cold** time at one core |
+
+**`b5z_reveal` — the reveal-and-fix rung, and an honest negative.** Its dronet window
+(9.0 ms) sits between dronet's 1-core *profile* time (8.33 → the AOT solve predicts it
+fits) and its 1-core *measured* cold time (11.74 → it does not), and above its sharded
+cold time (8.06 → widening should fix it). Arc: **`3 → 0 → 1 → 1`**. The board reveals a
+dronet miss no offline solve could see. Then:
+
+* **Suggesting the transformation works as a mechanism.** Board-aware search picks
+  `shard:dronet` *first* — the lever the profile-blind search never proposed.
+* **It does not pay off.** Sweeping the entire shard lever space against board costs:
+  `ffn` 4, `dronet` **3**, `ffn+dronet` **3**, `ffn+dronet+yolo` 5, `ffn+yolo` 6,
+  `dronet+yolo` 5. The minimum over the whole space is 3 — and the *blind* AOT schedule
+  recost on the board is **1**. Widening dronet fixes dronet and costs ffn more than it
+  saves; eight harts cannot carry both at these windows.
+* **CP-SAT does not rescue it: 9 misses** against greedy's 3 on identical input, with
+  every phase FEASIBLE and `best_bound = 0.0` after 421 s. On a five-network board-cost
+  model it is nowhere near converged, so this is not a case where more solver power helps.
+
+The consistent result across w4, w5 and b5z is that the outer loop's **re-solve** half
+does not pay off with either solver, while its **reveal and attribution** half does: it
+is what showed that ffn's 10 ms window and yolo's 26 ms window were never meetable, and
+what turns "the loop failed" into "the target was wrong, here is the achievable one".
