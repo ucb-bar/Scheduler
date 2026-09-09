@@ -1,0 +1,8329 @@
+{
+  "name": "yolov8_nano",
+  "version": 1,
+  "quant": "int8",
+  "input": {
+    "tensor": "x",
+    "tensors": [
+      "x"
+    ]
+  },
+  "output": {
+    "tensors": [
+      "cat_13",
+      "cat_14",
+      "cat_15"
+    ],
+    "tensor": null
+  },
+  "tensors": {
+    "x": {
+      "shape": [
+        1,
+        3,
+        64,
+        96
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.007874015748031496,
+        "zero_point": 0
+      }
+    },
+    "l0_act": {
+      "shape": [
+        1,
+        16,
+        32,
+        48
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.34940794696958044,
+        "zero_point": 0
+      }
+    },
+    "l1_act": {
+      "shape": [
+        1,
+        32,
+        16,
+        24
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.6917152104415293,
+        "zero_point": 0
+      }
+    },
+    "l2_cv1_act": {
+      "shape": [
+        1,
+        32,
+        16,
+        24
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.15034161965678058,
+        "zero_point": 0
+      }
+    },
+    "getitem": {
+      "shape": [
+        1,
+        16,
+        16,
+        24
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.15034161965678058,
+        "zero_point": 0
+      }
+    },
+    "getitem_1": {
+      "shape": [
+        1,
+        16,
+        16,
+        24
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.07627981291042538,
+        "zero_point": 0
+      }
+    },
+    "l2_m0_cv1_act": {
+      "shape": [
+        1,
+        16,
+        16,
+        24
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.12718980143389363,
+        "zero_point": 0
+      }
+    },
+    "l2_m0_cv2_act": {
+      "shape": [
+        1,
+        16,
+        16,
+        24
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.11651938731276144,
+        "zero_point": 0
+      }
+    },
+    "add": {
+      "shape": [
+        1,
+        16,
+        16,
+        24
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.13362394918606976,
+        "zero_point": 0
+      }
+    },
+    "cat": {
+      "shape": [
+        1,
+        48,
+        16,
+        24
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.15034161965678058,
+        "zero_point": 0
+      }
+    },
+    "l2_cv2_act": {
+      "shape": [
+        1,
+        32,
+        16,
+        24
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.08486464643102931,
+        "zero_point": 0
+      }
+    },
+    "l3_act": {
+      "shape": [
+        1,
+        64,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.04001463492085615,
+        "zero_point": 0
+      }
+    },
+    "l4_cv1_act": {
+      "shape": [
+        1,
+        64,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.040926456451416016,
+        "zero_point": 0
+      }
+    },
+    "getitem_2": {
+      "shape": [
+        1,
+        32,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.040926456451416016,
+        "zero_point": 0
+      }
+    },
+    "getitem_3": {
+      "shape": [
+        1,
+        32,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.02305207477779839,
+        "zero_point": 0
+      }
+    },
+    "l4_m0_cv1_act": {
+      "shape": [
+        1,
+        32,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.026433950334083377,
+        "zero_point": 0
+      }
+    },
+    "l4_m0_cv2_act": {
+      "shape": [
+        1,
+        32,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.02538186170923428,
+        "zero_point": 0
+      }
+    },
+    "add_1": {
+      "shape": [
+        1,
+        32,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.04007818567471241,
+        "zero_point": 0
+      }
+    },
+    "l4_m1_cv1_act": {
+      "shape": [
+        1,
+        32,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.016053025178083286,
+        "zero_point": 0
+      }
+    },
+    "l4_m1_cv2_act": {
+      "shape": [
+        1,
+        32,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.044453692248487095,
+        "zero_point": 0
+      }
+    },
+    "add_2": {
+      "shape": [
+        1,
+        32,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.058866876316821484,
+        "zero_point": 0
+      }
+    },
+    "cat_1": {
+      "shape": [
+        1,
+        128,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.058866876316821484,
+        "zero_point": 0
+      }
+    },
+    "l4_cv2_act": {
+      "shape": [
+        1,
+        64,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03380688719862089,
+        "zero_point": 0
+      }
+    },
+    "l5_act": {
+      "shape": [
+        1,
+        128,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.02382944324823815,
+        "zero_point": 0
+      }
+    },
+    "l6_cv1_act": {
+      "shape": [
+        1,
+        128,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.045542536758062406,
+        "zero_point": 0
+      }
+    },
+    "getitem_4": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.045542536758062406,
+        "zero_point": 0
+      }
+    },
+    "getitem_5": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.018311215197946144,
+        "zero_point": 0
+      }
+    },
+    "l6_m0_cv1_act": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.02574980165076068,
+        "zero_point": 0
+      }
+    },
+    "l6_m0_cv2_act": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.02637514730138103,
+        "zero_point": 0
+      }
+    },
+    "add_3": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03382169918751153,
+        "zero_point": 0
+      }
+    },
+    "l6_m1_cv1_act": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.02278605596287044,
+        "zero_point": 0
+      }
+    },
+    "l6_m1_cv2_act": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.0375662338076614,
+        "zero_point": 0
+      }
+    },
+    "add_4": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.04825182036152036,
+        "zero_point": 0
+      }
+    },
+    "cat_2": {
+      "shape": [
+        1,
+        256,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.04825182036152036,
+        "zero_point": 0
+      }
+    },
+    "l6_cv2_act": {
+      "shape": [
+        1,
+        128,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.02508577399366484,
+        "zero_point": 0
+      }
+    },
+    "l7_act": {
+      "shape": [
+        1,
+        256,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.025789307797048973,
+        "zero_point": 0
+      }
+    },
+    "l8_cv1_act": {
+      "shape": [
+        1,
+        256,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03954239717618687,
+        "zero_point": 0
+      }
+    },
+    "getitem_6": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03954239717618687,
+        "zero_point": 0
+      }
+    },
+    "getitem_7": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.0247972612305889,
+        "zero_point": 0
+      }
+    },
+    "l8_m0_cv1_act": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.020445206033901906,
+        "zero_point": 0
+      }
+    },
+    "l8_m0_cv2_act": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03911902585367518,
+        "zero_point": 0
+      }
+    },
+    "add_5": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.038600125650721274,
+        "zero_point": 0
+      }
+    },
+    "cat_3": {
+      "shape": [
+        1,
+        384,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03954239717618687,
+        "zero_point": 0
+      }
+    },
+    "l8_cv2_act": {
+      "shape": [
+        1,
+        256,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.028627213530653103,
+        "zero_point": 0
+      }
+    },
+    "l9_cv1_act": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.04122505788728008,
+        "zero_point": 0
+      }
+    },
+    "l9_m1": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.04122505788728008,
+        "zero_point": 0
+      }
+    },
+    "l9_m2": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.04122505788728008,
+        "zero_point": 0
+      }
+    },
+    "l9_m3": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.04122505788728008,
+        "zero_point": 0
+      }
+    },
+    "cat_4": {
+      "shape": [
+        1,
+        512,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.04122505788728008,
+        "zero_point": 0
+      }
+    },
+    "l9_cv2_act": {
+      "shape": [
+        1,
+        256,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.019159921510951725,
+        "zero_point": 0
+      }
+    },
+    "l10": {
+      "shape": [
+        1,
+        256,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.019159921510951725,
+        "zero_point": 0
+      }
+    },
+    "cat_5": {
+      "shape": [
+        1,
+        384,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.02508577399366484,
+        "zero_point": 0
+      }
+    },
+    "l12_cv1_act": {
+      "shape": [
+        1,
+        128,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.030222731312428874,
+        "zero_point": 0
+      }
+    },
+    "getitem_8": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.020995457341351848,
+        "zero_point": 0
+      }
+    },
+    "getitem_9": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.030222731312428874,
+        "zero_point": 0
+      }
+    },
+    "l12_m0_cv1_act": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.01912820996261957,
+        "zero_point": 0
+      }
+    },
+    "l12_m0_cv2_act": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.034499870510551874,
+        "zero_point": 0
+      }
+    },
+    "cat_6": {
+      "shape": [
+        1,
+        192,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.034499870510551874,
+        "zero_point": 0
+      }
+    },
+    "l12_cv2_act": {
+      "shape": [
+        1,
+        128,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.020749538902222642,
+        "zero_point": 0
+      }
+    },
+    "l13": {
+      "shape": [
+        1,
+        128,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.020749538902222642,
+        "zero_point": 0
+      }
+    },
+    "cat_7": {
+      "shape": [
+        1,
+        192,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03380688719862089,
+        "zero_point": 0
+      }
+    },
+    "l15_cv1_act": {
+      "shape": [
+        1,
+        64,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.022942719497079923,
+        "zero_point": 0
+      }
+    },
+    "getitem_10": {
+      "shape": [
+        1,
+        32,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.019757788951002705,
+        "zero_point": 0
+      }
+    },
+    "getitem_11": {
+      "shape": [
+        1,
+        32,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.022942719497079923,
+        "zero_point": 0
+      }
+    },
+    "l15_m0_cv1_act": {
+      "shape": [
+        1,
+        32,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.017087911996315784,
+        "zero_point": 0
+      }
+    },
+    "l15_m0_cv2_act": {
+      "shape": [
+        1,
+        32,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.040136427391232465,
+        "zero_point": 0
+      }
+    },
+    "cat_8": {
+      "shape": [
+        1,
+        96,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.040136427391232465,
+        "zero_point": 0
+      }
+    },
+    "l15_cv2_act": {
+      "shape": [
+        1,
+        64,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03128895984859917,
+        "zero_point": 0
+      }
+    },
+    "l16_act": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03221036880973756,
+        "zero_point": 0
+      }
+    },
+    "cat_9": {
+      "shape": [
+        1,
+        192,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03221036880973756,
+        "zero_point": 0
+      }
+    },
+    "l18_cv1_act": {
+      "shape": [
+        1,
+        128,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03454801979966051,
+        "zero_point": 0
+      }
+    },
+    "getitem_12": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03454801979966051,
+        "zero_point": 0
+      }
+    },
+    "getitem_13": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03372653075090543,
+        "zero_point": 0
+      }
+    },
+    "l18_m0_cv1_act": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.019774639700341413,
+        "zero_point": 0
+      }
+    },
+    "l18_m0_cv2_act": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.04252865183071827,
+        "zero_point": 0
+      }
+    },
+    "cat_10": {
+      "shape": [
+        1,
+        192,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.04252865183071827,
+        "zero_point": 0
+      }
+    },
+    "l18_cv2_act": {
+      "shape": [
+        1,
+        128,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03098987782095361,
+        "zero_point": 0
+      }
+    },
+    "l19_act": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.028446379608995334,
+        "zero_point": 0
+      }
+    },
+    "cat_11": {
+      "shape": [
+        1,
+        384,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.028446379608995334,
+        "zero_point": 0
+      }
+    },
+    "l21_cv1_act": {
+      "shape": [
+        1,
+        256,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.036444896788109006,
+        "zero_point": 0
+      }
+    },
+    "getitem_14": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.026580429452610767,
+        "zero_point": 0
+      }
+    },
+    "getitem_15": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.036444896788109006,
+        "zero_point": 0
+      }
+    },
+    "l21_m0_cv1_act": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.037913615309347316,
+        "zero_point": 0
+      }
+    },
+    "l21_m0_cv2_act": {
+      "shape": [
+        1,
+        128,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.035860782533180056,
+        "zero_point": 0
+      }
+    },
+    "cat_12": {
+      "shape": [
+        1,
+        384,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.036444896788109006,
+        "zero_point": 0
+      }
+    },
+    "l21_cv2_act": {
+      "shape": [
+        1,
+        256,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03601657687209722,
+        "zero_point": 0
+      }
+    },
+    "detect_cv2_0_0_act": {
+      "shape": [
+        1,
+        64,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03288462030606007,
+        "zero_point": 0
+      }
+    },
+    "detect_cv2_0_1_act": {
+      "shape": [
+        1,
+        64,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.2189400590310885,
+        "zero_point": 0
+      }
+    },
+    "detect_cv2_0_2": {
+      "shape": [
+        1,
+        64,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.10040427380659449,
+        "zero_point": 0
+      }
+    },
+    "detect_cv3_0_0_act": {
+      "shape": [
+        1,
+        80,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.021845280654787077,
+        "zero_point": 0
+      }
+    },
+    "detect_cv3_0_1_act": {
+      "shape": [
+        1,
+        80,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.2007139611431933,
+        "zero_point": 0
+      }
+    },
+    "detect_cv3_0_2": {
+      "shape": [
+        1,
+        80,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.1663844491553119,
+        "zero_point": 0
+      }
+    },
+    "cat_13": {
+      "shape": [
+        1,
+        144,
+        8,
+        12
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.1663844491553119,
+        "zero_point": 0
+      }
+    },
+    "detect_cv2_1_0_act": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.04994913161270262,
+        "zero_point": 0
+      }
+    },
+    "detect_cv2_1_1_act": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.12971854022168738,
+        "zero_point": 0
+      }
+    },
+    "detect_cv2_1_2": {
+      "shape": [
+        1,
+        64,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.08293416180948573,
+        "zero_point": 0
+      }
+    },
+    "detect_cv3_1_0_act": {
+      "shape": [
+        1,
+        80,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.03246754173218735,
+        "zero_point": 0
+      }
+    },
+    "detect_cv3_1_1_act": {
+      "shape": [
+        1,
+        80,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.44598556878998524,
+        "zero_point": 0
+      }
+    },
+    "detect_cv3_1_2": {
+      "shape": [
+        1,
+        80,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.18563333646518979,
+        "zero_point": 0
+      }
+    },
+    "cat_14": {
+      "shape": [
+        1,
+        144,
+        4,
+        6
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.18563333646518979,
+        "zero_point": 0
+      }
+    },
+    "detect_cv2_2_0_act": {
+      "shape": [
+        1,
+        64,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.05334396812859483,
+        "zero_point": 0
+      }
+    },
+    "detect_cv2_2_1_act": {
+      "shape": [
+        1,
+        64,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.09753964641901451,
+        "zero_point": 0
+      }
+    },
+    "detect_cv2_2_2": {
+      "shape": [
+        1,
+        64,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.08294143076018086,
+        "zero_point": 0
+      }
+    },
+    "detect_cv3_2_0_act": {
+      "shape": [
+        1,
+        80,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.052129647863192824,
+        "zero_point": 0
+      }
+    },
+    "detect_cv3_2_1_act": {
+      "shape": [
+        1,
+        80,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.152163092545637,
+        "zero_point": 0
+      }
+    },
+    "detect_cv3_2_2": {
+      "shape": [
+        1,
+        80,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.10271050610880214,
+        "zero_point": 0
+      }
+    },
+    "cat_15": {
+      "shape": [
+        1,
+        144,
+        2,
+        3
+      ],
+      "dtype": "i8",
+      "quant": {
+        "scale": 0.10271050610880214,
+        "zero_point": 0
+      }
+    }
+  },
+  "ops": [
+    {
+      "name": "l0.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "x"
+      ],
+      "outputs": [
+        "l0_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l0.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "x"
+          ],
+          "outputs": [
+            "l0_conv"
+          ],
+          "weight": "l0.conv.weight_q",
+          "bias": "l0.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 3,
+            "IH": 64,
+            "IW": 96,
+            "OC": 16,
+            "OH": 32,
+            "OW": 48,
+            "KH": 3,
+            "KW": 3,
+            "SH": 2,
+            "SW": 2,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1962557732,
+            "output_shift": 9,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l0.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l0_conv"
+          ],
+          "outputs": [
+            "l0_bn"
+          ],
+          "weight": "l0.bn.scale",
+          "bias": "l0.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 16,
+            "H": 32,
+            "W": 48
+          },
+          "quant": {
+            "scale_in": 0.017740737734817144,
+            "scale_out": 0.34940794696958044,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l0.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l0_bn"
+          ],
+          "outputs": [
+            "l0_act"
+          ],
+          "shape": {
+            "n": 24576
+          },
+          "quant": {
+            "scale_in": 0.34940794696958044,
+            "scale_out": 0.34940794696958044,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 0,
+      "hardware_target": "any",
+      "depends_on": []
+    },
+    {
+      "name": "l1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l0_act"
+      ],
+      "outputs": [
+        "l1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l0_act"
+          ],
+          "outputs": [
+            "l1_conv"
+          ],
+          "weight": "l1.conv.weight_q",
+          "bias": "l1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 16,
+            "IH": 32,
+            "IW": 48,
+            "OC": 32,
+            "OH": 16,
+            "OW": 24,
+            "KH": 3,
+            "KW": 3,
+            "SH": 2,
+            "SW": 2,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1154641346,
+            "output_shift": 6,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l1_conv"
+          ],
+          "outputs": [
+            "l1_bn"
+          ],
+          "weight": "l1.bn.scale",
+          "bias": "l1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 32,
+            "H": 16,
+            "W": 24
+          },
+          "quant": {
+            "scale_in": 0.1768548469843827,
+            "scale_out": 0.7592658696212168,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l1_bn"
+          ],
+          "outputs": [
+            "l1_act"
+          ],
+          "shape": {
+            "n": 12288
+          },
+          "quant": {
+            "scale_in": 0.7592658696212168,
+            "scale_out": 0.6917152104415293,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 1,
+      "hardware_target": "any",
+      "depends_on": [
+        0
+      ]
+    },
+    {
+      "name": "l2.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l1_act"
+      ],
+      "outputs": [
+        "l2_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l2.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l1_act"
+          ],
+          "outputs": [
+            "l2_cv1_conv"
+          ],
+          "weight": "l2.cv1.conv.weight_q",
+          "bias": "l2.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 32,
+            "IH": 16,
+            "IW": 24,
+            "OC": 32,
+            "OH": 16,
+            "OW": 24,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1247323205,
+            "output_shift": 6,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l2.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l2_cv1_conv"
+          ],
+          "outputs": [
+            "l2_cv1_bn"
+          ],
+          "weight": "l2.cv1.bn.scale",
+          "bias": "l2.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 32,
+            "H": 16,
+            "W": 24
+          },
+          "quant": {
+            "scale_in": 0.3422688161294291,
+            "scale_out": 0.4494585352619802,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l2.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l2_cv1_bn"
+          ],
+          "outputs": [
+            "l2_cv1_act"
+          ],
+          "shape": {
+            "n": 12288
+          },
+          "quant": {
+            "scale_in": 0.4494585352619802,
+            "scale_out": 0.15034161965678058,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 2,
+      "hardware_target": "any",
+      "depends_on": [
+        1
+      ]
+    },
+    {
+      "name": "chunk",
+      "op": "chunk2_c1",
+      "inputs": [
+        "l2_cv1_act"
+      ],
+      "outputs": [
+        "getitem",
+        "getitem_1"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 32,
+        "H": 16,
+        "W": 24,
+        "c_each": 16
+      },
+      "dispatch_id": 3,
+      "hardware_target": "any",
+      "depends_on": [
+        2
+      ]
+    },
+    {
+      "name": "l2.m0.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "getitem_1"
+      ],
+      "outputs": [
+        "l2_m0_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l2.m0.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "getitem_1"
+          ],
+          "outputs": [
+            "l2_m0_cv1_conv"
+          ],
+          "weight": "l2.m0.cv1.conv.weight_q",
+          "bias": "l2.m0.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 16,
+            "IH": 16,
+            "IW": 24,
+            "OC": 16,
+            "OH": 16,
+            "OW": 24,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1755854253,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l2.m0.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l2_m0_cv1_conv"
+          ],
+          "outputs": [
+            "l2_m0_cv1_bn"
+          ],
+          "weight": "l2.m0.cv1.bn.scale",
+          "bias": "l2.m0.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 16,
+            "H": 16,
+            "W": 24
+          },
+          "quant": {
+            "scale_in": 0.04728948037455401,
+            "scale_out": 0.25423043919360544,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l2.m0.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l2_m0_cv1_bn"
+          ],
+          "outputs": [
+            "l2_m0_cv1_act"
+          ],
+          "shape": {
+            "n": 6144
+          },
+          "quant": {
+            "scale_in": 0.25423043919360544,
+            "scale_out": 0.12718980143389363,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 4,
+      "hardware_target": "any",
+      "depends_on": [
+        3
+      ]
+    },
+    {
+      "name": "l2.m0.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l2_m0_cv1_act"
+      ],
+      "outputs": [
+        "l2_m0_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l2.m0.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l2_m0_cv1_act"
+          ],
+          "outputs": [
+            "l2_m0_cv2_conv"
+          ],
+          "weight": "l2.m0.cv2.conv.weight_q",
+          "bias": "l2.m0.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 16,
+            "IH": 16,
+            "IW": 24,
+            "OC": 16,
+            "OH": 16,
+            "OW": 24,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1602986484,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l2.m0.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l2_m0_cv2_conv"
+          ],
+          "outputs": [
+            "l2_m0_cv2_bn"
+          ],
+          "weight": "l2.m0.cv2.bn.scale",
+          "bias": "l2.m0.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 16,
+            "H": 16,
+            "W": 24
+          },
+          "quant": {
+            "scale_in": 0.07219909307524913,
+            "scale_out": 0.14796782666303981,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l2.m0.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l2_m0_cv2_bn"
+          ],
+          "outputs": [
+            "l2_m0_cv2_act"
+          ],
+          "shape": {
+            "n": 6144
+          },
+          "quant": {
+            "scale_in": 0.14796782666303981,
+            "scale_out": 0.11651938731276144,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 5,
+      "hardware_target": "any",
+      "depends_on": [
+        4
+      ]
+    },
+    {
+      "name": "add",
+      "op": "add_s8",
+      "inputs": [
+        "getitem_1",
+        "l2_m0_cv2_act"
+      ],
+      "outputs": [
+        "add"
+      ],
+      "shape": {
+        "n": 6144
+      },
+      "quant": {
+        "scale_a": 0.07627981291042538,
+        "scale_b": 0.11651938731276144,
+        "scale_out": 0.13362394918606976,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 6,
+      "hardware_target": "any",
+      "depends_on": [
+        3,
+        5
+      ]
+    },
+    {
+      "name": "cat",
+      "op": "cat3_c1_s8",
+      "inputs": [
+        "getitem",
+        "getitem_1",
+        "add"
+      ],
+      "outputs": [
+        "cat"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 16,
+        "W": 24,
+        "C_inputs": [
+          16,
+          16,
+          16
+        ],
+        "C_total": 48
+      },
+      "quant": {
+        "scales_in": [
+          0.15034161965678058,
+          0.07627981291042538,
+          0.13362394918606976
+        ],
+        "scale_out": 0.15034161965678058,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 7,
+      "hardware_target": "any",
+      "depends_on": [
+        3,
+        6
+      ]
+    },
+    {
+      "name": "l2.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat"
+      ],
+      "outputs": [
+        "l2_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l2.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat"
+          ],
+          "outputs": [
+            "l2_cv2_conv"
+          ],
+          "weight": "l2.cv2.conv.weight_q",
+          "bias": "l2.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 48,
+            "IH": 16,
+            "IW": 24,
+            "OC": 32,
+            "OH": 16,
+            "OW": 24,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1151928923,
+            "output_shift": 6,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l2.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l2_cv2_conv"
+          ],
+          "outputs": [
+            "l2_cv2_bn"
+          ],
+          "weight": "l2.cv2.bn.scale",
+          "bias": "l2.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 32,
+            "H": 16,
+            "W": 24
+          },
+          "quant": {
+            "scale_in": 0.06444793611060916,
+            "scale_out": 0.18946249653973918,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l2.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l2_cv2_bn"
+          ],
+          "outputs": [
+            "l2_cv2_act"
+          ],
+          "shape": {
+            "n": 12288
+          },
+          "quant": {
+            "scale_in": 0.18946249653973918,
+            "scale_out": 0.08486464643102931,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 8,
+      "hardware_target": "any",
+      "depends_on": [
+        7
+      ]
+    },
+    {
+      "name": "l3.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l2_cv2_act"
+      ],
+      "outputs": [
+        "l3_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l3.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l2_cv2_act"
+          ],
+          "outputs": [
+            "l3_conv"
+          ],
+          "weight": "l3.conv.weight_q",
+          "bias": "l3.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 32,
+            "IH": 16,
+            "IW": 24,
+            "OC": 64,
+            "OH": 8,
+            "OW": 12,
+            "KH": 3,
+            "KW": 3,
+            "SH": 2,
+            "SW": 2,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1107612085,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l3.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l3_conv"
+          ],
+          "outputs": [
+            "l3_bn"
+          ],
+          "weight": "l3.bn.scale",
+          "bias": "l3.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.043604467797467086,
+            "scale_out": 0.06191104979026975,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l3.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l3_bn"
+          ],
+          "outputs": [
+            "l3_act"
+          ],
+          "shape": {
+            "n": 6144
+          },
+          "quant": {
+            "scale_in": 0.06191104979026975,
+            "scale_out": 0.04001463492085615,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 9,
+      "hardware_target": "any",
+      "depends_on": [
+        8
+      ]
+    },
+    {
+      "name": "l4.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l3_act"
+      ],
+      "outputs": [
+        "l4_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l4.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l3_act"
+          ],
+          "outputs": [
+            "l4_cv1_conv"
+          ],
+          "weight": "l4.cv1.conv.weight_q",
+          "bias": "l4.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 8,
+            "IW": 12,
+            "OC": 64,
+            "OH": 8,
+            "OW": 12,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1705948325,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l4.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l4_cv1_conv"
+          ],
+          "outputs": [
+            "l4_cv1_bn"
+          ],
+          "weight": "l4.cv1.bn.scale",
+          "bias": "l4.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.01577820364884504,
+            "scale_out": 0.06256285990317037,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l4.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l4_cv1_bn"
+          ],
+          "outputs": [
+            "l4_cv1_act"
+          ],
+          "shape": {
+            "n": 6144
+          },
+          "quant": {
+            "scale_in": 0.06256285990317037,
+            "scale_out": 0.040926456451416016,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 10,
+      "hardware_target": "any",
+      "depends_on": [
+        9
+      ]
+    },
+    {
+      "name": "chunk_1",
+      "op": "chunk2_c1",
+      "inputs": [
+        "l4_cv1_act"
+      ],
+      "outputs": [
+        "getitem_2",
+        "getitem_3"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 64,
+        "H": 8,
+        "W": 12,
+        "c_each": 32
+      },
+      "dispatch_id": 11,
+      "hardware_target": "any",
+      "depends_on": [
+        10
+      ]
+    },
+    {
+      "name": "l4.m0.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "getitem_3"
+      ],
+      "outputs": [
+        "l4_m0_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l4.m0.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "getitem_3"
+          ],
+          "outputs": [
+            "l4_m0_cv1_conv"
+          ],
+          "weight": "l4.m0.cv1.conv.weight_q",
+          "bias": "l4.m0.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 32,
+            "IH": 8,
+            "IW": 12,
+            "OC": 32,
+            "OH": 8,
+            "OW": 12,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1777042629,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l4.m0.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l4_m0_cv1_conv"
+          ],
+          "outputs": [
+            "l4_m0_cv1_bn"
+          ],
+          "weight": "l4.m0.cv1.bn.scale",
+          "bias": "l4.m0.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 32,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.016862557628961997,
+            "scale_out": 0.042145023195762334,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l4.m0.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l4_m0_cv1_bn"
+          ],
+          "outputs": [
+            "l4_m0_cv1_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.042145023195762334,
+            "scale_out": 0.026433950334083377,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 12,
+      "hardware_target": "any",
+      "depends_on": [
+        11
+      ]
+    },
+    {
+      "name": "l4.m0.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l4_m0_cv1_act"
+      ],
+      "outputs": [
+        "l4_m0_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l4.m0.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l4_m0_cv1_act"
+          ],
+          "outputs": [
+            "l4_m0_cv2_conv"
+          ],
+          "weight": "l4.m0.cv2.conv.weight_q",
+          "bias": "l4.m0.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 32,
+            "IH": 8,
+            "IW": 12,
+            "OC": 32,
+            "OH": 8,
+            "OW": 12,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1513815271,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l4.m0.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l4_m0_cv2_conv"
+          ],
+          "outputs": [
+            "l4_m0_cv2_bn"
+          ],
+          "weight": "l4.m0.cv2.bn.scale",
+          "bias": "l4.m0.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 32,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.010159040060568982,
+            "scale_out": 0.035668331807053935,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l4.m0.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l4_m0_cv2_bn"
+          ],
+          "outputs": [
+            "l4_m0_cv2_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.035668331807053935,
+            "scale_out": 0.02538186170923428,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 13,
+      "hardware_target": "any",
+      "depends_on": [
+        12
+      ]
+    },
+    {
+      "name": "add_1",
+      "op": "add_s8",
+      "inputs": [
+        "getitem_3",
+        "l4_m0_cv2_act"
+      ],
+      "outputs": [
+        "add_1"
+      ],
+      "shape": {
+        "n": 3072
+      },
+      "quant": {
+        "scale_a": 0.02305207477779839,
+        "scale_b": 0.02538186170923428,
+        "scale_out": 0.04007818567471241,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 14,
+      "hardware_target": "any",
+      "depends_on": [
+        11,
+        13
+      ]
+    },
+    {
+      "name": "l4.m1.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "add_1"
+      ],
+      "outputs": [
+        "l4_m1_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l4.m1.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "add_1"
+          ],
+          "outputs": [
+            "l4_m1_cv1_conv"
+          ],
+          "weight": "l4.m1.cv1.conv.weight_q",
+          "bias": "l4.m1.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 32,
+            "IH": 8,
+            "IW": 12,
+            "OC": 32,
+            "OH": 8,
+            "OW": 12,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1195194478,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l4.m1.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l4_m1_cv1_conv"
+          ],
+          "outputs": [
+            "l4_m1_cv1_bn"
+          ],
+          "weight": "l4.m1.cv1.bn.scale",
+          "bias": "l4.m1.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 32,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.01809136698565145,
+            "scale_out": 0.03763490962231253,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l4.m1.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l4_m1_cv1_bn"
+          ],
+          "outputs": [
+            "l4_m1_cv1_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.03763490962231253,
+            "scale_out": 0.016053025178083286,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 15,
+      "hardware_target": "any",
+      "depends_on": [
+        14
+      ]
+    },
+    {
+      "name": "l4.m1.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l4_m1_cv1_act"
+      ],
+      "outputs": [
+        "l4_m1_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l4.m1.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l4_m1_cv1_act"
+          ],
+          "outputs": [
+            "l4_m1_cv2_conv"
+          ],
+          "weight": "l4.m1.cv2.conv.weight_q",
+          "bias": "l4.m1.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 32,
+            "IH": 8,
+            "IW": 12,
+            "OC": 32,
+            "OH": 8,
+            "OW": 12,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1548167227,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l4.m1.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l4_m1_cv2_conv"
+          ],
+          "outputs": [
+            "l4_m1_cv2_bn"
+          ],
+          "weight": "l4.m1.cv2.bn.scale",
+          "bias": "l4.m1.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 32,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.005087414125757893,
+            "scale_out": 0.0511445360859548,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l4.m1.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l4_m1_cv2_bn"
+          ],
+          "outputs": [
+            "l4_m1_cv2_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.0511445360859548,
+            "scale_out": 0.044453692248487095,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 16,
+      "hardware_target": "any",
+      "depends_on": [
+        15
+      ]
+    },
+    {
+      "name": "add_2",
+      "op": "add_s8",
+      "inputs": [
+        "add_1",
+        "l4_m1_cv2_act"
+      ],
+      "outputs": [
+        "add_2"
+      ],
+      "shape": {
+        "n": 3072
+      },
+      "quant": {
+        "scale_a": 0.04007818567471241,
+        "scale_b": 0.044453692248487095,
+        "scale_out": 0.058866876316821484,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 17,
+      "hardware_target": "any",
+      "depends_on": [
+        14,
+        16
+      ]
+    },
+    {
+      "name": "cat_1",
+      "op": "cat4_c1_s8",
+      "inputs": [
+        "getitem_2",
+        "getitem_3",
+        "add_1",
+        "add_2"
+      ],
+      "outputs": [
+        "cat_1"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 8,
+        "W": 12,
+        "C_inputs": [
+          32,
+          32,
+          32,
+          32
+        ],
+        "C_total": 128
+      },
+      "quant": {
+        "scales_in": [
+          0.040926456451416016,
+          0.02305207477779839,
+          0.04007818567471241,
+          0.058866876316821484
+        ],
+        "scale_out": 0.058866876316821484,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 18,
+      "hardware_target": "any",
+      "depends_on": [
+        11,
+        14,
+        17
+      ]
+    },
+    {
+      "name": "l4.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat_1"
+      ],
+      "outputs": [
+        "l4_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l4.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat_1"
+          ],
+          "outputs": [
+            "l4_cv2_conv"
+          ],
+          "weight": "l4.cv2.conv.weight_q",
+          "bias": "l4.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 128,
+            "IH": 8,
+            "IW": 12,
+            "OC": 64,
+            "OH": 8,
+            "OW": 12,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1443006087,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l4.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l4_cv2_conv"
+          ],
+          "outputs": [
+            "l4_cv2_bn"
+          ],
+          "weight": "l4.cv2.bn.scale",
+          "bias": "l4.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.02565227906534991,
+            "scale_out": 0.047294459005040444,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l4.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l4_cv2_bn"
+          ],
+          "outputs": [
+            "l4_cv2_act"
+          ],
+          "shape": {
+            "n": 6144
+          },
+          "quant": {
+            "scale_in": 0.047294459005040444,
+            "scale_out": 0.03380688719862089,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 19,
+      "hardware_target": "any",
+      "depends_on": [
+        18
+      ]
+    },
+    {
+      "name": "l5.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l4_cv2_act"
+      ],
+      "outputs": [
+        "l5_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l5.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l4_cv2_act"
+          ],
+          "outputs": [
+            "l5_conv"
+          ],
+          "weight": "l5.conv.weight_q",
+          "bias": "l5.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 8,
+            "IW": 12,
+            "OC": 128,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 2,
+            "SW": 2,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1271286677,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l5.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l5_conv"
+          ],
+          "outputs": [
+            "l5_bn"
+          ],
+          "weight": "l5.bn.scale",
+          "bias": "l5.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.02275017302805983,
+            "scale_out": 0.04271165967926266,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l5.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l5_bn"
+          ],
+          "outputs": [
+            "l5_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.04271165967926266,
+            "scale_out": 0.02382944324823815,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 20,
+      "hardware_target": "any",
+      "depends_on": [
+        19
+      ]
+    },
+    {
+      "name": "l6.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l5_act"
+      ],
+      "outputs": [
+        "l6_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l6.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l5_act"
+          ],
+          "outputs": [
+            "l6_cv1_conv"
+          ],
+          "weight": "l6.cv1.conv.weight_q",
+          "bias": "l6.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 128,
+            "IH": 4,
+            "IW": 6,
+            "OC": 128,
+            "OH": 4,
+            "OW": 6,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1457185677,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l6.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l6_cv1_conv"
+          ],
+          "outputs": [
+            "l6_cv1_bn"
+          ],
+          "weight": "l6.cv1.bn.scale",
+          "bias": "l6.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.008783802272766594,
+            "scale_out": 0.07260809169979546,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l6.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l6_cv1_bn"
+          ],
+          "outputs": [
+            "l6_cv1_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.07260809169979546,
+            "scale_out": 0.045542536758062406,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 21,
+      "hardware_target": "any",
+      "depends_on": [
+        20
+      ]
+    },
+    {
+      "name": "chunk_2",
+      "op": "chunk2_c1",
+      "inputs": [
+        "l6_cv1_act"
+      ],
+      "outputs": [
+        "getitem_4",
+        "getitem_5"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 128,
+        "H": 4,
+        "W": 6,
+        "c_each": 64
+      },
+      "dispatch_id": 22,
+      "hardware_target": "any",
+      "depends_on": [
+        21
+      ]
+    },
+    {
+      "name": "l6.m0.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "getitem_5"
+      ],
+      "outputs": [
+        "l6_m0_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l6.m0.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "getitem_5"
+          ],
+          "outputs": [
+            "l6_m0_cv1_conv"
+          ],
+          "weight": "l6.m0.cv1.conv.weight_q",
+          "bias": "l6.m0.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 4,
+            "IW": 6,
+            "OC": 64,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1796680775,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l6.m0.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l6_m0_cv1_conv"
+          ],
+          "outputs": [
+            "l6_m0_cv1_bn"
+          ],
+          "weight": "l6.m0.cv1.bn.scale",
+          "bias": "l6.m0.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.010367001135518231,
+            "scale_out": 0.052715140064870276,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l6.m0.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l6_m0_cv1_bn"
+          ],
+          "outputs": [
+            "l6_m0_cv1_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.052715140064870276,
+            "scale_out": 0.02574980165076068,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 23,
+      "hardware_target": "any",
+      "depends_on": [
+        22
+      ]
+    },
+    {
+      "name": "l6.m0.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l6_m0_cv1_act"
+      ],
+      "outputs": [
+        "l6_m0_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l6.m0.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l6_m0_cv1_act"
+          ],
+          "outputs": [
+            "l6_m0_cv2_conv"
+          ],
+          "weight": "l6.m0.cv2.conv.weight_q",
+          "bias": "l6.m0.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 4,
+            "IW": 6,
+            "OC": 64,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1413359130,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l6.m0.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l6_m0_cv2_conv"
+          ],
+          "outputs": [
+            "l6_m0_cv2_bn"
+          ],
+          "weight": "l6.m0.cv2.bn.scale",
+          "bias": "l6.m0.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.008317853522112988,
+            "scale_out": 0.028080990933996484,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l6.m0.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l6_m0_cv2_bn"
+          ],
+          "outputs": [
+            "l6_m0_cv2_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.028080990933996484,
+            "scale_out": 0.02637514730138103,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 24,
+      "hardware_target": "any",
+      "depends_on": [
+        23
+      ]
+    },
+    {
+      "name": "add_3",
+      "op": "add_s8",
+      "inputs": [
+        "getitem_5",
+        "l6_m0_cv2_act"
+      ],
+      "outputs": [
+        "add_3"
+      ],
+      "shape": {
+        "n": 1536
+      },
+      "quant": {
+        "scale_a": 0.018311215197946144,
+        "scale_b": 0.02637514730138103,
+        "scale_out": 0.03382169918751153,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 25,
+      "hardware_target": "any",
+      "depends_on": [
+        22,
+        24
+      ]
+    },
+    {
+      "name": "l6.m1.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "add_3"
+      ],
+      "outputs": [
+        "l6_m1_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l6.m1.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "add_3"
+          ],
+          "outputs": [
+            "l6_m1_cv1_conv"
+          ],
+          "weight": "l6.m1.cv1.conv.weight_q",
+          "bias": "l6.m1.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 4,
+            "IW": 6,
+            "OC": 64,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1344264936,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l6.m1.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l6_m1_cv1_conv"
+          ],
+          "outputs": [
+            "l6_m1_cv1_bn"
+          ],
+          "weight": "l6.m1.cv1.bn.scale",
+          "bias": "l6.m1.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.010596075395899495,
+            "scale_out": 0.04217717028039647,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l6.m1.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l6_m1_cv1_bn"
+          ],
+          "outputs": [
+            "l6_m1_cv1_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.04217717028039647,
+            "scale_out": 0.02278605596287044,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 26,
+      "hardware_target": "any",
+      "depends_on": [
+        25
+      ]
+    },
+    {
+      "name": "l6.m1.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l6_m1_cv1_act"
+      ],
+      "outputs": [
+        "l6_m1_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l6.m1.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l6_m1_cv1_act"
+          ],
+          "outputs": [
+            "l6_m1_cv2_conv"
+          ],
+          "weight": "l6.m1.cv2.conv.weight_q",
+          "bias": "l6.m1.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 4,
+            "IW": 6,
+            "OC": 64,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1166456910,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l6.m1.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l6_m1_cv2_conv"
+          ],
+          "outputs": [
+            "l6_m1_cv2_bn"
+          ],
+          "weight": "l6.m1.cv2.bn.scale",
+          "bias": "l6.m1.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.007736566498523622,
+            "scale_out": 0.042561091775969256,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l6.m1.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l6_m1_cv2_bn"
+          ],
+          "outputs": [
+            "l6_m1_cv2_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.042561091775969256,
+            "scale_out": 0.0375662338076614,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 27,
+      "hardware_target": "any",
+      "depends_on": [
+        26
+      ]
+    },
+    {
+      "name": "add_4",
+      "op": "add_s8",
+      "inputs": [
+        "add_3",
+        "l6_m1_cv2_act"
+      ],
+      "outputs": [
+        "add_4"
+      ],
+      "shape": {
+        "n": 1536
+      },
+      "quant": {
+        "scale_a": 0.03382169918751153,
+        "scale_b": 0.0375662338076614,
+        "scale_out": 0.04825182036152036,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 28,
+      "hardware_target": "any",
+      "depends_on": [
+        25,
+        27
+      ]
+    },
+    {
+      "name": "cat_2",
+      "op": "cat4_c1_s8",
+      "inputs": [
+        "getitem_4",
+        "getitem_5",
+        "add_3",
+        "add_4"
+      ],
+      "outputs": [
+        "cat_2"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 4,
+        "W": 6,
+        "C_inputs": [
+          64,
+          64,
+          64,
+          64
+        ],
+        "C_total": 256
+      },
+      "quant": {
+        "scales_in": [
+          0.045542536758062406,
+          0.018311215197946144,
+          0.03382169918751153,
+          0.04825182036152036
+        ],
+        "scale_out": 0.04825182036152036,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 29,
+      "hardware_target": "any",
+      "depends_on": [
+        22,
+        25,
+        28
+      ]
+    },
+    {
+      "name": "l6.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat_2"
+      ],
+      "outputs": [
+        "l6_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l6.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat_2"
+          ],
+          "outputs": [
+            "l6_cv2_conv"
+          ],
+          "weight": "l6.cv2.conv.weight_q",
+          "bias": "l6.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 256,
+            "IH": 4,
+            "IW": 6,
+            "OC": 128,
+            "OH": 4,
+            "OW": 6,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1124865014,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l6.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l6_cv2_conv"
+          ],
+          "outputs": [
+            "l6_cv2_bn"
+          ],
+          "weight": "l6.cv2.bn.scale",
+          "bias": "l6.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.021306755035880982,
+            "scale_out": 0.03794991876196673,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l6.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l6_cv2_bn"
+          ],
+          "outputs": [
+            "l6_cv2_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.03794991876196673,
+            "scale_out": 0.02508577399366484,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 30,
+      "hardware_target": "any",
+      "depends_on": [
+        29
+      ]
+    },
+    {
+      "name": "l7.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l6_cv2_act"
+      ],
+      "outputs": [
+        "l7_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l7.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l6_cv2_act"
+          ],
+          "outputs": [
+            "l7_conv"
+          ],
+          "weight": "l7.conv.weight_q",
+          "bias": "l7.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 128,
+            "IH": 4,
+            "IW": 6,
+            "OC": 256,
+            "OH": 2,
+            "OW": 3,
+            "KH": 3,
+            "KW": 3,
+            "SH": 2,
+            "SW": 2,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1545023886,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l7.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l7_conv"
+          ],
+          "outputs": [
+            "l7_bn"
+          ],
+          "weight": "l7.bn.scale",
+          "bias": "l7.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 256,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.008948552326893244,
+            "scale_out": 0.03932569533821166,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l7.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l7_bn"
+          ],
+          "outputs": [
+            "l7_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.03932569533821166,
+            "scale_out": 0.025789307797048973,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 31,
+      "hardware_target": "any",
+      "depends_on": [
+        30
+      ]
+    },
+    {
+      "name": "l8.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l7_act"
+      ],
+      "outputs": [
+        "l8_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l8.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l7_act"
+          ],
+          "outputs": [
+            "l8_cv1_conv"
+          ],
+          "weight": "l8.cv1.conv.weight_q",
+          "bias": "l8.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 256,
+            "IH": 2,
+            "IW": 3,
+            "OC": 256,
+            "OH": 2,
+            "OW": 3,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1980360379,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l8.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l8_cv1_conv"
+          ],
+          "outputs": [
+            "l8_cv1_bn"
+          ],
+          "weight": "l8.cv1.bn.scale",
+          "bias": "l8.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 256,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.005838798256370965,
+            "scale_out": 0.050648816927211494,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l8.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l8_cv1_bn"
+          ],
+          "outputs": [
+            "l8_cv1_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.050648816927211494,
+            "scale_out": 0.03954239717618687,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 32,
+      "hardware_target": "any",
+      "depends_on": [
+        31
+      ]
+    },
+    {
+      "name": "chunk_3",
+      "op": "chunk2_c1",
+      "inputs": [
+        "l8_cv1_act"
+      ],
+      "outputs": [
+        "getitem_6",
+        "getitem_7"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 256,
+        "H": 2,
+        "W": 3,
+        "c_each": 128
+      },
+      "dispatch_id": 33,
+      "hardware_target": "any",
+      "depends_on": [
+        32
+      ]
+    },
+    {
+      "name": "l8.m0.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "getitem_7"
+      ],
+      "outputs": [
+        "l8_m0_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l8.m0.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "getitem_7"
+          ],
+          "outputs": [
+            "l8_m0_cv1_conv"
+          ],
+          "weight": "l8.m0.cv1.conv.weight_q",
+          "bias": "l8.m0.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 128,
+            "IH": 2,
+            "IW": 3,
+            "OC": 128,
+            "OH": 2,
+            "OW": 3,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1395998216,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l8.m0.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l8_m0_cv1_conv"
+          ],
+          "outputs": [
+            "l8_m0_cv1_bn"
+          ],
+          "weight": "l8.m0.cv1.bn.scale",
+          "bias": "l8.m0.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.00488088262362743,
+            "scale_out": 0.035377160770686596,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l8.m0.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l8_m0_cv1_bn"
+          ],
+          "outputs": [
+            "l8_m0_cv1_act"
+          ],
+          "shape": {
+            "n": 768
+          },
+          "quant": {
+            "scale_in": 0.035377160770686596,
+            "scale_out": 0.020445206033901906,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 34,
+      "hardware_target": "any",
+      "depends_on": [
+        33
+      ]
+    },
+    {
+      "name": "l8.m0.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l8_m0_cv1_act"
+      ],
+      "outputs": [
+        "l8_m0_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l8.m0.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l8_m0_cv1_act"
+          ],
+          "outputs": [
+            "l8_m0_cv2_conv"
+          ],
+          "weight": "l8.m0.cv2.conv.weight_q",
+          "bias": "l8.m0.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 128,
+            "IH": 2,
+            "IW": 3,
+            "OC": 128,
+            "OH": 2,
+            "OW": 3,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1336404851,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l8.m0.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l8_m0_cv2_conv"
+          ],
+          "outputs": [
+            "l8_m0_cv2_bn"
+          ],
+          "weight": "l8.m0.cv2.bn.scale",
+          "bias": "l8.m0.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.010565868512851986,
+            "scale_out": 0.040018543483704094,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l8.m0.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l8_m0_cv2_bn"
+          ],
+          "outputs": [
+            "l8_m0_cv2_act"
+          ],
+          "shape": {
+            "n": 768
+          },
+          "quant": {
+            "scale_in": 0.040018543483704094,
+            "scale_out": 0.03911902585367518,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 35,
+      "hardware_target": "any",
+      "depends_on": [
+        34
+      ]
+    },
+    {
+      "name": "add_5",
+      "op": "add_s8",
+      "inputs": [
+        "getitem_7",
+        "l8_m0_cv2_act"
+      ],
+      "outputs": [
+        "add_5"
+      ],
+      "shape": {
+        "n": 768
+      },
+      "quant": {
+        "scale_a": 0.0247972612305889,
+        "scale_b": 0.03911902585367518,
+        "scale_out": 0.038600125650721274,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 36,
+      "hardware_target": "any",
+      "depends_on": [
+        33,
+        35
+      ]
+    },
+    {
+      "name": "cat_3",
+      "op": "cat3_c1_s8",
+      "inputs": [
+        "getitem_6",
+        "getitem_7",
+        "add_5"
+      ],
+      "outputs": [
+        "cat_3"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 2,
+        "W": 3,
+        "C_inputs": [
+          128,
+          128,
+          128
+        ],
+        "C_total": 384
+      },
+      "quant": {
+        "scales_in": [
+          0.03954239717618687,
+          0.0247972612305889,
+          0.038600125650721274
+        ],
+        "scale_out": 0.03954239717618687,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 37,
+      "hardware_target": "any",
+      "depends_on": [
+        33,
+        36
+      ]
+    },
+    {
+      "name": "l8.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat_3"
+      ],
+      "outputs": [
+        "l8_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l8.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat_3"
+          ],
+          "outputs": [
+            "l8_cv2_conv"
+          ],
+          "weight": "l8.cv2.conv.weight_q",
+          "bias": "l8.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 384,
+            "IH": 2,
+            "IW": 3,
+            "OC": 256,
+            "OH": 2,
+            "OW": 3,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1552602540,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l8.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l8_cv2_conv"
+          ],
+          "outputs": [
+            "l8_cv2_bn"
+          ],
+          "weight": "l8.cv2.bn.scale",
+          "bias": "l8.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 256,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.010389536384522445,
+            "scale_out": 0.04205799853707862,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l8.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l8_cv2_bn"
+          ],
+          "outputs": [
+            "l8_cv2_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.04205799853707862,
+            "scale_out": 0.028627213530653103,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 38,
+      "hardware_target": "any",
+      "depends_on": [
+        37
+      ]
+    },
+    {
+      "name": "l9.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l8_cv2_act"
+      ],
+      "outputs": [
+        "l9_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l9.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l8_cv2_act"
+          ],
+          "outputs": [
+            "l9_cv1_conv"
+          ],
+          "weight": "l9.cv1.conv.weight_q",
+          "bias": "l9.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 256,
+            "IH": 2,
+            "IW": 3,
+            "OC": 128,
+            "OH": 2,
+            "OW": 3,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1137682364,
+            "output_shift": 6,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l9.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l9_cv1_conv"
+          ],
+          "outputs": [
+            "l9_cv1_bn"
+          ],
+          "weight": "l9.cv1.bn.scale",
+          "bias": "l9.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.006987260551903192,
+            "scale_out": 0.04143865465179203,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l9.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l9_cv1_bn"
+          ],
+          "outputs": [
+            "l9_cv1_act"
+          ],
+          "shape": {
+            "n": 768
+          },
+          "quant": {
+            "scale_in": 0.04143865465179203,
+            "scale_out": 0.04122505788728008,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 39,
+      "hardware_target": "any",
+      "depends_on": [
+        38
+      ]
+    },
+    {
+      "name": "l9.m1",
+      "op": "maxpool2d_s8",
+      "inputs": [
+        "l9_cv1_act"
+      ],
+      "outputs": [
+        "l9_m1"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 128,
+        "IH": 2,
+        "IW": 3,
+        "OH": 2,
+        "OW": 3,
+        "KH": 5,
+        "KW": 5,
+        "SH": 1,
+        "SW": 1,
+        "PH": 2,
+        "PW": 2,
+        "DH": 1,
+        "DW": 1
+      },
+      "dispatch_id": 40,
+      "hardware_target": "any",
+      "depends_on": [
+        39
+      ]
+    },
+    {
+      "name": "l9.m2",
+      "op": "maxpool2d_s8",
+      "inputs": [
+        "l9_m1"
+      ],
+      "outputs": [
+        "l9_m2"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 128,
+        "IH": 2,
+        "IW": 3,
+        "OH": 2,
+        "OW": 3,
+        "KH": 5,
+        "KW": 5,
+        "SH": 1,
+        "SW": 1,
+        "PH": 2,
+        "PW": 2,
+        "DH": 1,
+        "DW": 1
+      },
+      "dispatch_id": 41,
+      "hardware_target": "any",
+      "depends_on": [
+        40
+      ]
+    },
+    {
+      "name": "l9.m3",
+      "op": "maxpool2d_s8",
+      "inputs": [
+        "l9_m2"
+      ],
+      "outputs": [
+        "l9_m3"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 128,
+        "IH": 2,
+        "IW": 3,
+        "OH": 2,
+        "OW": 3,
+        "KH": 5,
+        "KW": 5,
+        "SH": 1,
+        "SW": 1,
+        "PH": 2,
+        "PW": 2,
+        "DH": 1,
+        "DW": 1
+      },
+      "dispatch_id": 42,
+      "hardware_target": "any",
+      "depends_on": [
+        41
+      ]
+    },
+    {
+      "name": "cat_4",
+      "op": "cat4_c1_s8",
+      "inputs": [
+        "l9_cv1_act",
+        "l9_m1",
+        "l9_m2",
+        "l9_m3"
+      ],
+      "outputs": [
+        "cat_4"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 2,
+        "W": 3,
+        "C_inputs": [
+          128,
+          128,
+          128,
+          128
+        ],
+        "C_total": 512
+      },
+      "quant": {
+        "scales_in": [
+          0.04122505788728008,
+          0.04122505788728008,
+          0.04122505788728008,
+          0.04122505788728008
+        ],
+        "scale_out": 0.04122505788728008,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 43,
+      "hardware_target": "any",
+      "depends_on": [
+        39,
+        40,
+        41,
+        42
+      ]
+    },
+    {
+      "name": "l9.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat_4"
+      ],
+      "outputs": [
+        "l9_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l9.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat_4"
+          ],
+          "outputs": [
+            "l9_cv2_conv"
+          ],
+          "weight": "l9.cv2.conv.weight_q",
+          "bias": "l9.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 512,
+            "IH": 2,
+            "IW": 3,
+            "OC": 256,
+            "OH": 2,
+            "OW": 3,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1677970791,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l9.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l9_cv2_conv"
+          ],
+          "outputs": [
+            "l9_cv2_bn"
+          ],
+          "weight": "l9.cv2.bn.scale",
+          "bias": "l9.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 256,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.02204401662030558,
+            "scale_out": 0.039328049487016334,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l9.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l9_cv2_bn"
+          ],
+          "outputs": [
+            "l9_cv2_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.039328049487016334,
+            "scale_out": 0.019159921510951725,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 44,
+      "hardware_target": "any",
+      "depends_on": [
+        43
+      ]
+    },
+    {
+      "name": "l10",
+      "op": "upsample_nearest_s8",
+      "inputs": [
+        "l9_cv2_act"
+      ],
+      "outputs": [
+        "l10"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 256,
+        "IH": 2,
+        "IW": 3,
+        "scale": 2
+      },
+      "dispatch_id": 45,
+      "hardware_target": "any",
+      "depends_on": [
+        44
+      ]
+    },
+    {
+      "name": "cat_5",
+      "op": "cat2_c1_s8",
+      "inputs": [
+        "l10",
+        "l6_cv2_act"
+      ],
+      "outputs": [
+        "cat_5"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 4,
+        "W": 6,
+        "C_inputs": [
+          256,
+          128
+        ],
+        "C_total": 384
+      },
+      "quant": {
+        "scales_in": [
+          0.019159921510951725,
+          0.02508577399366484
+        ],
+        "scale_out": 0.02508577399366484,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 46,
+      "hardware_target": "any",
+      "depends_on": [
+        30,
+        45
+      ]
+    },
+    {
+      "name": "l12.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat_5"
+      ],
+      "outputs": [
+        "l12_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l12.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat_5"
+          ],
+          "outputs": [
+            "l12_cv1_conv"
+          ],
+          "weight": "l12.cv1.conv.weight_q",
+          "bias": "l12.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 384,
+            "IH": 4,
+            "IW": 6,
+            "OC": 128,
+            "OH": 4,
+            "OW": 6,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1238973458,
+            "output_shift": 6,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l12.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l12_cv1_conv"
+          ],
+          "outputs": [
+            "l12_cv1_bn"
+          ],
+          "weight": "l12.cv1.bn.scale",
+          "bias": "l12.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.007339488333604467,
+            "scale_out": 0.03952174674807571,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l12.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l12_cv1_bn"
+          ],
+          "outputs": [
+            "l12_cv1_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.03952174674807571,
+            "scale_out": 0.030222731312428874,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 47,
+      "hardware_target": "any",
+      "depends_on": [
+        46
+      ]
+    },
+    {
+      "name": "chunk_4",
+      "op": "chunk2_c1",
+      "inputs": [
+        "l12_cv1_act"
+      ],
+      "outputs": [
+        "getitem_8",
+        "getitem_9"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 128,
+        "H": 4,
+        "W": 6,
+        "c_each": 64
+      },
+      "dispatch_id": 48,
+      "hardware_target": "any",
+      "depends_on": [
+        47
+      ]
+    },
+    {
+      "name": "l12.m0.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "getitem_9"
+      ],
+      "outputs": [
+        "l12_m0_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l12.m0.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "getitem_9"
+          ],
+          "outputs": [
+            "l12_m0_cv1_conv"
+          ],
+          "weight": "l12.m0.cv1.conv.weight_q",
+          "bias": "l12.m0.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 4,
+            "IW": 6,
+            "OC": 64,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1336767328,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l12.m0.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l12_m0_cv1_conv"
+          ],
+          "outputs": [
+            "l12_m0_cv1_bn"
+          ],
+          "weight": "l12.m0.cv1.bn.scale",
+          "bias": "l12.m0.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.010638685676995226,
+            "scale_out": 0.029808669578372023,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l12.m0.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l12_m0_cv1_bn"
+          ],
+          "outputs": [
+            "l12_m0_cv1_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.029808669578372023,
+            "scale_out": 0.01912820996261957,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 49,
+      "hardware_target": "any",
+      "depends_on": [
+        48
+      ]
+    },
+    {
+      "name": "l12.m0.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l12_m0_cv1_act"
+      ],
+      "outputs": [
+        "l12_m0_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l12.m0.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l12_m0_cv1_act"
+          ],
+          "outputs": [
+            "l12_m0_cv2_conv"
+          ],
+          "weight": "l12.m0.cv2.conv.weight_q",
+          "bias": "l12.m0.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 4,
+            "IW": 6,
+            "OC": 64,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1841728623,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l12.m0.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l12_m0_cv2_conv"
+          ],
+          "outputs": [
+            "l12_m0_cv2_bn"
+          ],
+          "weight": "l12.m0.cv2.bn.scale",
+          "bias": "l12.m0.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.0058997461176294045,
+            "scale_out": 0.034909481138694944,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l12.m0.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l12_m0_cv2_bn"
+          ],
+          "outputs": [
+            "l12_m0_cv2_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.034909481138694944,
+            "scale_out": 0.034499870510551874,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 50,
+      "hardware_target": "any",
+      "depends_on": [
+        49
+      ]
+    },
+    {
+      "name": "cat_6",
+      "op": "cat3_c1_s8",
+      "inputs": [
+        "getitem_8",
+        "getitem_9",
+        "l12_m0_cv2_act"
+      ],
+      "outputs": [
+        "cat_6"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 4,
+        "W": 6,
+        "C_inputs": [
+          64,
+          64,
+          64
+        ],
+        "C_total": 192
+      },
+      "quant": {
+        "scales_in": [
+          0.020995457341351848,
+          0.030222731312428874,
+          0.034499870510551874
+        ],
+        "scale_out": 0.034499870510551874,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 51,
+      "hardware_target": "any",
+      "depends_on": [
+        48,
+        50
+      ]
+    },
+    {
+      "name": "l12.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat_6"
+      ],
+      "outputs": [
+        "l12_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l12.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat_6"
+          ],
+          "outputs": [
+            "l12_cv2_conv"
+          ],
+          "weight": "l12.cv2.conv.weight_q",
+          "bias": "l12.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 192,
+            "IH": 4,
+            "IW": 6,
+            "OC": 128,
+            "OH": 4,
+            "OW": 6,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 2129260634,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l12.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l12_cv2_conv"
+          ],
+          "outputs": [
+            "l12_cv2_bn"
+          ],
+          "weight": "l12.cv2.bn.scale",
+          "bias": "l12.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.007427356843873272,
+            "scale_out": 0.04149202286727785,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l12.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l12_cv2_bn"
+          ],
+          "outputs": [
+            "l12_cv2_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.04149202286727785,
+            "scale_out": 0.020749538902222642,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 52,
+      "hardware_target": "any",
+      "depends_on": [
+        51
+      ]
+    },
+    {
+      "name": "l13",
+      "op": "upsample_nearest_s8",
+      "inputs": [
+        "l12_cv2_act"
+      ],
+      "outputs": [
+        "l13"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 128,
+        "IH": 4,
+        "IW": 6,
+        "scale": 2
+      },
+      "dispatch_id": 53,
+      "hardware_target": "any",
+      "depends_on": [
+        52
+      ]
+    },
+    {
+      "name": "cat_7",
+      "op": "cat2_c1_s8",
+      "inputs": [
+        "l13",
+        "l4_cv2_act"
+      ],
+      "outputs": [
+        "cat_7"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 8,
+        "W": 12,
+        "C_inputs": [
+          128,
+          64
+        ],
+        "C_total": 192
+      },
+      "quant": {
+        "scales_in": [
+          0.020749538902222642,
+          0.03380688719862089
+        ],
+        "scale_out": 0.03380688719862089,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 54,
+      "hardware_target": "any",
+      "depends_on": [
+        19,
+        53
+      ]
+    },
+    {
+      "name": "l15.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat_7"
+      ],
+      "outputs": [
+        "l15_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l15.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat_7"
+          ],
+          "outputs": [
+            "l15_cv1_conv"
+          ],
+          "weight": "l15.cv1.conv.weight_q",
+          "bias": "l15.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 192,
+            "IH": 8,
+            "IW": 12,
+            "OC": 64,
+            "OH": 8,
+            "OW": 12,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1815054850,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l15.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l15_cv1_conv"
+          ],
+          "outputs": [
+            "l15_cv1_bn"
+          ],
+          "weight": "l15.cv1.bn.scale",
+          "bias": "l15.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.010590192839855284,
+            "scale_out": 0.05678062363872378,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l15.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l15_cv1_bn"
+          ],
+          "outputs": [
+            "l15_cv1_act"
+          ],
+          "shape": {
+            "n": 6144
+          },
+          "quant": {
+            "scale_in": 0.05678062363872378,
+            "scale_out": 0.022942719497079923,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 55,
+      "hardware_target": "any",
+      "depends_on": [
+        54
+      ]
+    },
+    {
+      "name": "chunk_5",
+      "op": "chunk2_c1",
+      "inputs": [
+        "l15_cv1_act"
+      ],
+      "outputs": [
+        "getitem_10",
+        "getitem_11"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 64,
+        "H": 8,
+        "W": 12,
+        "c_each": 32
+      },
+      "dispatch_id": 56,
+      "hardware_target": "any",
+      "depends_on": [
+        55
+      ]
+    },
+    {
+      "name": "l15.m0.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "getitem_11"
+      ],
+      "outputs": [
+        "l15_m0_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l15.m0.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "getitem_11"
+          ],
+          "outputs": [
+            "l15_m0_cv1_conv"
+          ],
+          "weight": "l15.m0.cv1.conv.weight_q",
+          "bias": "l15.m0.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 32,
+            "IH": 8,
+            "IW": 12,
+            "OC": 32,
+            "OH": 8,
+            "OW": 12,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1939151123,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l15.m0.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l15_m0_cv1_conv"
+          ],
+          "outputs": [
+            "l15_m0_cv1_bn"
+          ],
+          "weight": "l15.m0.cv1.bn.scale",
+          "bias": "l15.m0.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 32,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.009640371705603413,
+            "scale_out": 0.030410973105843613,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l15.m0.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l15_m0_cv1_bn"
+          ],
+          "outputs": [
+            "l15_m0_cv1_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.030410973105843613,
+            "scale_out": 0.017087911996315784,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 57,
+      "hardware_target": "any",
+      "depends_on": [
+        56
+      ]
+    },
+    {
+      "name": "l15.m0.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l15_m0_cv1_act"
+      ],
+      "outputs": [
+        "l15_m0_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l15.m0.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l15_m0_cv1_act"
+          ],
+          "outputs": [
+            "l15_m0_cv2_conv"
+          ],
+          "weight": "l15.m0.cv2.conv.weight_q",
+          "bias": "l15.m0.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 32,
+            "IH": 8,
+            "IW": 12,
+            "OC": 32,
+            "OH": 8,
+            "OW": 12,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1939392266,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l15.m0.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l15_m0_cv2_conv"
+          ],
+          "outputs": [
+            "l15_m0_cv2_bn"
+          ],
+          "weight": "l15.m0.cv2.bn.scale",
+          "bias": "l15.m0.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 32,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.00745868072735043,
+            "scale_out": 0.040374478017251324,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l15.m0.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l15_m0_cv2_bn"
+          ],
+          "outputs": [
+            "l15_m0_cv2_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.040374478017251324,
+            "scale_out": 0.040136427391232465,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 58,
+      "hardware_target": "any",
+      "depends_on": [
+        57
+      ]
+    },
+    {
+      "name": "cat_8",
+      "op": "cat3_c1_s8",
+      "inputs": [
+        "getitem_10",
+        "getitem_11",
+        "l15_m0_cv2_act"
+      ],
+      "outputs": [
+        "cat_8"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 8,
+        "W": 12,
+        "C_inputs": [
+          32,
+          32,
+          32
+        ],
+        "C_total": 96
+      },
+      "quant": {
+        "scales_in": [
+          0.019757788951002705,
+          0.022942719497079923,
+          0.040136427391232465
+        ],
+        "scale_out": 0.040136427391232465,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 59,
+      "hardware_target": "any",
+      "depends_on": [
+        56,
+        58
+      ]
+    },
+    {
+      "name": "l15.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat_8"
+      ],
+      "outputs": [
+        "l15_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l15.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat_8"
+          ],
+          "outputs": [
+            "l15_cv2_conv"
+          ],
+          "weight": "l15.cv2.conv.weight_q",
+          "bias": "l15.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 96,
+            "IH": 8,
+            "IW": 12,
+            "OC": 64,
+            "OH": 8,
+            "OW": 12,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1901275441,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l15.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l15_cv2_conv"
+          ],
+          "outputs": [
+            "l15_cv2_bn"
+          ],
+          "weight": "l15.cv2.bn.scale",
+          "bias": "l15.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.010457818902383639,
+            "scale_out": 0.04239610236460768,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l15.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l15_cv2_bn"
+          ],
+          "outputs": [
+            "l15_cv2_act"
+          ],
+          "shape": {
+            "n": 6144
+          },
+          "quant": {
+            "scale_in": 0.04239610236460768,
+            "scale_out": 0.03128895984859917,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 60,
+      "hardware_target": "any",
+      "depends_on": [
+        59
+      ]
+    },
+    {
+      "name": "l16.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l15_cv2_act"
+      ],
+      "outputs": [
+        "l16_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l16.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l15_cv2_act"
+          ],
+          "outputs": [
+            "l16_conv"
+          ],
+          "weight": "l16.conv.weight_q",
+          "bias": "l16.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 8,
+            "IW": 12,
+            "OC": 64,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 2,
+            "SW": 2,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1839753870,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l16.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l16_conv"
+          ],
+          "outputs": [
+            "l16_bn"
+          ],
+          "weight": "l16.bn.scale",
+          "bias": "l16.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.010604484813419853,
+            "scale_out": 0.04019176678394708,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l16.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l16_bn"
+          ],
+          "outputs": [
+            "l16_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.04019176678394708,
+            "scale_out": 0.03221036880973756,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 61,
+      "hardware_target": "any",
+      "depends_on": [
+        60
+      ]
+    },
+    {
+      "name": "cat_9",
+      "op": "cat2_c1_s8",
+      "inputs": [
+        "l16_act",
+        "l12_cv2_act"
+      ],
+      "outputs": [
+        "cat_9"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 4,
+        "W": 6,
+        "C_inputs": [
+          64,
+          128
+        ],
+        "C_total": 192
+      },
+      "quant": {
+        "scales_in": [
+          0.03221036880973756,
+          0.020749538902222642
+        ],
+        "scale_out": 0.03221036880973756,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 62,
+      "hardware_target": "any",
+      "depends_on": [
+        52,
+        61
+      ]
+    },
+    {
+      "name": "l18.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat_9"
+      ],
+      "outputs": [
+        "l18_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l18.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat_9"
+          ],
+          "outputs": [
+            "l18_cv1_conv"
+          ],
+          "weight": "l18.cv1.conv.weight_q",
+          "bias": "l18.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 192,
+            "IH": 4,
+            "IW": 6,
+            "OC": 128,
+            "OH": 4,
+            "OW": 6,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1622365553,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l18.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l18_cv1_conv"
+          ],
+          "outputs": [
+            "l18_cv1_bn"
+          ],
+          "weight": "l18.cv1.bn.scale",
+          "bias": "l18.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.008025730688740887,
+            "scale_out": 0.04917042274174728,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l18.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l18_cv1_bn"
+          ],
+          "outputs": [
+            "l18_cv1_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.04917042274174728,
+            "scale_out": 0.03454801979966051,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 63,
+      "hardware_target": "any",
+      "depends_on": [
+        62
+      ]
+    },
+    {
+      "name": "chunk_6",
+      "op": "chunk2_c1",
+      "inputs": [
+        "l18_cv1_act"
+      ],
+      "outputs": [
+        "getitem_12",
+        "getitem_13"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 128,
+        "H": 4,
+        "W": 6,
+        "c_each": 64
+      },
+      "dispatch_id": 64,
+      "hardware_target": "any",
+      "depends_on": [
+        63
+      ]
+    },
+    {
+      "name": "l18.m0.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "getitem_13"
+      ],
+      "outputs": [
+        "l18_m0_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l18.m0.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "getitem_13"
+          ],
+          "outputs": [
+            "l18_m0_cv1_conv"
+          ],
+          "weight": "l18.m0.cv1.conv.weight_q",
+          "bias": "l18.m0.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 4,
+            "IW": 6,
+            "OC": 64,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1494480586,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l18.m0.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l18_m0_cv1_conv"
+          ],
+          "outputs": [
+            "l18_m0_cv1_bn"
+          ],
+          "weight": "l18.m0.cv1.bn.scale",
+          "bias": "l18.m0.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.010672854626272607,
+            "scale_out": 0.03670271926038847,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l18.m0.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l18_m0_cv1_bn"
+          ],
+          "outputs": [
+            "l18_m0_cv1_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.03670271926038847,
+            "scale_out": 0.019774639700341413,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 65,
+      "hardware_target": "any",
+      "depends_on": [
+        64
+      ]
+    },
+    {
+      "name": "l18.m0.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l18_m0_cv1_act"
+      ],
+      "outputs": [
+        "l18_m0_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l18.m0.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l18_m0_cv1_act"
+          ],
+          "outputs": [
+            "l18_m0_cv2_conv"
+          ],
+          "weight": "l18.m0.cv2.conv.weight_q",
+          "bias": "l18.m0.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 4,
+            "IW": 6,
+            "OC": 64,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1526457996,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l18.m0.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l18_m0_cv2_conv"
+          ],
+          "outputs": [
+            "l18_m0_cv2_bn"
+          ],
+          "weight": "l18.m0.cv2.bn.scale",
+          "bias": "l18.m0.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.005743304575522115,
+            "scale_out": 0.06953174110472672,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l18.m0.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l18_m0_cv2_bn"
+          ],
+          "outputs": [
+            "l18_m0_cv2_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.06953174110472672,
+            "scale_out": 0.04252865183071827,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 66,
+      "hardware_target": "any",
+      "depends_on": [
+        65
+      ]
+    },
+    {
+      "name": "cat_10",
+      "op": "cat3_c1_s8",
+      "inputs": [
+        "getitem_12",
+        "getitem_13",
+        "l18_m0_cv2_act"
+      ],
+      "outputs": [
+        "cat_10"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 4,
+        "W": 6,
+        "C_inputs": [
+          64,
+          64,
+          64
+        ],
+        "C_total": 192
+      },
+      "quant": {
+        "scales_in": [
+          0.03454801979966051,
+          0.03372653075090543,
+          0.04252865183071827
+        ],
+        "scale_out": 0.04252865183071827,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 67,
+      "hardware_target": "any",
+      "depends_on": [
+        64,
+        66
+      ]
+    },
+    {
+      "name": "l18.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat_10"
+      ],
+      "outputs": [
+        "l18_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l18.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat_10"
+          ],
+          "outputs": [
+            "l18_cv2_conv"
+          ],
+          "weight": "l18.cv2.conv.weight_q",
+          "bias": "l18.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 192,
+            "IH": 4,
+            "IW": 6,
+            "OC": 128,
+            "OH": 4,
+            "OW": 6,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 2035986264,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l18.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l18_cv2_conv"
+          ],
+          "outputs": [
+            "l18_cv2_bn"
+          ],
+          "weight": "l18.cv2.bn.scale",
+          "bias": "l18.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.009845727071987363,
+            "scale_out": 0.06670613176240696,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l18.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l18_cv2_bn"
+          ],
+          "outputs": [
+            "l18_cv2_act"
+          ],
+          "shape": {
+            "n": 3072
+          },
+          "quant": {
+            "scale_in": 0.06670613176240696,
+            "scale_out": 0.03098987782095361,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 68,
+      "hardware_target": "any",
+      "depends_on": [
+        67
+      ]
+    },
+    {
+      "name": "l19.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l18_cv2_act"
+      ],
+      "outputs": [
+        "l19_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l19.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l18_cv2_act"
+          ],
+          "outputs": [
+            "l19_conv"
+          ],
+          "weight": "l19.conv.weight_q",
+          "bias": "l19.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 128,
+            "IH": 4,
+            "IW": 6,
+            "OC": 128,
+            "OH": 2,
+            "OW": 3,
+            "KH": 3,
+            "KW": 3,
+            "SH": 2,
+            "SW": 2,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1855431842,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l19.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l19_conv"
+          ],
+          "outputs": [
+            "l19_bn"
+          ],
+          "weight": "l19.bn.scale",
+          "bias": "l19.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.00703411308799203,
+            "scale_out": 0.04259843901386411,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l19.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l19_bn"
+          ],
+          "outputs": [
+            "l19_act"
+          ],
+          "shape": {
+            "n": 768
+          },
+          "quant": {
+            "scale_in": 0.04259843901386411,
+            "scale_out": 0.028446379608995334,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 69,
+      "hardware_target": "any",
+      "depends_on": [
+        68
+      ]
+    },
+    {
+      "name": "cat_11",
+      "op": "cat2_c1_s8",
+      "inputs": [
+        "l19_act",
+        "l9_cv2_act"
+      ],
+      "outputs": [
+        "cat_11"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 2,
+        "W": 3,
+        "C_inputs": [
+          128,
+          256
+        ],
+        "C_total": 384
+      },
+      "quant": {
+        "scales_in": [
+          0.028446379608995334,
+          0.019159921510951725
+        ],
+        "scale_out": 0.028446379608995334,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 70,
+      "hardware_target": "any",
+      "depends_on": [
+        44,
+        69
+      ]
+    },
+    {
+      "name": "l21.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat_11"
+      ],
+      "outputs": [
+        "l21_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l21.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat_11"
+          ],
+          "outputs": [
+            "l21_cv1_conv"
+          ],
+          "weight": "l21.cv1.conv.weight_q",
+          "bias": "l21.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 384,
+            "IH": 2,
+            "IW": 3,
+            "OC": 256,
+            "OH": 2,
+            "OW": 3,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1311534278,
+            "output_shift": 6,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l21.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l21_cv1_conv"
+          ],
+          "outputs": [
+            "l21_cv1_bn"
+          ],
+          "weight": "l21.cv1.bn.scale",
+          "bias": "l21.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 256,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.005650286130079134,
+            "scale_out": 0.042346184647928074,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l21.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l21_cv1_bn"
+          ],
+          "outputs": [
+            "l21_cv1_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.042346184647928074,
+            "scale_out": 0.036444896788109006,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 71,
+      "hardware_target": "any",
+      "depends_on": [
+        70
+      ]
+    },
+    {
+      "name": "chunk_7",
+      "op": "chunk2_c1",
+      "inputs": [
+        "l21_cv1_act"
+      ],
+      "outputs": [
+        "getitem_14",
+        "getitem_15"
+      ],
+      "shape": {
+        "N": 1,
+        "C": 256,
+        "H": 2,
+        "W": 3,
+        "c_each": 128
+      },
+      "dispatch_id": 72,
+      "hardware_target": "any",
+      "depends_on": [
+        71
+      ]
+    },
+    {
+      "name": "l21.m0.cv1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "getitem_15"
+      ],
+      "outputs": [
+        "l21_m0_cv1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l21.m0.cv1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "getitem_15"
+          ],
+          "outputs": [
+            "l21_m0_cv1_conv"
+          ],
+          "weight": "l21.m0.cv1.conv.weight_q",
+          "bias": "l21.m0.cv1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 128,
+            "IH": 2,
+            "IW": 3,
+            "OC": 128,
+            "OH": 2,
+            "OW": 3,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1688193215,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l21.m0.cv1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l21_m0_cv1_conv"
+          ],
+          "outputs": [
+            "l21_m0_cv1_bn"
+          ],
+          "weight": "l21.m0.cv1.bn.scale",
+          "bias": "l21.m0.cv1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.0070783580382039225,
+            "scale_out": 0.047147138850895436,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l21.m0.cv1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l21_m0_cv1_bn"
+          ],
+          "outputs": [
+            "l21_m0_cv1_act"
+          ],
+          "shape": {
+            "n": 768
+          },
+          "quant": {
+            "scale_in": 0.047147138850895436,
+            "scale_out": 0.037913615309347316,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 73,
+      "hardware_target": "any",
+      "depends_on": [
+        72
+      ]
+    },
+    {
+      "name": "l21.m0.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l21_m0_cv1_act"
+      ],
+      "outputs": [
+        "l21_m0_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l21.m0.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l21_m0_cv1_act"
+          ],
+          "outputs": [
+            "l21_m0_cv2_conv"
+          ],
+          "weight": "l21.m0.cv2.conv.weight_q",
+          "bias": "l21.m0.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 128,
+            "IH": 2,
+            "IW": 3,
+            "OC": 128,
+            "OH": 2,
+            "OW": 3,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1957594184,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l21.m0.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l21_m0_cv2_conv"
+          ],
+          "outputs": [
+            "l21_m0_cv2_bn"
+          ],
+          "weight": "l21.m0.cv2.bn.scale",
+          "bias": "l21.m0.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 128,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.006073924969500444,
+            "scale_out": 0.054776439516563115,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l21.m0.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l21_m0_cv2_bn"
+          ],
+          "outputs": [
+            "l21_m0_cv2_act"
+          ],
+          "shape": {
+            "n": 768
+          },
+          "quant": {
+            "scale_in": 0.054776439516563115,
+            "scale_out": 0.035860782533180056,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 74,
+      "hardware_target": "any",
+      "depends_on": [
+        73
+      ]
+    },
+    {
+      "name": "cat_12",
+      "op": "cat3_c1_s8",
+      "inputs": [
+        "getitem_14",
+        "getitem_15",
+        "l21_m0_cv2_act"
+      ],
+      "outputs": [
+        "cat_12"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 2,
+        "W": 3,
+        "C_inputs": [
+          128,
+          128,
+          128
+        ],
+        "C_total": 384
+      },
+      "quant": {
+        "scales_in": [
+          0.026580429452610767,
+          0.036444896788109006,
+          0.035860782533180056
+        ],
+        "scale_out": 0.036444896788109006,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 75,
+      "hardware_target": "any",
+      "depends_on": [
+        72,
+        74
+      ]
+    },
+    {
+      "name": "l21.cv2.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "cat_12"
+      ],
+      "outputs": [
+        "l21_cv2_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "l21.cv2.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "cat_12"
+          ],
+          "outputs": [
+            "l21_cv2_conv"
+          ],
+          "weight": "l21.cv2.conv.weight_q",
+          "bias": "l21.cv2.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 384,
+            "IH": 2,
+            "IW": 3,
+            "OC": 256,
+            "OH": 2,
+            "OW": 3,
+            "KH": 1,
+            "KW": 1,
+            "SH": 1,
+            "SW": 1,
+            "PH": 0,
+            "PW": 0
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1260842017,
+            "output_shift": 6,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l21.cv2.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "l21_cv2_conv"
+          ],
+          "outputs": [
+            "l21_cv2_bn"
+          ],
+          "weight": "l21.cv2.bn.scale",
+          "bias": "l21.cv2.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 256,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.006900020471708042,
+            "scale_out": 0.05523156744288647,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "l21.cv2.act",
+          "op": "silu_s8",
+          "inputs": [
+            "l21_cv2_bn"
+          ],
+          "outputs": [
+            "l21_cv2_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.05523156744288647,
+            "scale_out": 0.03601657687209722,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 76,
+      "hardware_target": "any",
+      "depends_on": [
+        75
+      ]
+    },
+    {
+      "name": "detect.cv2_0_0.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l15_cv2_act"
+      ],
+      "outputs": [
+        "detect_cv2_0_0_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "detect.cv2_0_0.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l15_cv2_act"
+          ],
+          "outputs": [
+            "detect_cv2_0_0_conv"
+          ],
+          "weight": "detect.cv2_0_0.conv.weight_q",
+          "bias": "detect.cv2_0_0.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 8,
+            "IW": 12,
+            "OC": 64,
+            "OH": 8,
+            "OW": 12,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1323400088,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv2_0_0.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "detect_cv2_0_0_conv"
+          ],
+          "outputs": [
+            "detect_cv2_0_0_bn"
+          ],
+          "weight": "detect.cv2_0_0.bn.scale",
+          "bias": "detect.cv2_0_0.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.00957609161617249,
+            "scale_out": 0.07242535418412817,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv2_0_0.act",
+          "op": "silu_s8",
+          "inputs": [
+            "detect_cv2_0_0_bn"
+          ],
+          "outputs": [
+            "detect_cv2_0_0_act"
+          ],
+          "shape": {
+            "n": 6144
+          },
+          "quant": {
+            "scale_in": 0.07242535418412817,
+            "scale_out": 0.03288462030606007,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 77,
+      "hardware_target": "any",
+      "depends_on": [
+        60
+      ]
+    },
+    {
+      "name": "detect.cv2_0_1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "detect_cv2_0_0_act"
+      ],
+      "outputs": [
+        "detect_cv2_0_1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "detect.cv2_0_1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "detect_cv2_0_0_act"
+          ],
+          "outputs": [
+            "detect_cv2_0_1_conv"
+          ],
+          "weight": "detect.cv2_0_1.conv.weight_q",
+          "bias": "detect.cv2_0_1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 8,
+            "IW": 12,
+            "OC": 64,
+            "OH": 8,
+            "OW": 12,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1311027351,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv2_0_1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "detect_cv2_0_1_conv"
+          ],
+          "outputs": [
+            "detect_cv2_0_1_bn"
+          ],
+          "weight": "detect.cv2_0_1.bn.scale",
+          "bias": "detect.cv2_0_1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.011067351957005778,
+            "scale_out": 0.2189400590310885,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv2_0_1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "detect_cv2_0_1_bn"
+          ],
+          "outputs": [
+            "detect_cv2_0_1_act"
+          ],
+          "shape": {
+            "n": 6144
+          },
+          "quant": {
+            "scale_in": 0.2189400590310885,
+            "scale_out": 0.2189400590310885,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 78,
+      "hardware_target": "any",
+      "depends_on": [
+        77
+      ]
+    },
+    {
+      "name": "detect.cv2_0_2",
+      "op": "conv2d_s8",
+      "inputs": [
+        "detect_cv2_0_1_act"
+      ],
+      "outputs": [
+        "detect_cv2_0_2"
+      ],
+      "weight": "detect.cv2_0_2.weight_q",
+      "bias": "detect.cv2_0_2.bias_q",
+      "shape": {
+        "N": 1,
+        "IC": 64,
+        "IH": 8,
+        "IW": 12,
+        "OC": 64,
+        "OH": 8,
+        "OW": 12,
+        "KH": 1,
+        "KW": 1,
+        "SH": 1,
+        "SW": 1,
+        "PH": 0,
+        "PW": 0
+      },
+      "quant": {
+        "input_offset": 0,
+        "filter_offset": 0,
+        "output_offset": 0,
+        "output_multiplier": 1457604577,
+        "output_shift": 7,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 79,
+      "hardware_target": "any",
+      "depends_on": [
+        78
+      ]
+    },
+    {
+      "name": "detect.cv3_0_0.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l15_cv2_act"
+      ],
+      "outputs": [
+        "detect_cv3_0_0_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "detect.cv3_0_0.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l15_cv2_act"
+          ],
+          "outputs": [
+            "detect_cv3_0_0_conv"
+          ],
+          "weight": "detect.cv3_0_0.conv.weight_q",
+          "bias": "detect.cv3_0_0.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 8,
+            "IW": 12,
+            "OC": 80,
+            "OH": 8,
+            "OW": 12,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1947691560,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv3_0_0.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "detect_cv3_0_0_conv"
+          ],
+          "outputs": [
+            "detect_cv3_0_0_bn"
+          ],
+          "weight": "detect.cv3_0_0.bn.scale",
+          "bias": "detect.cv3_0_0.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 80,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.009295253303107313,
+            "scale_out": 0.04711187542892817,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv3_0_0.act",
+          "op": "silu_s8",
+          "inputs": [
+            "detect_cv3_0_0_bn"
+          ],
+          "outputs": [
+            "detect_cv3_0_0_act"
+          ],
+          "shape": {
+            "n": 7680
+          },
+          "quant": {
+            "scale_in": 0.04711187542892817,
+            "scale_out": 0.021845280654787077,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 80,
+      "hardware_target": "any",
+      "depends_on": [
+        60
+      ]
+    },
+    {
+      "name": "detect.cv3_0_1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "detect_cv3_0_0_act"
+      ],
+      "outputs": [
+        "detect_cv3_0_1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "detect.cv3_0_1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "detect_cv3_0_0_act"
+          ],
+          "outputs": [
+            "detect_cv3_0_1_conv"
+          ],
+          "weight": "detect.cv3_0_1.conv.weight_q",
+          "bias": "detect.cv3_0_1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 80,
+            "IH": 8,
+            "IW": 12,
+            "OC": 80,
+            "OH": 8,
+            "OW": 12,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1799730768,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv3_0_1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "detect_cv3_0_1_conv"
+          ],
+          "outputs": [
+            "detect_cv3_0_1_bn"
+          ],
+          "weight": "detect.cv3_0_1.bn.scale",
+          "bias": "detect.cv3_0_1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 80,
+            "H": 8,
+            "W": 12
+          },
+          "quant": {
+            "scale_in": 0.00800462219658799,
+            "scale_out": 0.36786315197081076,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv3_0_1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "detect_cv3_0_1_bn"
+          ],
+          "outputs": [
+            "detect_cv3_0_1_act"
+          ],
+          "shape": {
+            "n": 7680
+          },
+          "quant": {
+            "scale_in": 0.36786315197081076,
+            "scale_out": 0.2007139611431933,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 81,
+      "hardware_target": "any",
+      "depends_on": [
+        80
+      ]
+    },
+    {
+      "name": "detect.cv3_0_2",
+      "op": "conv2d_s8",
+      "inputs": [
+        "detect_cv3_0_1_act"
+      ],
+      "outputs": [
+        "detect_cv3_0_2"
+      ],
+      "weight": "detect.cv3_0_2.weight_q",
+      "bias": "detect.cv3_0_2.bias_q",
+      "shape": {
+        "N": 1,
+        "IC": 80,
+        "IH": 8,
+        "IW": 12,
+        "OC": 80,
+        "OH": 8,
+        "OW": 12,
+        "KH": 1,
+        "KW": 1,
+        "SH": 1,
+        "SW": 1,
+        "PH": 0,
+        "PW": 0
+      },
+      "quant": {
+        "input_offset": 0,
+        "filter_offset": 0,
+        "output_offset": 0,
+        "output_multiplier": 1248749856,
+        "output_shift": 8,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 82,
+      "hardware_target": "any",
+      "depends_on": [
+        81
+      ]
+    },
+    {
+      "name": "cat_13",
+      "op": "cat2_c1_s8",
+      "inputs": [
+        "detect_cv2_0_2",
+        "detect_cv3_0_2"
+      ],
+      "outputs": [
+        "cat_13"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 8,
+        "W": 12,
+        "C_inputs": [
+          64,
+          80
+        ],
+        "C_total": 144
+      },
+      "quant": {
+        "scales_in": [
+          0.10040427380659449,
+          0.1663844491553119
+        ],
+        "scale_out": 0.1663844491553119,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 83,
+      "hardware_target": "any",
+      "depends_on": [
+        79,
+        82
+      ]
+    },
+    {
+      "name": "detect.cv2_1_0.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l18_cv2_act"
+      ],
+      "outputs": [
+        "detect_cv2_1_0_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "detect.cv2_1_0.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l18_cv2_act"
+          ],
+          "outputs": [
+            "detect_cv2_1_0_conv"
+          ],
+          "weight": "detect.cv2_1_0.conv.weight_q",
+          "bias": "detect.cv2_1_0.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 128,
+            "IH": 4,
+            "IW": 6,
+            "OC": 64,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1364090580,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv2_1_0.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "detect_cv2_1_0_conv"
+          ],
+          "outputs": [
+            "detect_cv2_1_0_bn"
+          ],
+          "weight": "detect.cv2_1_0.bn.scale",
+          "bias": "detect.cv2_1_0.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.00881148041702631,
+            "scale_out": 0.0763970322496309,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv2_1_0.act",
+          "op": "silu_s8",
+          "inputs": [
+            "detect_cv2_1_0_bn"
+          ],
+          "outputs": [
+            "detect_cv2_1_0_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.0763970322496309,
+            "scale_out": 0.04994913161270262,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 84,
+      "hardware_target": "any",
+      "depends_on": [
+        68
+      ]
+    },
+    {
+      "name": "detect.cv2_1_1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "detect_cv2_1_0_act"
+      ],
+      "outputs": [
+        "detect_cv2_1_1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "detect.cv2_1_1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "detect_cv2_1_0_act"
+          ],
+          "outputs": [
+            "detect_cv2_1_1_conv"
+          ],
+          "weight": "detect.cv2_1_1.conv.weight_q",
+          "bias": "detect.cv2_1_1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 4,
+            "IW": 6,
+            "OC": 64,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1975109382,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv2_1_1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "detect_cv2_1_1_conv"
+          ],
+          "outputs": [
+            "detect_cv2_1_1_bn"
+          ],
+          "weight": "detect.cv2_1_1.bn.scale",
+          "bias": "detect.cv2_1_1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.012581524886484221,
+            "scale_out": 0.1644161104217289,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv2_1_1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "detect_cv2_1_1_bn"
+          ],
+          "outputs": [
+            "detect_cv2_1_1_act"
+          ],
+          "shape": {
+            "n": 1536
+          },
+          "quant": {
+            "scale_in": 0.1644161104217289,
+            "scale_out": 0.12971854022168738,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 85,
+      "hardware_target": "any",
+      "depends_on": [
+        84
+      ]
+    },
+    {
+      "name": "detect.cv2_1_2",
+      "op": "conv2d_s8",
+      "inputs": [
+        "detect_cv2_1_1_act"
+      ],
+      "outputs": [
+        "detect_cv2_1_2"
+      ],
+      "weight": "detect.cv2_1_2.weight_q",
+      "bias": "detect.cv2_1_2.bias_q",
+      "shape": {
+        "N": 1,
+        "IC": 64,
+        "IH": 4,
+        "IW": 6,
+        "OC": 64,
+        "OH": 4,
+        "OW": 6,
+        "KH": 1,
+        "KW": 1,
+        "SH": 1,
+        "SW": 1,
+        "PH": 0,
+        "PW": 0
+      },
+      "quant": {
+        "input_offset": 0,
+        "filter_offset": 0,
+        "output_offset": 0,
+        "output_multiplier": 1129830447,
+        "output_shift": 7,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 86,
+      "hardware_target": "any",
+      "depends_on": [
+        85
+      ]
+    },
+    {
+      "name": "detect.cv3_1_0.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l18_cv2_act"
+      ],
+      "outputs": [
+        "detect_cv3_1_0_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "detect.cv3_1_0.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l18_cv2_act"
+          ],
+          "outputs": [
+            "detect_cv3_1_0_conv"
+          ],
+          "weight": "detect.cv3_1_0.conv.weight_q",
+          "bias": "detect.cv3_1_0.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 128,
+            "IH": 4,
+            "IW": 6,
+            "OC": 80,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1338371927,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv3_1_0.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "detect_cv3_1_0_conv"
+          ],
+          "outputs": [
+            "detect_cv3_1_0_bn"
+          ],
+          "weight": "detect.cv3_1_0.bn.scale",
+          "bias": "detect.cv3_1_0.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 80,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.008277267921627977,
+            "scale_out": 0.058176018121674306,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv3_1_0.act",
+          "op": "silu_s8",
+          "inputs": [
+            "detect_cv3_1_0_bn"
+          ],
+          "outputs": [
+            "detect_cv3_1_0_act"
+          ],
+          "shape": {
+            "n": 1920
+          },
+          "quant": {
+            "scale_in": 0.058176018121674306,
+            "scale_out": 0.03246754173218735,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 87,
+      "hardware_target": "any",
+      "depends_on": [
+        68
+      ]
+    },
+    {
+      "name": "detect.cv3_1_1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "detect_cv3_1_0_act"
+      ],
+      "outputs": [
+        "detect_cv3_1_1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "detect.cv3_1_1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "detect_cv3_1_0_act"
+          ],
+          "outputs": [
+            "detect_cv3_1_1_conv"
+          ],
+          "weight": "detect.cv3_1_1.conv.weight_q",
+          "bias": "detect.cv3_1_1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 80,
+            "IH": 4,
+            "IW": 6,
+            "OC": 80,
+            "OH": 4,
+            "OW": 6,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1334331455,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv3_1_1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "detect_cv3_1_1_conv"
+          ],
+          "outputs": [
+            "detect_cv3_1_1_bn"
+          ],
+          "weight": "detect.cv3_1_1.bn.scale",
+          "bias": "detect.cv3_1_1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 80,
+            "H": 4,
+            "W": 6
+          },
+          "quant": {
+            "scale_in": 0.009643243053766687,
+            "scale_out": 0.44598556878998524,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv3_1_1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "detect_cv3_1_1_bn"
+          ],
+          "outputs": [
+            "detect_cv3_1_1_act"
+          ],
+          "shape": {
+            "n": 1920
+          },
+          "quant": {
+            "scale_in": 0.44598556878998524,
+            "scale_out": 0.44598556878998524,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 88,
+      "hardware_target": "any",
+      "depends_on": [
+        87
+      ]
+    },
+    {
+      "name": "detect.cv3_1_2",
+      "op": "conv2d_s8",
+      "inputs": [
+        "detect_cv3_1_1_act"
+      ],
+      "outputs": [
+        "detect_cv3_1_2"
+      ],
+      "weight": "detect.cv3_1_2.weight_q",
+      "bias": "detect.cv3_1_2.bias_q",
+      "shape": {
+        "N": 1,
+        "IC": 80,
+        "IH": 4,
+        "IW": 6,
+        "OC": 80,
+        "OH": 4,
+        "OW": 6,
+        "KH": 1,
+        "KW": 1,
+        "SH": 1,
+        "SW": 1,
+        "PH": 0,
+        "PW": 0
+      },
+      "quant": {
+        "input_offset": 0,
+        "filter_offset": 0,
+        "output_offset": 0,
+        "output_multiplier": 1501847191,
+        "output_shift": 7,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 89,
+      "hardware_target": "any",
+      "depends_on": [
+        88
+      ]
+    },
+    {
+      "name": "cat_14",
+      "op": "cat2_c1_s8",
+      "inputs": [
+        "detect_cv2_1_2",
+        "detect_cv3_1_2"
+      ],
+      "outputs": [
+        "cat_14"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 4,
+        "W": 6,
+        "C_inputs": [
+          64,
+          80
+        ],
+        "C_total": 144
+      },
+      "quant": {
+        "scales_in": [
+          0.08293416180948573,
+          0.18563333646518979
+        ],
+        "scale_out": 0.18563333646518979,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 90,
+      "hardware_target": "any",
+      "depends_on": [
+        86,
+        89
+      ]
+    },
+    {
+      "name": "detect.cv2_2_0.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l21_cv2_act"
+      ],
+      "outputs": [
+        "detect_cv2_2_0_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "detect.cv2_2_0.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l21_cv2_act"
+          ],
+          "outputs": [
+            "detect_cv2_2_0_conv"
+          ],
+          "weight": "detect.cv2_2_0.conv.weight_q",
+          "bias": "detect.cv2_2_0.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 256,
+            "IH": 2,
+            "IW": 3,
+            "OC": 64,
+            "OH": 2,
+            "OW": 3,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1872495978,
+            "output_shift": 8,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv2_2_0.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "detect_cv2_2_0_conv"
+          ],
+          "outputs": [
+            "detect_cv2_2_0_bn"
+          ],
+          "weight": "detect.cv2_2_0.bn.scale",
+          "bias": "detect.cv2_2_0.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.010057117056658887,
+            "scale_out": 0.05340443633672759,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv2_2_0.act",
+          "op": "silu_s8",
+          "inputs": [
+            "detect_cv2_2_0_bn"
+          ],
+          "outputs": [
+            "detect_cv2_2_0_act"
+          ],
+          "shape": {
+            "n": 384
+          },
+          "quant": {
+            "scale_in": 0.05340443633672759,
+            "scale_out": 0.05334396812859483,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 91,
+      "hardware_target": "any",
+      "depends_on": [
+        76
+      ]
+    },
+    {
+      "name": "detect.cv2_2_1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "detect_cv2_2_0_act"
+      ],
+      "outputs": [
+        "detect_cv2_2_1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "detect.cv2_2_1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "detect_cv2_2_0_act"
+          ],
+          "outputs": [
+            "detect_cv2_2_1_conv"
+          ],
+          "weight": "detect.cv2_2_1.conv.weight_q",
+          "bias": "detect.cv2_2_1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 64,
+            "IH": 2,
+            "IW": 3,
+            "OC": 64,
+            "OH": 2,
+            "OW": 3,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1458936341,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv2_2_1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "detect_cv2_2_1_conv"
+          ],
+          "outputs": [
+            "detect_cv2_2_1_bn"
+          ],
+          "weight": "detect.cv2_2_1.bn.scale",
+          "bias": "detect.cv2_2_1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 64,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.015514603749973568,
+            "scale_out": 0.09754005191833015,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv2_2_1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "detect_cv2_2_1_bn"
+          ],
+          "outputs": [
+            "detect_cv2_2_1_act"
+          ],
+          "shape": {
+            "n": 384
+          },
+          "quant": {
+            "scale_in": 0.09754005191833015,
+            "scale_out": 0.09753964641901451,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 92,
+      "hardware_target": "any",
+      "depends_on": [
+        91
+      ]
+    },
+    {
+      "name": "detect.cv2_2_2",
+      "op": "conv2d_s8",
+      "inputs": [
+        "detect_cv2_2_1_act"
+      ],
+      "outputs": [
+        "detect_cv2_2_2"
+      ],
+      "weight": "detect.cv2_2_2.weight_q",
+      "bias": "detect.cv2_2_2.bias_q",
+      "shape": {
+        "N": 1,
+        "IC": 64,
+        "IH": 2,
+        "IW": 3,
+        "OC": 64,
+        "OH": 2,
+        "OW": 3,
+        "KH": 1,
+        "KW": 1,
+        "SH": 1,
+        "SW": 1,
+        "PH": 0,
+        "PW": 0
+      },
+      "quant": {
+        "input_offset": 0,
+        "filter_offset": 0,
+        "output_offset": 0,
+        "output_multiplier": 1626879785,
+        "output_shift": 8,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 93,
+      "hardware_target": "any",
+      "depends_on": [
+        92
+      ]
+    },
+    {
+      "name": "detect.cv3_2_0.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "l21_cv2_act"
+      ],
+      "outputs": [
+        "detect_cv3_2_0_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "detect.cv3_2_0.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "l21_cv2_act"
+          ],
+          "outputs": [
+            "detect_cv3_2_0_conv"
+          ],
+          "weight": "detect.cv3_2_0.conv.weight_q",
+          "bias": "detect.cv3_2_0.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 256,
+            "IH": 2,
+            "IW": 3,
+            "OC": 80,
+            "OH": 2,
+            "OW": 3,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1260796384,
+            "output_shift": 7,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv3_2_0.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "detect_cv3_2_0_conv"
+          ],
+          "outputs": [
+            "detect_cv3_2_0_bn"
+          ],
+          "weight": "detect.cv3_2_0.bn.scale",
+          "bias": "detect.cv3_2_0.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 80,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.011600521605784498,
+            "scale_out": 0.05219852267287847,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv3_2_0.act",
+          "op": "silu_s8",
+          "inputs": [
+            "detect_cv3_2_0_bn"
+          ],
+          "outputs": [
+            "detect_cv3_2_0_act"
+          ],
+          "shape": {
+            "n": 480
+          },
+          "quant": {
+            "scale_in": 0.05219852267287847,
+            "scale_out": 0.052129647863192824,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 94,
+      "hardware_target": "any",
+      "depends_on": [
+        76
+      ]
+    },
+    {
+      "name": "detect.cv3_2_1.conv",
+      "op": "conv2d_batchnorm2d_silu_s8",
+      "inputs": [
+        "detect_cv3_2_0_act"
+      ],
+      "outputs": [
+        "detect_cv3_2_1_act"
+      ],
+      "sub_ops": [
+        {
+          "name": "detect.cv3_2_1.conv",
+          "op": "conv2d_s8",
+          "inputs": [
+            "detect_cv3_2_0_act"
+          ],
+          "outputs": [
+            "detect_cv3_2_1_conv"
+          ],
+          "weight": "detect.cv3_2_1.conv.weight_q",
+          "bias": "detect.cv3_2_1.conv.bias_q",
+          "shape": {
+            "N": 1,
+            "IC": 80,
+            "IH": 2,
+            "IW": 3,
+            "OC": 80,
+            "OH": 2,
+            "OW": 3,
+            "KH": 3,
+            "KW": 3,
+            "SH": 1,
+            "SW": 1,
+            "PH": 1,
+            "PW": 1
+          },
+          "quant": {
+            "input_offset": 0,
+            "filter_offset": 0,
+            "output_offset": 0,
+            "output_multiplier": 1250597999,
+            "output_shift": 6,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv3_2_1.bn",
+          "op": "batchnorm2d_s8",
+          "inputs": [
+            "detect_cv3_2_1_conv"
+          ],
+          "outputs": [
+            "detect_cv3_2_1_bn"
+          ],
+          "weight": "detect.cv3_2_1.bn.scale",
+          "bias": "detect.cv3_2_1.bn.bias_fused",
+          "shape": {
+            "N": 1,
+            "C": 80,
+            "H": 2,
+            "W": 3
+          },
+          "quant": {
+            "scale_in": 0.008458131880272092,
+            "scale_out": 0.152163092545637,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        },
+        {
+          "name": "detect.cv3_2_1.act",
+          "op": "silu_s8",
+          "inputs": [
+            "detect_cv3_2_1_bn"
+          ],
+          "outputs": [
+            "detect_cv3_2_1_act"
+          ],
+          "shape": {
+            "n": 480
+          },
+          "quant": {
+            "scale_in": 0.152163092545637,
+            "scale_out": 0.152163092545637,
+            "activation_min": -128,
+            "activation_max": 127
+          }
+        }
+      ],
+      "dispatch_id": 95,
+      "hardware_target": "any",
+      "depends_on": [
+        94
+      ]
+    },
+    {
+      "name": "detect.cv3_2_2",
+      "op": "conv2d_s8",
+      "inputs": [
+        "detect_cv3_2_1_act"
+      ],
+      "outputs": [
+        "detect_cv3_2_2"
+      ],
+      "weight": "detect.cv3_2_2.weight_q",
+      "bias": "detect.cv3_2_2.bias_q",
+      "shape": {
+        "N": 1,
+        "IC": 80,
+        "IH": 2,
+        "IW": 3,
+        "OC": 80,
+        "OH": 2,
+        "OW": 3,
+        "KH": 1,
+        "KW": 1,
+        "SH": 1,
+        "SW": 1,
+        "PH": 0,
+        "PW": 0
+      },
+      "quant": {
+        "input_offset": 0,
+        "filter_offset": 0,
+        "output_offset": 0,
+        "output_multiplier": 1189910266,
+        "output_shift": 7,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 96,
+      "hardware_target": "any",
+      "depends_on": [
+        95
+      ]
+    },
+    {
+      "name": "cat_15",
+      "op": "cat2_c1_s8",
+      "inputs": [
+        "detect_cv2_2_2",
+        "detect_cv3_2_2"
+      ],
+      "outputs": [
+        "cat_15"
+      ],
+      "shape": {
+        "N": 1,
+        "H": 2,
+        "W": 3,
+        "C_inputs": [
+          64,
+          80
+        ],
+        "C_total": 144
+      },
+      "quant": {
+        "scales_in": [
+          0.08294143076018086,
+          0.10271050610880214
+        ],
+        "scale_out": 0.10271050610880214,
+        "activation_min": -128,
+        "activation_max": 127
+      },
+      "dispatch_id": 97,
+      "hardware_target": "any",
+      "depends_on": [
+        93,
+        96
+      ]
+    }
+  ],
+  "dispatches": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97
+  ]
+}
