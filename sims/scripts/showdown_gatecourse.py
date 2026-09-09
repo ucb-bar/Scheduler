@@ -127,7 +127,7 @@ def draw_topdown(ax, bg, K, cpos, cquat, xpu, ros, gates, people, tnorm, rot, fl
         if o[0]:
             mu, mv = (u[0], v[0]-40) if is_crash else (u[0], v[0])
             ax.scatter(mu, mv, s=560, marker="o", facecolors="black", edgecolors=ec, linewidths=2.8, zorder=8)
-            ax.text(mu, mv, str(mi+1), color="white", fontsize=15, weight="bold", ha="center", va="center", zorder=9)
+            ax.text(mu, mv, chr(ord("a")+mi), color="white", fontsize=15, weight="bold", ha="center", va="center", zorder=9)
     # "barely avoids" callout: dashed connector from the near-miss drone point to the tall bin it clears
     if near_miss is not None and near_miss[1] is not None:
         dpt, bpt, clr = near_miss
@@ -167,7 +167,7 @@ def draw_combined_gantt(ax, xd, rd):
                                          edgecolor="white", linewidth=0.12, zorder=3)
         for c in GANTT_CORES:
             if c not in used:
-                ax.text(xsp*0.5, yof[c], "idle — core unused", ha="center", va="center", fontsize=9,
+                ax.text(xsp*0.5, yof[c], "idle — core unused", ha="center", va="center", fontsize=13,
                         style="italic", color="0.5", zorder=4)
         return yof
 
@@ -208,27 +208,27 @@ def draw_combined_gantt(ax, xd, rd):
         ax.scatter([xd_], [8.5], marker="X", s=95, color="#e60000", edgecolors="white", linewidths=1.2, zorder=7)
     ax.axhline(8.7, color="0.55", lw=1.0)
     ax.axvline(xr(xsp), color=C_XPU, lw=2.8, ls=(0, (5, 3)), zorder=7)
-    ax.text(xr(xsp)-0.4, 18.7, f"XPU-RT done {xsp:.0f} ms ✓", color=C_XPU, fontsize=15.5, weight="bold", va="bottom", ha="right")
+    ax.text(xr(xsp)-0.4, 18.7, f"XPU-RT done {xsp:.0f} ms ✓", color=C_XPU, fontsize=20, weight="bold", va="bottom", ha="right")
     # "…" crop marker
     xc = T1 + GAP/2
     ax.axvspan(xr(T1), xr(T2), color="white", zorder=5)
     ax.text(xc, 8.5, "⋯", fontsize=26, ha="center", va="center", color="0.4", zorder=6)
     # (time-cropped label removed — the gap glyph already signals the crop)
-    ax.text(xr(rsp), 3.5, f"ROS still backlogged\n{rsp:.0f} ms → ✗ CRASH", color=C_ROS, fontsize=15, weight="bold",
-            va="center", ha="right", zorder=8, linespacing=1.2)
-    ax.text(-3.4, 13.5, "XPU-RT", fontsize=17, weight="bold", rotation=90, va="center", ha="center")
-    ax.text(-3.4, 3.5, "ROS", fontsize=17, weight="bold", rotation=90, va="center", ha="center", color=C_ROS)
-    ax.text(-6.4, 13.5, "CP-SAT · 8 cores", fontsize=12.5, color="0.35", rotation=90, va="center", ha="center")
-    ax.text(-6.4, 3.5, "static · 6 cores", fontsize=12.5, color="0.35", rotation=90, va="center", ha="center")
-    ax.text(0.2, 19.0, "sensors in ↓ (red)   ·   model outputs ↑ (coloured)", fontsize=12.5, color="0.3", va="bottom")
+    ax.text(xr(rsp), 12.2, f"ROS still backlogged\n{rsp:.0f} ms → ✗ CRASH", color=C_ROS, fontsize=17, weight="bold",
+            va="center", ha="right", zorder=8, linespacing=1.15)
+    ax.text(-3.4, 13.5, "XPU-RT", fontsize=19, weight="bold", rotation=90, va="center", ha="center")
+    ax.text(-3.4, 3.5, "ROS", fontsize=19, weight="bold", rotation=90, va="center", ha="center", color=C_ROS)
+    ax.text(-6.6, 13.5, "CP-SAT · 8 cores", fontsize=11.5, color="0.35", rotation=90, va="center", ha="center")
+    ax.text(-6.6, 3.5, "static · 6 cores", fontsize=11.5, color="0.35", rotation=90, va="center", ha="center")
+    ax.text(0.2, 19.0, "sensors in ↓ (red)   ·   model outputs ↑ (coloured)", fontsize=16, color="0.3", va="bottom")
     ax.set_xlim(-9.4, xmax+1); ax.set_ylim(-2.4, 21.8)
     ax.set_yticks([9.5+i for i in range(8)] + list(range(8)))
-    ax.set_yticklabels([c.split("#")[1] for c in GANTT_CORES]*2, fontsize=13.5, weight="bold")
+    ax.set_yticklabels([c.split("#")[1] for c in GANTT_CORES]*2, fontsize=17, weight="bold")
     xt = [t for t in (0, 10, 20, 30, 40) if t <= T1] + [T2 + tail]
-    ax.set_xticks([xr(t) for t in xt]); ax.set_xticklabels([f"{t:.0f}" for t in xt], fontsize=12.5)
-    ax.set_xlabel("onboard schedule time (ms) · K1 board", fontsize=15)
+    ax.set_xticks([xr(t) for t in xt]); ax.set_xticklabels([f"{t:.0f}" for t in xt], fontsize=17)
+    ax.set_xlabel("onboard schedule time (ms) · K1 board", fontsize=21)
     ax.set_title("Onboard K1 schedule — XPU-RT shards YOLO across 8 cores (~45 Hz); "
-                 "ROS serial on 1 hart backs up (~15 Hz) → control starves", fontsize=16, weight="bold", loc="left")
+                 "ROS serial on 1 hart backs up (~15 Hz) → control starves", fontsize=19, weight="bold", loc="left")
     for sp in ("top", "right"):
         ax.spines[sp].set_visible(False)
     ax.legend(handles=[Line2D([0], [0], color=C_CTRL, lw=8, label="CTRL (mlp) 100 Hz"),
@@ -236,7 +236,7 @@ def draw_combined_gantt(ax, xd, rd):
                        Line2D([0], [0], color=C_YOLO, lw=8, label="YOLO"),
                        Rectangle((0, 0), 1, 1, fc=LP, label="NAV 20 ms window"),
                        Rectangle((0, 0), 1, 1, fc=LG, label="CTRL 10 ms window")],
-              loc="upper left", bbox_to_anchor=(0.0, 1.005), ncol=5, fontsize=13.5,
+              loc="upper left", bbox_to_anchor=(0.0, 1.005), ncol=5, fontsize=16,
               framealpha=0.96, handlelength=1.6, columnspacing=1.2)
 
 
@@ -288,18 +288,21 @@ def main():
     else:
         _step_near, _clear, _near_bin = int(0.45*nx), 0.66, None
     moments = [("ROS", int(0.25*nr), "ROS · clears gate G1"), ("ROS", nr-1, "ROS · loses stability → crash"),
-               ("XPU", _step_near, f"XPU-RT · barely clears crate ({_clear:.2f} m)"),
+               ("XPU", _step_near, f"XPU-RT · clears crate {_clear:.2f} m"),
                ("XPU", int(0.96*nx), "XPU-RT · gate G4 + person")]
     near_miss = (xxyz[_step_near, :3], _near_bin, _clear)
 
     plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 14, "pdf.fonttype": 42})
     fig = plt.figure(figsize=(27, 15.5))
-    outer = fig.add_gridspec(4, 1, height_ratios=[4.0, 2.7, 1.95, 4.0], hspace=0.30,
-                             left=0.028, right=0.995, top=0.965, bottom=0.03)
+    # 7 rows = 4 content rows + 3 explicit spacer rows, so each inter-row gap is tuned
+    # independently (hspace can't): roomy above/below the moment+telemetry rows where axis
+    # labels live, but tight between the moment strips and the telemetry row (rows 2 & 4).
+    outer = fig.add_gridspec(7, 1, height_ratios=[4.0, 0.82, 2.7, 0.34, 1.95, 0.86, 4.0], hspace=0.0,
+                             left=0.055, right=0.995, top=0.965, bottom=0.03)
 
     # A top-down (edge to edge, or narrowed to make room for the envelope panel on its right)
     if use_env:
-        arow = outer[0].subgridspec(1, 3, width_ratios=[4.7, 1.55, 0.05], wspace=0.13)
+        arow = outer[0].subgridspec(1, 3, width_ratios=[4.05, 2.0, 0.06], wspace=0.15)
         axt = fig.add_subplot(arow[0]); axe = fig.add_subplot(arow[1]); cax = fig.add_subplot(arow[2])
     else:
         axt = fig.add_subplot(outer[0])
@@ -319,7 +322,7 @@ def main():
                       "ROS (50 Hz control) loses stability and crashes", fontsize=18, weight="bold", loc="left")
 
     # B snapshots: 4 moments in a row, each a horizontal [chase | FPV+YOLO | ToF] — FPV/ToF given more room
-    bgrid = outer[1].subgridspec(1, 4, wspace=0.09)
+    bgrid = outer[2].subgridspec(1, 4, wspace=0.09)
     for c, (src, step, lab) in enumerate(moments):
         dd = a.ros_dir if src == "ROS" else a.xpu_dir
         fs = (R if src == "ROS" else X)["frame_steps"]; f = frame_at(dd, fs, step)
@@ -329,32 +332,32 @@ def main():
         axh = fig.add_subplot(col[0, :]); axh.axis("off")
         axh.scatter([0.016], [0.5], s=330, marker="o", facecolors="black", edgecolors=tc, linewidths=2.6,
                     transform=axh.transAxes, clip_on=False, zorder=5)
-        axh.text(0.016, 0.5, str(c+1), color="white", fontsize=12, weight="bold", ha="center", va="center",
+        axh.text(0.016, 0.5, chr(ord("a")+c), color="white", fontsize=12, weight="bold", ha="center", va="center",
                  transform=axh.transAxes, zorder=6)
         axh.text(0.052, 0.5, f"{lab} · t={tt:.1f}s", fontsize=15.5, weight="bold", color=tc, va="center",
                  transform=axh.transAxes)
         ac = fig.add_subplot(col[1, 0]); ac.imshow(f["chase"][225:465, 415:655]); ac.axis("off")   # tighter zoom on the drone
-        ac.set_title("chase", fontsize=13)
+        ac.set_title("chase", fontsize=16)
         af = fig.add_subplot(col[1, 1]); af.imshow(f["fpv"], cmap="gray", vmin=0, vmax=1, aspect="equal")
         for x in [d for d in f["det"] if d[5] >= 0.4]:
             cls, x0, y0, x1, y1, cf = x; _, cc = YOLO.get(int(cls), ("obj", "#39f"))
             af.add_patch(Rectangle((x0, y0), x1-x0, y1-y0, fill=False, ec=cc, lw=2.6))
-        af.set_xticks([]); af.set_yticks([]); af.set_title("FPV + YOLO", fontsize=13)
-        at = fig.add_subplot(col[1, 2]); cross_tof(at, f["tof"]); at.set_title("cross-ToF", fontsize=13)
+        af.set_xticks([]); af.set_yticks([]); af.set_title("FPV + YOLO", fontsize=16)
+        at = fig.add_subplot(col[1, 2]); cross_tof(at, f["tof"]); at.set_title("cross-ToF", fontsize=16)
 
     # C telemetry
-    tg = outer[2].subgridspec(1, 4, wspace=0.26)
+    tg = outer[4].subgridspec(1, 4, wspace=0.26)
     xw = np.linalg.norm(X["imu_w"], axis=1); rw = np.linalg.norm(R["imu_w"], axis=1)
     axi = fig.add_subplot(tg[0]); axi.plot(xt, smooth(xw), color=C_XPU, lw=2.2, label="XPU-RT"); axi.plot(rt, smooth(rw), color=C_ROS, lw=2.2, label="ROS")
-    axi.set_ylabel("IMU |ω| (rad/s), smoothed", fontsize=14); axi.set_title("body-rate magnitude", fontsize=15.5, weight="bold"); axi.legend(fontsize=13, loc="upper right")
+    axi.set_ylabel("IMU |ω| (rad/s), smoothed", fontsize=14); axi.set_title("body-rate magnitude", fontsize=18, weight="bold"); axi.legend(fontsize=13, loc="upper right")
     xg = np.degrees(np.arctan2(X["goal_cmd"][:, 1], X["goal_cmd"][:, 0])); rg = np.degrees(np.arctan2(R["goal_cmd"][:, 1], R["goal_cmd"][:, 0]))
     axg = fig.add_subplot(tg[1]); axg.plot(xt, xg, color=C_XPU, lw=2.2); axg.plot(rt, rg, color=C_ROS, lw=2.2)
-    axg.set_ylabel("goal heading (°)", fontsize=14); axg.set_title("nav goal heading", fontsize=15.5, weight="bold")
+    axg.set_ylabel("goal heading (°)", fontsize=14); axg.set_title("nav goal heading", fontsize=18, weight="bold")
     xs = np.linalg.norm(np.gradient(xxyz[:, :2], xt, axis=0), axis=1); rs = np.linalg.norm(np.gradient(rxyz[:, :2], rt, axis=0), axis=1)
     axs = fig.add_subplot(tg[2]); axs.plot(xt, smooth(xs, 11), color=C_XPU, lw=2.2); axs.plot(rt, smooth(rs, 11), color=C_ROS, lw=2.2)
-    axs.set_ylabel("forward speed (m/s)", fontsize=14); axs.set_title("speed → ROS drops at crash", fontsize=15.5, weight="bold")
+    axs.set_ylabel("forward speed (m/s)", fontsize=14); axs.set_title("speed → ROS drops at crash", fontsize=18, weight="bold")
     for ax in (axi, axg, axs):
-        ax.set_xlabel("time (s)", fontsize=14); ax.grid(True, color="0.9", lw=0.5); ax.tick_params(labelsize=12)
+        ax.set_xlabel("time (s)", fontsize=14); ax.grid(True, color="0.9", lw=0.5); ax.tick_params(labelsize=14)
         ax.axvspan(rt[-1], xt.max(), color="#f6e3e3", alpha=0.5, zorder=0)                # ROS gone after crash
         ax.axvline(rt[-1], color=C_ROS, lw=1.8, ls=(0, (4, 2)), alpha=0.85, zorder=1)     # crash instant -> data gap
     axi.text(rt[-1] + 0.2, 0.93, "ROS ✗ crashes", color=C_ROS, fontsize=11, weight="bold",
@@ -363,10 +366,10 @@ def main():
     axq.plot(xxyz[:, 1], xxyz[:, 0], color="0.8", lw=1.0, zorder=0)
     axq.quiver(xxyz[sel, 1], xxyz[sel, 0], vxy[sel, 1], vxy[sel, 0], xt[sel], cmap="viridis", angles="xy", scale_units="xy", scale=7.0, width=0.007, headwidth=4, headlength=5)
     axq.set_xlabel("along-aisle y (m)", fontsize=14); axq.set_ylabel("lateral x (m)", fontsize=14)
-    axq.set_title("XPU-RT velocity (arrow = heading·speed)", fontsize=15.5, weight="bold"); axq.grid(True, color="0.92", lw=0.5); axq.tick_params(labelsize=12); axq.set_aspect("equal", adjustable="datalim")
+    axq.set_title("XPU-RT velocity (arrow = heading·speed)", fontsize=18, weight="bold"); axq.grid(True, color="0.92", lw=0.5); axq.tick_params(labelsize=14); axq.set_aspect("equal", adjustable="datalim")
 
     # D combined annotated Gantt
-    axd = fig.add_subplot(outer[3])
+    axd = fig.add_subplot(outer[6])
     draw_combined_gantt(axd, json.load(open(a.sched_xpu))["dispatches"], json.load(open(a.sched_ros))["dispatches"])
 
     fig.savefig(a.out + ".png", dpi=a.dpi, bbox_inches="tight")

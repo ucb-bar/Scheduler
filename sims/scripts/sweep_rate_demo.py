@@ -979,7 +979,9 @@ def main():
                    "alt_dtof": [], "alt_baro": [],
                    "dense_chase": [], "dense_fpv": [], "dense_tof": [], "dense_det": [],
                    "frame_steps": [], "iso_frames": [],
+                   "ov_seq": [], "ov_seq_t": [], "ov_seq_pose": [], "ov_seq_obst": [],
                    "ov_bg": None, "iso_bg": None} if args_cli.dump_figure_data else None)
+        _OVSEQ_N = 9; _ovseq_stride = max(1, args_cli.max_steps // _OVSEQ_N)   # chronophotography stride
         last_det = []   # freshest YOLO detections, held between the sparse figure snapshots
         for t in range(args_cli.max_steps):
             xy_now = (robot.data.root_pos_w[0] - origin[0])[:2].cpu().numpy().astype(np.float64)
@@ -1068,6 +1070,13 @@ def main():
                 _figep["imu_w"].append(np.asarray(snap["w"], dtype=np.float32))    # (3,) body ang-vel
                 _figep["alt_dtof"].append(np.float32(snap["dtof"]))
                 _figep["alt_baro"].append(np.float32(snap["baro"]))
+                # --- chronophotography: fixed overhead cam at ~9 evenly-spaced steps (movers move, bg fixed) ---
+                if t % _ovseq_stride == 0 and len(_figep["ov_seq"]) < _OVSEQ_N:
+                    _figep["ov_seq"].append(_rgb(ov))
+                    _figep["ov_seq_t"].append(t * control_dt)
+                    _figep["ov_seq_pose"].append(np.concatenate([snap["pos_w"],
+                                                 robot.data.root_quat_w[0].cpu().numpy()]))
+                    _figep["ov_seq_obst"].append(coll.data.object_pos_w[0].cpu().numpy())
                 # --- dense per-moment frames (every FIG_DENSE steps) for post-hoc moment selection ---
                 if t % FIG_DENSE == 0:
                     # run YOLO fresh so the boxes match THIS fpv frame (cls,x0,y0,x1,y1,conf in 90×60)
@@ -1203,6 +1212,11 @@ def main():
             gates_world=gates_world,                                       # (G,3)
             # --- fixed overhead (top-down) camera ---
             ov_bg=fe["ov_bg"], ovK=ovK, ovpos=ovpos, ovquat=ovquat,
+            # --- chronophotography sequence of the fixed overhead cam (N frames; movers at successive pos) ---
+            ov_seq=np.asarray(fe["ov_seq"], dtype=np.uint8),
+            ov_seq_t=np.asarray(fe["ov_seq_t"], dtype=np.float64),
+            ov_seq_pose=np.asarray(fe["ov_seq_pose"], dtype=np.float64),
+            ov_seq_obst=np.asarray(fe["ov_seq_obst"], dtype=np.float32),
             # --- fixed isometric overview camera ---
             iso_bg=fe["iso_bg"], iso_over=iso_over,
             isoK=iso_calib["K"], isopos=iso_calib["pos"], isoquat=iso_calib["quat"],
