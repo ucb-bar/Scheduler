@@ -122,7 +122,13 @@ def objective_verdict(cand_out, base_out, cand_sched_path, base_sched_path, spec
     if bi != ci:
         return False, (f"refused -- instance counts differ ({bi} vs {ci}); that is two "
                        f"amounts of work, not two graphs")
-    return objective.accept(cand_out, base_out)
+    # DETERMINISTIC comparison: both sides are analytic evaluations of solved schedules
+    # against fixed costs, not repeated executions, so the miss counts carry no jitter
+    # for a tolerance to absorb. With the measurement tolerance the search converged a
+    # lever short on w4 and b4 -- 5 -> 3 misses called "indistinguishable" because 8% of
+    # 34 instances is 2.72. See candidate_objective.DETERMINISTIC_TOLERANCES.
+    return objective.accept(cand_out, base_out,
+                            tol=objective.DETERMINISTIC_TOLERANCES)
 
 
 def buildable(sched_path, log, label):
@@ -872,11 +878,28 @@ def main():
                 f"{'nine-term objective' if use_objective else 'legacy two-term'} rule "
                 f"— CONVERGED")
             break
-        # lexicographic: minimize the objective first, break ties by makespan (among lever sets
-        # that meet deadlines equally, prefer the one that also finishes soonest). On this workload
-        # shard and IME EACH drive lateness to 0 independently, so this tie-break is what decides
-        # between two genuinely-deadline-meeting options rather than an arbitrary dict order.
-        best = min(winners, key=lambda c: (c["score"], c["mk"]))
+        # RANK WINNERS BY THE RULE THAT ACCEPTED THEM, not by makespan. This used to be
+        # `min(winners, key=(c["score"], c["mk"]))` and the comment claimed it minimised
+        # "the objective first" -- but `score` IS the makespan metric, so among several
+        # accepted candidates the loop took the FASTEST schedule even when another had
+        # fewer deadline misses, the term the rule ranks first.
+        #
+        # It only became visible once the miss tolerance stopped hiding it: with the
+        # measurement tolerance few candidates were accepted per round, so the choice
+        # rarely mattered. With deterministic tolerances w5 offered several, the loop
+        # picked the shortest makespan, and its final miss count went from 7 to NINE --
+        # a hill-climb steered by the seventh term.
+        #
+        # Now the key mirrors the nine-term order: misses, worst lateness, frequency
+        # shortfall, p99, then makespan as the final tie-break.
+        def _rank(c):
+            o = c.get("out")
+            if o is None:  # legacy two-term rule; keep its old behaviour
+                return (0, c["score"], c["mk"])
+            return (o.total_misses(), o.worst_lateness(),
+                    o.worst_frequency_shortfall(), o.worst_p99(), c["mk"])
+
+        best = min(winners, key=_rank)
         pct = ((cur_score - best["score"]) / cur_score * 100) if cur_score else 0.0
         # A lever can be accepted on a HIGHER-priority term while this metric gets
         # worse -- w5 accepts shard:dronet because misses go 10 -> 7 even though makespan

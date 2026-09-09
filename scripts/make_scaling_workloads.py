@@ -161,7 +161,56 @@ LADDER_COMPOSITION = {
     },
 }
 
-LADDERS = {"scaling": LADDER, "composition": LADDER_COMPOSITION}
+#: THE THIRD LADDER, sized from BOARD measurements instead of profiles.
+#:
+#: The two ladders above are sized from `net_times`, which reads the profile CSVs, and
+#: `check()` passes a rung as "in the band" when a profiled implementation fits the
+#: window. Executing those rungs on a K1 showed the premise does not hold. Warm execution
+#: per instance, summed from the trace's own cycles (scripts/attribute_board_misses.py):
+#:
+#:     net                  profile @ best   MEASURED warm   window   board/profile
+#:     ffn_block              7.72 (8c)         10.03-10.34   10.0        1.34x
+#:     yolov8_nano_64x96     23.95 (8c)         42.77         26.0        1.79x
+#:     dronet                 6.05 (2c)          6.02          7.0        1.00x
+#:     fused_full             3.62 (1c)          4.42          5.0        1.22x
+#:     mlp_control            0.08 (1c)          0.07          5.0        0.9x
+#:
+#: So `ffn_block` misses its 10 ms window on the board at its FASTEST measured width, and
+#: `yolov8_nano_64x96` misses its 26 ms window by 1.64x. Three of five ffn instances and
+#: the single yolo instance are over window by execution alone, which no scheduler can
+#: recover -- the loop was being asked to hit a target that does not exist, and the
+#: "0 infeasible misses" classification says otherwise only because it trusts profiles.
+#:
+#: These rungs restore the premise the ladder is documented to have, by sizing windows
+#: from the MEASURED numbers with ~15% slack. Baselines still miss (ffn at one core is
+#: ~35.7 ms on the board against a 12 ms window), so nothing is given away.
+#:
+#: ONE RESIDUAL IS EXPECTED AND IS NOT A SCHEDULING FAILURE: the first instance of a
+#: network pays cold start -- `fused_full` runs 2.66-2.70x its warm median on instance 0
+#: (11.8-12.1 ms against 4.42 warm) and cannot fit a 5 ms window it otherwise sits
+#: comfortably inside. Its period is 5 ms, so the window cannot absorb it. Expect exactly
+#: one cold-start miss per such network and check it with attribute_board_misses.py
+#: rather than assuming it.
+LADDER_BOARD = {
+    "b4_board_sized": {
+        "mlp_control": (5.0, 5.0, 12),
+        "fused_full": (5.0, 5.0, 12),
+        "ffn_block": (12.0, 12.0, 5),
+        "dronet": (12.0, 7.0, 5),
+    },
+    "b5_board_sized": {
+        "mlp_control": (5.0, 5.0, 12),
+        "fused_full": (5.0, 5.0, 12),
+        "ffn_block": (12.0, 12.0, 5),
+        "dronet": (12.0, 7.0, 5),
+        # 42.77 ms measured widened, +15%: the first window in this study that yolo can
+        # actually meet. Its profile-sized 26 ms never could.
+        "yolov8_nano_64x96": (50.0, 50.0, 1),
+    },
+}
+
+LADDERS = {"scaling": LADDER, "composition": LADDER_COMPOSITION,
+           "board": LADDER_BOARD}
 
 
 def net_times(net):
@@ -231,7 +280,8 @@ def main() -> int:
                          "3); 'composition' holds the buildable set and isolates dronet "
                          "to the top rung")
     a = ap.parse_args()
-    ladder = (dict(LADDER, **LADDER_COMPOSITION) if a.ladder == "both"
+    ladder = (dict(LADDER, **LADDER_COMPOSITION, **LADDER_BOARD)
+              if a.ladder == "both"
               else LADDERS[a.ladder])
     out_dir = a.out_dir if os.path.isabs(a.out_dir) else os.path.join(REPO, a.out_dir)
 

@@ -224,6 +224,29 @@ class Tolerances:
 
 DEFAULT_TOLERANCES = Tolerances()
 
+#: For comparing two ANALYTICALLY evaluated schedules, where the miss count is not a
+#: measurement.
+#:
+#: `Tolerances.miss_rate_frac` is 8% because seven repeated BOARD RUNS of one schedule
+#: gave MLP 7-9 misses of 38 -- real execution jitter, which a tolerance must exceed to
+#: absorb. That reasoning does not transfer to the AOT search, where a candidate's misses
+#: are computed from a solved schedule against fixed per-dispatch costs: a deterministic
+#: function of the schedule, with no run-to-run spread at all (two independent full loop
+#: runs of w4 and w5 are bit-identical, makespan to 3 decimals).
+#:
+#: Applied there, the noise tolerance costs exactly the improvements the loop exists to
+#: find. On `b4_board_sized`, 34 instances put the term-1 tolerance at 0.08 * 34 = 2.72
+#: misses, so `shard:dronet` -- which takes hard deadline misses from 5 to 3, clearing
+#: dronet entirely -- was reported "indistinguishable on every term" and the decision
+#: fell through to p99, where it loses. The loop then converged one lever short and w4
+#: looked like a workload where nothing helps.
+#:
+#: Deadline misses are exact integers here, so any difference is evidence and the
+#: tolerance is zero. The CONTINUOUS terms keep their tolerances: lateness, p99 and
+#: makespan are floats that do move between identical CP-SAT runs under a time limit,
+#: which is a separate and real source of noise.
+DETERMINISTIC_TOLERANCES = Tolerances(miss_instances=0, miss_rate_frac=0.0)
+
 
 # ---------------------------------------------------------------- comparison
 
