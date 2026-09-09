@@ -184,6 +184,16 @@ def cpsat_schedule(
             print(f"[cpsat] codegen contract: {_n_oc} packed-weight dispatch(es) had "
                   f"width(s) that do not divide their OC excluded")
 
+    # PER-NETWORK SHARD RESTRICTION, before the duration table, so a restricted
+    # combination is excluded rather than merely expensive and the horizon stays tight.
+    try:
+        import codegen_contract as _cc
+        _only = _cc.shard_only_networks_from_env()
+        if _only is not None:
+            _cc.restrict_shard_to_networks(ops, combos, machines, _only, log=print)
+    except Exception as _e:
+        print(f"[cpsat] per-network shard restriction unavailable: {_e}")
+
     # Horizon = sum of max per-op duration across *feasible* combos.
     # Infeasible combos get a placeholder large duration (won't be chosen), but
     # we exclude them from horizon arithmetic so horizon stays tight.

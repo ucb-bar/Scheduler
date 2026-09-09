@@ -276,3 +276,176 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+#: Same sentinel `scheduler_cpsat` treats as an exclusion, so a pinned-out width is
+#: excluded in CP-SAT and unaffordable in greedy by the same number.
+_PINNED_OUT_COST_MS = 1e8
+
+
+def packed_weight_groups(ops):
+    """`{(network, dispatch_id): [op index, ...]}` for packed-weight dispatches only.
+
+    Shared so the two schedulers group a dispatch's instances the SAME way. The op kind
+    is not a field on an Operation; it lives in `operation_name`, and `op_kind` is
+    attached from the profile database by `run_xpurt_schedule._annotate_op_kinds`, with
+    the module-name parse as the fallback for callers that build a workload directly.
+    """
+    packed = packed_weight_ops()
+    groups = {}
+    for i, op in enumerate(ops):
+        name = str(getattr(op, "operation_name", "") or "")
+        kind = str(getattr(op, "op_kind", "") or "") or op_of(name, packed)
+        if kind not in packed:
+            continue
+        did = getattr(op, "operation_id", None)
+        if did is None:
+            continue
+        net = str(getattr(op, "op_network", "") or "")
+        if not net:
+            net = (name.split("$")[0] if "$" in name
+                   else name.split("_dispatch_")[0])
+        groups.setdefault((net, int(did)), []).append(i)
+    return groups
+
+
+def pin_uniform_widths(ops, combos, machines, log=None):
+    """Restrict every packed-weight dispatch to ONE core width across its instances,
+    by EXCLUDING the other widths. Returns the number of dispatches pinned.
+
+    WHY A LIST SCHEDULER NEEDS THIS AND CP-SAT DOES NOT. CP-SAT has a
+    combination-selection variable per op, so the contract can be expressed as a
+    constraint coupling a dispatch's instances (`XPURT_UNIFORM_PACKED_WIDTH` in
+    `scheduler_cpsat`) and the solver then chooses one width for all of them. A list
+    scheduler picks each op's combination greedily as it walks the ready set, with
+    nothing to couple, so the contract could only ever be checked AFTERWARDS and the
+    whole candidate thrown away.
+
+    That asymmetry was not cosmetic. On `w4_ffn_dronet_sensor` the greedy `shard`
+    schedule is the best schedule anyone has produced for that workload -- 5 instance
+    misses against the baseline's 10, worst lateness 3.09 ms against 17.95 -- and it was
+    discarded for THREE dispatches (dronet 0, 8, 9) whose instances took different
+    widths. The loop then reported w4 as a workload where no lever helps.
+
+    Pinning restores the option by construction: excluded widths cannot be chosen, so
+    the greedy schedule is uniform-width and passes the contract without a repair pass.
+
+    THE WIDTH IS CHOSEN BY MEASURED COST, not by a rule of thumb. Among the widths every
+    instance of the dispatch can actually take, we pick the one minimising the summed
+    duration over those instances. Choosing "widest" would be wrong on real data --
+    yolo's OC=2 detect-head convs measure SLOWER on four cores than on one -- and
+    choosing "narrowest" would silently undo sharding, which is the whole point of the
+    lever.
+    """
+    groups = packed_weight_groups(ops)
+    widths = sorted({len(combos[k]) for k in range(len(combos))})
+    n_pinned, skipped = 0, []
+    for key, idxs in sorted(groups.items()):
+        if len(idxs) < 2:
+            continue
+
+        def combos_of(width, i):
+            return [k for k in range(len(combos))
+                    if len(combos[k]) == width
+                    and k not in ops[i].infeasible_combinations]
+
+        usable = [w for w in widths if all(combos_of(w, i) for i in idxs)]
+        if not usable:
+            # No width every instance can take. Pinning cannot make this dispatch
+            # buildable, and excluding everything would make the op unschedulable, so
+            # leave it and let the contract check report it honestly.
+            skipped.append(key)
+            continue
+
+        def cost(width):
+            total = 0.0
+            for i in idxs:
+                try:
+                    total += min(float(ops[i].get_duration_for_combination(
+                        k, combos, machines)) for k in combos_of(width, i))
+                except Exception:
+                    return float("inf")
+            return total
+
+        best = min(usable, key=lambda w: (cost(w), w))
+        for i in idxs:
+            drop = {k for k in range(len(combos)) if len(combos[k]) != best}
+            ops[i].infeasible_combinations = set(
+                ops[i].infeasible_combinations) | drop
+            # AND PRICE THEM OUT, because the list scheduler does not read
+            # `infeasible_combinations` at all -- it picks the combination with the
+            # earliest completion, full stop. Flagging alone pinned nothing: the greedy
+            # w4 shard schedule still took widths [1, 4] on dronet 0/8/9 and still
+            # failed the contract. `processing_times` is what both schedulers actually
+            # read (`get_duration_for_combination` is a direct index into it), and
+            # CP-SAT already folds a sentinel cost back into its exclusions, so writing
+            # the sentinel is the one edit that binds both.
+            try:
+                for k in drop:
+                    ops[i].processing_times[k] = _PINNED_OUT_COST_MS
+            except Exception:
+                pass
+        n_pinned += 1
+    if log:
+        if skipped:
+            log(f"[contract] {len(skipped)} packed-weight dispatch(es) have no width "
+                f"every instance can take; left unpinned: {skipped[:4]}")
+        if n_pinned:
+            log(f"[contract] pinned {n_pinned} packed-weight dispatch(es) to one "
+                f"measured-best width across their instances")
+    return n_pinned
+
+
+def restrict_shard_to_networks(ops, combos, machines, allowed, log=None):
+    """Price out every multi-core combination for ops whose network is NOT in `allowed`.
+    Returns the number of ops restricted.
+
+    WHY A PER-NETWORK SHARD DECISION IS NEEDED. `machine_combination_mode: "shard"` is
+    global: it opens multi-hart combinations for every network at once. That is fine
+    while widening is free, and wrong as soon as the core budget binds. On
+    `w5_ffn_dronet_yolo` the whole-workload shard lever is REJECTED -- worst deadline
+    lateness goes from 24.67 ms to 34.87 -- because it also widens `yolov8_nano_64x96`,
+    which is 191.6 core-ms of work and monopolises all eight harts while the 5 ms-period
+    networks wait. The right decision on that rung is to widen `ffn_block` and `dronet`
+    and leave yolo single-core, and with one global switch the loop cannot express it,
+    so it takes the whole lever or none of it.
+
+    That is exactly the choice `make_scaling_workloads.py` says the top rungs exist to
+    force: "as networks accumulate it has to choose WHICH nets to widen ... a real
+    scheduling decision with a right and a wrong answer".
+
+    Restriction is by COST, not by `infeasible_combinations`, for the same reason
+    `pin_uniform_widths` prices widths out: the list scheduler never reads the
+    infeasibility set, and CP-SAT folds a sentinel cost back into its exclusions, so the
+    sentinel is the one edit both schedulers honour.
+    """
+    allowed = {str(a) for a in (allowed or ())}
+    n = 0
+    for op in ops:
+        net = str(getattr(op, "op_network", "") or "")
+        if not net:
+            name = str(getattr(op, "operation_name", "") or "")
+            net = (name.split("$")[0] if "$" in name
+                   else name.split("_dispatch_")[0])
+        if net in allowed:
+            continue
+        touched = False
+        for k in range(len(combos)):
+            if len(combos[k]) > 1:
+                try:
+                    op.processing_times[k] = _PINNED_OUT_COST_MS
+                    touched = True
+                except Exception:
+                    pass
+                op.infeasible_combinations = set(op.infeasible_combinations) | {k}
+        n += 1 if touched else 0
+    if log and n:
+        log(f"[contract] shard restricted to {sorted(allowed)}: {n} op(s) of other "
+            f"networks held at one core")
+    return n
+
+
+def shard_only_networks_from_env():
+    """`XPURT_SHARD_ONLY_NETS` as a set, or None when unset (shard everything)."""
+    raw = os.environ.get("XPURT_SHARD_ONLY_NETS", "").strip()
+    return {p for p in (x.strip() for x in raw.split(",")) if p} or None if raw else None

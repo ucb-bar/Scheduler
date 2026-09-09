@@ -157,6 +157,10 @@ def load_networks_config(json_path: str) -> tuple[dict, dict]:
         # `time_limit`, so `--solver cpsat` silently ran on the MILP's 20 s
         # fallback while the flag controlling it was documented "milp only".
         "cpsat_time_limit": float(sched.get("cpsat_time_limit", 300.0)),
+        # Networks the solver may widen across harts. The co-design loop writes this
+        # when it decides to shard some networks and not others; recorded in the SPEC so
+        # the decision is reproducible, unlike an env var set by whoever launched the run.
+        "shard_only_networks": list(sched.get("shard_only_networks") or []) or None,
         "use_profiled": bool(sched.get("use_profiled", False)),
         "prune_periodic": bool(sched.get("prune_periodic", True)),
         "restrict_makespan_to_nonperiodic": bool(sched.get("restrict_makespan_to_nonperiodic", True)),
@@ -289,6 +293,22 @@ def schedule_iree_networks(
     effective_p_core_speedup = cfg["p_core_speedup"]
     effective_random_seed = cfg["random_seed"]
     effective_solver_verbosity = cfg["solver_verbosity"]
+    # THE SHARD SET TRAVELS WITH THE SPEC, and must be published BEFORE any solver
+    # runs. `scheduler.shard_only_networks` is what the co-design loop writes when it
+    # decides to widen some networks and not others; a decision recorded in the spec is
+    # reproducible where an env var set by whoever launched the run is not. Set here
+    # rather than at the CP-SAT call site because `--solver greedy` never reaches that
+    # site -- the first version of this only bound the registry path, so every
+    # per-network shard candidate came back with byte-identical numbers and the loop
+    # rejected all five of them for the same reason at once.
+    _only = cfg.get("shard_only_networks")
+    if _only:
+        os.environ["XPURT_SHARD_ONLY_NETS"] = ",".join(str(x) for x in _only)
+        print(f"  shard_only_networks: {list(_only)} "
+              f"(every other network held at one core)")
+    else:
+        os.environ.pop("XPURT_SHARD_ONLY_NETS", None)
+
     effective_time_limit = cfg["time_limit"]
     effective_use_profiled = cfg["use_profiled"]
     effective_prune_periodic = cfg["prune_periodic"]

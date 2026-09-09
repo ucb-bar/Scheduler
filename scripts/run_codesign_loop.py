@@ -252,7 +252,17 @@ def solve(spec_path, solver="greedy", board_cal=None, time_limit=None):
     try:
         _spec = json.load(open(spec_path))
         _mode = ((_spec.get("scheduler") or {}).get("machine_combination_mode"))
-        if solver == "cpsat" and _mode == "shard":
+        if _mode == "shard":
+            # BOTH ARMS, not just CP-SAT. This was cpsat-only because the constraint it
+            # sets was a CP-SAT constraint; greedy's candidate was checked afterwards
+            # and thrown away instead. The comment above predicted the cost of that
+            # ("it understates greedy on exactly the workloads where sharding is the
+            # answer") and w4_ffn_dronet_sensor is that workload: greedy's shard
+            # schedule takes its misses from 10 to 5 and its worst lateness from
+            # 17.95 ms to 3.90, and it was discarded over three dronet dispatches.
+            # `codegen_contract.pin_uniform_widths` now gives the list scheduler the
+            # same guarantee by pricing the losing widths out, so the flag means the
+            # same thing to both arms.
             env = {"XPURT_UNIFORM_PACKED_WIDTH": "1"}
     except Exception:
         pass
@@ -415,6 +425,39 @@ def apply_unfuse(spec: dict, log) -> dict:
     log(f"      unfuse: adopted ModelBlaster unfused dispatch graph for "
         f"{swapped or '(none — no fused net with an unfused build on disk)'}")
     return spec
+
+
+def apply_shard_only(net: str):
+    """A shard lever that widens ONE network and holds the rest at a single core.
+
+    WHY PER-NETWORK. `apply_shard` flips a global switch, so the loop could only take
+    sharding for every network at once or not at all. On `w5_ffn_dronet_yolo` that made
+    the lever unusable: widening also widens `yolov8_nano_64x96`, 191.6 core-ms that
+    monopolises all eight harts while the 5 ms-period networks wait, so worst deadline
+    lateness went 24.67 -> 34.87 ms and the whole lever was rejected -- including the
+    part that helps. The right answer on that rung is to widen `ffn_block` and `dronet`
+    and leave yolo alone, which is exactly the decision the ladder was built to force
+    ("it has to choose WHICH nets to widen"), and which one global switch cannot say.
+
+    Successive rounds compose: each accepted `shard:<net>` appends to the list, so the
+    loop discovers a SET of networks to widen one at a time instead of guessing it.
+    """
+    def f(spec: dict, log) -> dict:
+        spec = copy.deepcopy(spec)
+        sch = spec.setdefault("scheduler", {})
+        sch["machine_combination_mode"] = "shard"
+        only = list(sch.get("shard_only_networks") or [])
+        if net in only:
+            return spec  # already widened; not a candidate (the caller skips no-ops)
+        only.append(net)
+        sch["shard_only_networks"] = only
+        if "hardware" in spec and "profile" in spec["hardware"]:
+            spec["hardware"]["profile"]["topo_tag_override"] = False
+        log(f"      shard:{net}: widen {net}, hold {'+'.join(
+            n for n in spec.get('networks', {}) if n not in only) or '(nothing)'} "
+            f"at one core")
+        return spec
+    return f
 
 
 LEVERS = {"ime": apply_ime, "shard": apply_shard, "unfuse": apply_unfuse}
@@ -660,12 +703,26 @@ def main():
     cur_sched, cur_spec_path = sched, base_path
     cur_out = base_out
 
+    # EXPAND `shard` INTO ONE CANDIDATE PER NETWORK, plus the all-networks lever it
+    # came from. The per-network candidates let a round widen `ffn_block` without also
+    # widening yolo; keeping the global one means a workload where widening everything
+    # IS right (w2, w3) still gets there in a single round.
+    lever_fns = dict(LEVERS)
+    if "shard" in active_levers:
+        _nets = list((working.get("networks") or {}).keys())
+        for _n in _nets:
+            lever_fns[f"shard:{_n}"] = apply_shard_only(_n)
+        active_levers = ([l for l in active_levers if l != "shard"]
+                         + [f"shard:{n}" for n in _nets] + ["shard"])
+        log(f"levers: shard expanded per network -> "
+            f"{[f'shard:{n}' for n in _nets]} (+ shard = all networks)")
+
     for rnd in range(1, args.max_rounds + 1):
         cands = []
         for lever in active_levers:
             if lever in applied:
                 continue
-            cspec = LEVERS[lever](cur_spec, log)
+            cspec = lever_fns[lever](cur_spec, log)
             if cspec == cur_spec:
                 # A LEVER THAT CHANGED NOTHING IS NOT A CANDIDATE. This is not
                 # pedantry: on the sensor workload `unfuse` found no unfused build on
@@ -821,8 +878,11 @@ def main():
         # between two genuinely-deadline-meeting options rather than an arbitrary dict order.
         best = min(winners, key=lambda c: (c["score"], c["mk"]))
         pct = ((cur_score - best["score"]) / cur_score * 100) if cur_score else 0.0
+        # A lever can be accepted on a HIGHER-priority term while this metric gets
+        # worse -- w5 accepts shard:dronet because misses go 10 -> 7 even though makespan
+        # grows -- and the old format printed that as "(--12.9%)". Sign it once.
         log(f"round {rnd}: ACCEPT +{best['lever']}  {metric_name} "
-            f"{cur_score:.3f} -> {best['score']:.3f} (-{pct:.1f}%)")
+            f"{cur_score:.3f} -> {best['score']:.3f} ({-pct:+.1f}%)")
 
         # render the accepted schedule's Gantt (IME dispatches darker+hatched)
         gstem = os.path.join(out_dir, f"round_{rnd}_{best['lever']}_gantt")

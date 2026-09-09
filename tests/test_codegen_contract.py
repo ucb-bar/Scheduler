@@ -154,10 +154,43 @@ class TheRealSchedulesThatBrokeTheBuild(unittest.TestCase):
         return cc.violations(p)
 
     def test_the_w5_shard_schedule_is_still_refused(self):
-        vs = self._check("w5_ffn_dronet_yolo_r2_shard")
+        """The schedule that broke the board build, from a FROZEN excerpt.
+
+        This used to read `schedules/scheduled_w5_..._greedy_profiled.json` directly,
+        which is a build OUTPUT: the moment `codegen_contract.pin_uniform_widths` made
+        the greedy shard schedule uniform-width, a rerun overwrote that path with a
+        clean schedule and this test failed -- not because the refusal regressed, but
+        because the artifact it asserted about had been rewritten. A regression test
+        cannot depend on a file the pipeline rewrites. The excerpt keeps only the four
+        dronet dispatches that violate the rule, so it is 10 KB and immune to reruns.
+        """
+        p = os.path.join(_REPO, "tests", "fixtures",
+                         "w5_shard_uniform_width_violation.json")
+        vs = cc.violations(json.load(open(p)))
         refuse = [v for v in vs if v["severity"] == "refuse"]
         self.assertTrue(refuse, "this schedule is what the board build died on")
         self.assertTrue(all(v["network"] == "dronet" for v in refuse))
+        self.assertEqual({v["rule"] for v in refuse},
+                         {"uniform_width_across_instances"})
+
+    def test_pinning_makes_that_same_shard_schedule_buildable(self):
+        """The other half of the pair: the fix, asserted on the real w5 shard spec.
+
+        Without pinning, greedy gives dronet's conv dispatches different widths across
+        instances and the candidate is thrown away -- which is how w4 and w5 came to be
+        reported as workloads where no lever helps. With it, the same solve is
+        contract-clean. Skipped rather than silently passing when the live schedule is
+        absent, since it is a build output.
+        """
+        vs = self._check("w5_ffn_dronet_yolo_r2_shard")
+        if vs is None:
+            self.skipTest("no live w5 shard schedule in this checkout")
+        # A schedule produced with the pin on must carry no width refusal at all.
+        width = [v for v in vs if v["rule"] == "uniform_width_across_instances"]
+        self.assertEqual(
+            width, [],
+            "the live w5 shard schedule still mixes widths across instances; "
+            "was it solved without XPURT_UNIFORM_PACKED_WIDTH=1?")
 
     def test_the_w5_ime_schedule_is_accepted(self):
         self.assertEqual(self._check("w5_ffn_dronet_yolo_r1_ime"), [])
