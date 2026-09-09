@@ -70,16 +70,30 @@ else
   echo "(skip warehouse figures: need Isaac flight dumps; see docs/figure_runbook.md §2-4)"
 fi
 
-# 7. loop_ablation — reads results/loop_ablation/ablation_summary.json only, never
-# re-solves. The summary is produced by scripts/ablate_feedback_loops.py (hours for a
-# CP-SAT arm), so this renders whatever is on disk and says so when there is nothing.
-if [ -f "$REPO/results/loop_ablation/ablation_summary.json" ]; then
-  say "loop_ablation (inner vs outer, per solver)"
+# 7. loop_ablation — reads an ablation_summary.json only, never re-solves. The summary is
+# produced by scripts/ablate_feedback_loops.py (hours for a CP-SAT arm), so this renders
+# whatever is on disk and says so when there is nothing.
+#
+# Candidates in PREFERENCE order, newest experiment first. The ladder is the current
+# population (see docs/figure_runbook.md §7 for why the 25-spec corpus answers a different
+# question), and results/loop_ablation holds the older corpus-wide greedy-only run. Taking
+# the first that exists means a fresh ladder run supersedes the old one without anyone
+# having to remember to edit this file, and the chosen summary is PRINTED so the figure
+# can never quietly come from a source the reader did not expect.
+ABL_SUMMARY=""
+for _cand in results/loop_ablation_ladder_v2 results/loop_ablation_ladder \
+             results/loop_ablation; do
+  if [ -f "$REPO/$_cand/ablation_summary.json" ]; then
+    ABL_SUMMARY="$_cand/ablation_summary.json"; break
+  fi
+done
+if [ -n "$ABL_SUMMARY" ]; then
+  say "loop_ablation (inner vs outer, per solver) from $ABL_SUMMARY"
   $PY scripts/plot_loop_ablation.py \
-    --summary results/loop_ablation/ablation_summary.json \
+    --summary "$ABL_SUMMARY" \
     --out-dir "$R" --stem loop_ablation || true
 else
-  echo "(skip loop_ablation: no results/loop_ablation/ablation_summary.json; see docs/figure_runbook.md §7)"
+  echo "(skip loop_ablation: no ablation_summary.json under results/loop_ablation*; see docs/figure_runbook.md §7)"
 fi
 
 say "done — figures in $R"
