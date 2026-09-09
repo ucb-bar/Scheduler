@@ -300,6 +300,9 @@ def cpsat_schedule(
     #
     # Off unless asked for, so no existing result moves. The co-design loop's `shard`
     # lever turns it on, which is what makes that lever's output deployable.
+    # Recorded for the warm start below: a hint that violates the coupling is worse
+    # than no hint, so the hint has to know which dispatches are coupled to what.
+    uniform_groups: dict = {}
     if os.environ.get("XPURT_UNIFORM_PACKED_WIDTH", "0") not in ("0", "", "false"):
         _groups = _packed_weight_groups(ops)
         _n_coupled = 0
@@ -332,6 +335,7 @@ def cpsat_schedule(
                     # this instance runs at width w  <=>  the dispatch runs at width w
                     model.Add(sum(presence[_i][k] for k in _ks) == _wv)
             model.AddExactlyOne(_w_vars.values())
+            uniform_groups[_key] = (list(_idxs), sorted(_usable))
             _n_coupled += 1
         if _skipped:
             print(f"[cpsat] codegen contract: {len(_skipped)} packed-weight "
@@ -554,15 +558,57 @@ def cpsat_schedule(
         lower_obj += transfer_weight * sum(p * c for p, c in transfer_terms)
 
     # Warm start (HEFT).
+    #
+    # A HINT THAT BREAKS THE UNIFORM-WIDTH COUPLING IS WORSE THAN NO HINT. HEFT picks a
+    # width per INSTANCE, so on a packed-weight dispatch it will happily hint width 1
+    # for one instance and 4 for another -- exactly the assignment the coupling above
+    # forbids. CP-SAT then starts from an infeasible point and spends its budget
+    # repairing it: on w4 the constrained solve returned NO SCHEDULE AT ALL (alpha None)
+    # while the unconstrained one solved fine, which is what sent us looking here.
+    # So project the hint onto the constraint first: per coupled dispatch, take the
+    # width HEFT chose most often among that dispatch's instances (restricted to the
+    # widths every instance can take), and hint that one width for all of them.
+    _forced_width = {}
+    if uniform_groups and warm_start is not None:
+        try:
+            _ws_alpha = warm_start[1]
+            for _key, (_idxs, _usable) in uniform_groups.items():
+                _votes: dict = {}
+                for _i in _idxs:
+                    _w = len(combos[int(np.argmax(_ws_alpha[_i]))])
+                    if _w in _usable:
+                        _votes[_w] = _votes.get(_w, 0) + 1
+                # No instance voted for a usable width -> fall back to the narrowest,
+                # which is always buildable and never the reason a solve fails.
+                _w_pick = (max(_votes, key=lambda w: (_votes[w], -w)) if _votes
+                           else _usable[0])
+                for _i in _idxs:
+                    _forced_width[_i] = _w_pick
+        except Exception:
+            _forced_width = {}
+
     if warm_start is not None:
         ws_t, ws_alpha = warm_start
         try:
             for i in range(n):
                 k = int(np.argmax(ws_alpha[i]))
+                if i in _forced_width:
+                    # Keep HEFT's machine choice when it already has the right width;
+                    # otherwise take any combination of the forced width this op can run.
+                    if len(combos[k]) != _forced_width[i]:
+                        _alt = [kk for kk in range(n_combos)
+                                if len(combos[kk]) == _forced_width[i]
+                                and kk not in ops[i].infeasible_combinations]
+                        if not _alt:
+                            continue  # nothing legal to hint; leave this op unhinted
+                        k = _alt[0]
                 model.AddHint(presence[i][k], 1)
                 model.AddHint(chosen_start[i], _to_int_us(float(ws_t[i])))
         except Exception:
             pass
+    if _forced_width:
+        print(f"[cpsat] codegen contract: warm start projected onto the coupling for "
+              f"{len(_forced_width)} dispatch instance(s)")
 
     solver = cp_model.CpSolver()
     if time_limit is not None and time_limit > 0:
