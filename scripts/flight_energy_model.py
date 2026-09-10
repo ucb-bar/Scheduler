@@ -32,7 +32,11 @@ def energy(npz, arm, kappa):
     t = d["t_s"].astype(float)
     if "wrench" not in d.files or np.allclose(d["wrench"], 0):
         return None                                         # no logged wrench (older dump / classical ctrl)
-    w = d["wrench"].astype(float)                           # (T,4) [thrust,Mx,My,Mz]
+    w = d["wrench"].astype(float).copy()                   # (T,4) [thrust,Mx,My,Mz] — NORMALIZED command
+    # The logged thrust channel is a normalized command around hover (u=-1 -> 0 thrust, u=0 -> hover,
+    # u>0 -> climb), not absolute Newtons. Map to total thrust in HOVER units (hover total = 1) so the
+    # momentum-theory power is finite and physical; mg cancels in the ours-vs-baseline ratios below.
+    w[:, 0] = np.clip(1.0 + w[:, 0], 0.0, None)            # normalized -> total thrust (hover=1)
     Ti = rotor_thrusts(w, arm, kappa)                      # (T,4)
     P = (Ti ** 1.5).sum(axis=1)                            # momentum-theory total power (∝)
     P_hover = 4 * (w[:, 0] / 4) ** 1.5                     # same total thrust, evenly split (no moments)

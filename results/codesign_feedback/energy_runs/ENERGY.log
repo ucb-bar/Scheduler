@@ -1,0 +1,43 @@
+=== 21:45:51 waiting for the strengthening campaign to finish so the GPU is free... ===
+=== 21:45:51 GPU free — starting energy runs (ours vs baseline, 3 seeds each, wrench-logged) ===
+=== 21:45:51 energy: xpu100 seed 1000 (lat=4.89 mom=0.005) ===
+=== 21:48:29 energy: xpu100 seed 1001 (lat=4.89 mom=0.005) ===
+=== 21:51:24 energy: xpu100 seed 1002 (lat=4.89 mom=0.005) ===
+=== 21:53:47 energy: ros50 seed 1000 (lat=12.40 mom=0.01) ===
+=== 21:55:28 energy: ros50 seed 1001 (lat=12.40 mom=0.01) ===
+=== 21:57:52 energy: ros50 seed 1002 (lat=12.40 mom=0.01) ===
+=== 22:01:17 energy: ros25 seed 1000 (lat=35.58 mom=0.02) ===
+=== 22:02:26 energy: ros25 seed 1001 (lat=35.58 mom=0.02) ===
+=== 22:03:54 energy: ros25 seed 1002 (lat=35.58 mom=0.02) ===
+=== 22:05:01 computing modeled propulsive energy from the logged wrench... ===
+/scratch/agustin/xpurt-dev-sync/scripts/flight_energy_model.py:38: RuntimeWarning: invalid value encountered in power
+  P_hover = 4 * (w[:, 0] / 4) ** 1.5                     # same total thrust, evenly split (no moments)
+flight            dur_s  meanT(N)  mean|M|  energy(∝) maneuver%
+ros25_s1000         0.9    -0.305   0.8537      103.7      nan%
+ros25_s1001         3.2     0.371   0.8428      370.2      nan%
+ros25_s1002         0.9    -0.436   0.8239       84.8      nan%
+ros50_s1000         5.9     0.061   0.6902      146.9      nan%
+ros50_s1001        10.9     0.060   0.7027      282.2      nan%
+ros50_s1002        18.0     0.058   0.7010      460.0      nan%
+xpu100_s1000        8.1     0.058   0.0136        2.6      nan%
+xpu100_s1001       10.2     0.059   0.0157        8.3      nan%
+xpu100_s1002        8.1     0.057   0.0107        2.1      nan%
+
+  ros25_s1000 vs XPU: total energy 40.14x, maneuver energy fraction nan% vs nan%
+
+  ros25_s1001 vs XPU: total energy 143.30x, maneuver energy fraction nan% vs nan%
+
+  ros25_s1002 vs XPU: total energy 32.83x, maneuver energy fraction nan% vs nan%
+
+  ros50_s1000 vs XPU: total energy 56.89x, maneuver energy fraction nan% vs nan%
+
+  ros50_s1001 vs XPU: total energy 109.24x, maneuver energy fraction nan% vs nan%
+
+  ros50_s1002 vs XPU: total energy 178.10x, maneuver energy fraction nan% vs nan%
+
+  xpu100_s1001 vs XPU: total energy 3.22x, maneuver energy fraction nan% vs nan%
+
+  xpu100_s1002 vs XPU: total energy 0.82x, maneuver energy fraction nan% vs nan%
+
+wrote /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/flight_energy.csv  (ratios robust to arm/kappa; absolute ∝ units)
+=== 22:05:01 ENERGY EXPERIMENT DONE -> /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/flight_energy.csv ===

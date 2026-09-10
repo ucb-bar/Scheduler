@@ -1,0 +1,7 @@
+pair,seed,t_window_s,window_ended_by,E_xpu,E_base,ratio_base_over_xpu
+xpu100_vs_ros50,1000,5.85,ros50,1.741,146.843,84.323
+xpu100_vs_ros50,1001,10.17,XPU,8.326,264.777,31.802
+xpu100_vs_ros50,1002,8.14,XPU,2.126,210.872,99.205
+xpu100_vs_ros25,1000,0.94,ros25,1.32,103.02,78.073
+xpu100_vs_ros25,1001,3.24,ros25,1.767,369.522,209.139
+xpu100_vs_ros25,1002,0.87,ros25,1.414,84.134,59.503
