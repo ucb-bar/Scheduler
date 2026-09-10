@@ -1,0 +1,112 @@
+=== 14:00:37 A showdown +12 seeds -> new_xpu/new_ros50/new_ros (append, 6->18) ===
+=== 14:18:59 A xpu done   (now 18 rows) ===
+=== 14:39:11 A ros50 done (now 18 rows) ===
+=== 14:43:51 A ros25 done (now 18 rows) ===
+=== 14:43:51 B fresh envelope grid 5 speeds x 4 rates x 12 seeds -> hil_ablation_v2.csv ===
+=== 14:43:51 B cell cruise=1.0 lat=8ms ===
+=== 15:07:50 B cell cruise=1.0 lat=18ms ===
+=== 15:35:30 RESUME: stage A skipped (showdown already 18/18/18) ===
+=== 15:35:30 B resume envelope grid -> hil_ablation_v2.csv (skip cells already >=12 rows) ===
+=== 15:35:30 B skip cruise=1.0 lat=8ms (have 12) ===
+=== 15:35:30 B cell cruise=1.0 lat=18ms (have 0, need 12) ===
+=== 15:54:55 B cell cruise=1.0 lat=28ms (have 0, need 12) ===
+=== 16:13:27 B cell cruise=1.0 lat=38ms (have 0, need 12) ===
+=== 16:26:25 B cell cruise=1.2 lat=8ms (have 0, need 12) ===
+=== 16:41:39 B cell cruise=1.2 lat=18ms (have 0, need 12) ===
+=== 16:54:42 B cell cruise=1.2 lat=28ms (have 0, need 12) ===
+=== 17:09:16 B cell cruise=1.2 lat=38ms (have 0, need 12) ===
+=== 17:21:27 B cell cruise=1.4 lat=8ms (have 0, need 12) ===
+=== 17:34:01 B cell cruise=1.4 lat=18ms (have 0, need 12) ===
+=== 17:48:03 B cell cruise=1.4 lat=28ms (have 0, need 12) ===
+=== 18:02:50 B cell cruise=1.4 lat=38ms (have 0, need 12) ===
+=== 18:12:43 B cell cruise=1.6 lat=8ms (have 0, need 12) ===
+=== 18:22:10 B cell cruise=1.6 lat=18ms (have 0, need 12) ===
+=== 18:31:45 B cell cruise=1.6 lat=28ms (have 0, need 12) ===
+=== 18:39:17 B cell cruise=1.6 lat=38ms (have 0, need 12) ===
+=== 18:45:24 B cell cruise=1.8 lat=8ms (have 0, need 12) ===
+=== 18:54:49 B cell cruise=1.8 lat=18ms (have 0, need 12) ===
+=== 19:03:43 B cell cruise=1.8 lat=28ms (have 0, need 12) ===
+=== 19:14:47 B cell cruise=1.8 lat=38ms (have 0, need 12) ===
+=== 19:22:43 B done (240 rows) ===
+=== 19:22:43 C resume course-B (WAREHOUSE_COURSE=b) -> hil_ablation_courseB.csv (skip cells already >=6 rows) ===
+=== 19:22:43 C cell cruise=1.0 lat=8ms (have 0, need 6) ===
+=== 19:35:40 C cell cruise=1.0 lat=18ms (have 0, need 6) ===
+=== 19:47:43 C cell cruise=1.0 lat=28ms (have 0, need 6) ===
+=== 19:56:59 C cell cruise=1.0 lat=38ms (have 0, need 6) ===
+=== 20:07:07 C cell cruise=1.2 lat=8ms (have 0, need 6) ===
+=== 20:15:48 RESUME: stage A skipped (showdown already 18/18/18) ===
+=== 20:15:48 B resume envelope grid -> hil_ablation_v2.csv (skip cells already >=12 rows) ===
+=== 20:15:48 B skip cruise=1.0 lat=8ms (have 12) ===
+=== 20:15:48 B skip cruise=1.0 lat=18ms (have 12) ===
+=== 20:15:48 B skip cruise=1.0 lat=28ms (have 12) ===
+=== 20:15:48 B skip cruise=1.0 lat=38ms (have 12) ===
+=== 20:15:48 B skip cruise=1.2 lat=8ms (have 12) ===
+=== 20:15:48 B skip cruise=1.2 lat=18ms (have 12) ===
+=== 20:15:48 B skip cruise=1.2 lat=28ms (have 12) ===
+=== 20:15:48 B skip cruise=1.2 lat=38ms (have 12) ===
+=== 20:15:48 B skip cruise=1.4 lat=8ms (have 12) ===
+=== 20:15:48 B skip cruise=1.4 lat=18ms (have 12) ===
+=== 20:15:48 B skip cruise=1.4 lat=28ms (have 12) ===
+=== 20:15:48 B skip cruise=1.4 lat=38ms (have 12) ===
+=== 20:15:48 B skip cruise=1.6 lat=8ms (have 12) ===
+=== 20:15:48 B skip cruise=1.6 lat=18ms (have 12) ===
+=== 20:15:48 B skip cruise=1.6 lat=28ms (have 12) ===
+=== 20:15:48 B skip cruise=1.6 lat=38ms (have 12) ===
+=== 20:15:48 B skip cruise=1.8 lat=8ms (have 12) ===
+=== 20:15:48 B skip cruise=1.8 lat=18ms (have 12) ===
+=== 20:15:48 B skip cruise=1.8 lat=28ms (have 12) ===
+=== 20:15:48 B skip cruise=1.8 lat=38ms (have 12) ===
+=== 20:15:48 B done (240 rows) ===
+=== 20:15:48 C resume course-B (WAREHOUSE_COURSE=b) -> hil_ablation_courseB.csv (skip cells already >=6 rows) ===
+=== 20:15:48 C skip cruise=1.0 lat=8ms (have 6) ===
+=== 20:15:48 C skip cruise=1.0 lat=18ms (have 6) ===
+=== 20:15:48 C skip cruise=1.0 lat=28ms (have 6) ===
+=== 20:15:48 C skip cruise=1.0 lat=38ms (have 6) ===
+=== 20:15:48 C skip cruise=1.2 lat=8ms (have 6) ===
+=== 20:15:48 C cell cruise=1.2 lat=18ms (have 0, need 6) ===
+=== 20:31:55 RESUME: stage A skipped (showdown already 18/18/18) ===
+=== 20:31:55 B resume envelope grid -> hil_ablation_v2.csv (skip cells already >=12 rows) ===
+=== 20:31:55 B skip cruise=1.0 lat=8ms (have 12) ===
+=== 20:31:55 B skip cruise=1.0 lat=18ms (have 12) ===
+=== 20:31:55 B skip cruise=1.0 lat=28ms (have 12) ===
+=== 20:31:55 B skip cruise=1.0 lat=38ms (have 12) ===
+=== 20:31:55 B skip cruise=1.2 lat=8ms (have 12) ===
+=== 20:31:55 B skip cruise=1.2 lat=18ms (have 12) ===
+=== 20:31:55 B skip cruise=1.2 lat=28ms (have 12) ===
+=== 20:31:55 B skip cruise=1.2 lat=38ms (have 12) ===
+=== 20:31:55 B skip cruise=1.4 lat=8ms (have 12) ===
+=== 20:31:55 B skip cruise=1.4 lat=18ms (have 12) ===
+=== 20:31:55 B skip cruise=1.4 lat=28ms (have 12) ===
+=== 20:31:55 B skip cruise=1.4 lat=38ms (have 12) ===
+=== 20:31:55 B skip cruise=1.6 lat=8ms (have 12) ===
+=== 20:31:55 B skip cruise=1.6 lat=18ms (have 12) ===
+=== 20:31:55 B skip cruise=1.6 lat=28ms (have 12) ===
+=== 20:31:55 B skip cruise=1.6 lat=38ms (have 12) ===
+=== 20:31:55 B skip cruise=1.8 lat=8ms (have 12) ===
+=== 20:31:55 B skip cruise=1.8 lat=18ms (have 12) ===
+=== 20:31:55 B skip cruise=1.8 lat=28ms (have 12) ===
+=== 20:31:55 B skip cruise=1.8 lat=38ms (have 12) ===
+=== 20:31:55 B done (240 rows) ===
+=== 20:31:55 C resume course-B (WAREHOUSE_COURSE=b) -> hil_ablation_courseB.csv (skip cells already >=6 rows) ===
+=== 20:31:55 C skip cruise=1.0 lat=8ms (have 6) ===
+=== 20:31:55 C skip cruise=1.0 lat=18ms (have 6) ===
+=== 20:31:55 C skip cruise=1.0 lat=28ms (have 6) ===
+=== 20:31:55 C skip cruise=1.0 lat=38ms (have 6) ===
+=== 20:31:55 C skip cruise=1.2 lat=8ms (have 6) ===
+=== 20:31:55 C skip cruise=1.2 lat=18ms (have 6) ===
+=== 20:31:55 C cell cruise=1.2 lat=28ms (have 0, need 6) ===
+=== 20:40:01 C cell cruise=1.2 lat=38ms (have 0, need 6) ===
+=== 20:45:29 C cell cruise=1.4 lat=8ms (have 0, need 6) ===
+=== 20:50:54 C cell cruise=1.4 lat=18ms (have 0, need 6) ===
+=== 20:57:20 C cell cruise=1.4 lat=28ms (have 0, need 6) ===
+=== 21:04:50 C cell cruise=1.4 lat=38ms (have 0, need 6) ===
+=== 21:08:32 C cell cruise=1.6 lat=8ms (have 0, need 6) ===
+=== 21:13:42 C cell cruise=1.6 lat=18ms (have 0, need 6) ===
+=== 21:18:31 C cell cruise=1.6 lat=28ms (have 0, need 6) ===
+=== 21:23:48 C cell cruise=1.6 lat=38ms (have 0, need 6) ===
+=== 21:28:09 C cell cruise=1.8 lat=8ms (have 0, need 6) ===
+=== 21:33:39 C cell cruise=1.8 lat=18ms (have 0, need 6) ===
+=== 21:38:26 C cell cruise=1.8 lat=28ms (have 0, need 6) ===
+=== 21:42:45 C cell cruise=1.8 lat=38ms (have 0, need 6) ===
+=== 21:45:51 C done (120 rows) ===
+=== 21:45:51 RESUME COMPLETE — review, then finalize_v2.sh ===

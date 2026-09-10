@@ -113,13 +113,15 @@ def draw_envelope(ax, csv_path=DEFAULT_CSV, compact=False, colorbar_ax=None, tit
         if h == 100:
             t.set_color(C_XPU); t.set_fontweight("bold")
     ax.set_xlabel("control rate (Hz)", fontsize=14 * fs, labelpad=6)
-    ax.set_ylabel("gate-course success fraction", fontsize=14 * fs)
+    ax.set_ylabel("success fraction" if compact else "gate-course success fraction", fontsize=14 * fs)
     ax.tick_params(labelsize=12 * fs)
     for sp in ("top", "right"):
         ax.spines[sp].set_visible(False)
     if title and not compact:                                    # compact embed drops its own title — the caption covers it
+        ntot = sum(n for (_k, n) in (cell[c] for c in cell))     # total flights (data-driven, not hardcoded)
+        nper = sum(cell[(s, rates[0])][1] for s in speeds)       # pooled n per rate
         ax.set_title("Flight envelope — a control-rate floor gates success; above it, speed sets the limit\n"
-                     "120 flights · colour = cruise speed · Wilson 95% CI · black = pooled over speed (n=30/rate)",
+                     f"{ntot} flights · colour = cruise speed · Wilson 95% CI · black = pooled over speed (n={nper}/rate)",
                      fontsize=12.5 * fs, weight="bold", loc="left")
     # label the pooled trend inline near its first point (full-size only)
     if not compact:

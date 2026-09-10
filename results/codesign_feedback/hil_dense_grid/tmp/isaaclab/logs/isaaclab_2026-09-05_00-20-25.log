@@ -1,0 +1,43 @@
+2026-09-05 00:20:25 [simulation_context.py:836] WARNING: The `enable_external_forces_every_iteration` parameter in the PhysxCfg is set to False. If you are experiencing noisy velocities, consider enabling this flag. You may need to slightly increase the number of velocity iterations (setting it to 1 or 2 rather than 0), together with this flag, to improve the accuracy of velocity updates.
+2026-09-05 00:20:26 [schemas.py:557] DEBUG: Adding contact report API to prim: '/World/envs/env_0/Robot/body'
+2026-09-05 00:20:26 [schemas.py:557] DEBUG: Adding contact report API to prim: '/World/envs/env_0/Robot/m1_prop'
+2026-09-05 00:20:26 [schemas.py:557] DEBUG: Adding contact report API to prim: '/World/envs/env_0/Robot/m2_prop'
+2026-09-05 00:20:26 [schemas.py:557] DEBUG: Adding contact report API to prim: '/World/envs/env_0/Robot/m3_prop'
+2026-09-05 00:20:26 [schemas.py:557] DEBUG: Adding contact report API to prim: '/World/envs/env_0/Robot/m4_prop'
+2026-09-05 00:20:27 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Warehouse' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/DomeLight' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_0_bar_0' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_0_bar_1' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_0_bar_2' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_0_bar_3' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_1_bar_0' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_1_bar_1' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_1_bar_2' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_1_bar_3' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_2_bar_0' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_2_bar_1' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_2_bar_2' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_2_bar_3' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_3_bar_0' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_3_bar_1' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_3_bar_2' on device 'cuda:0'.
+2026-09-05 00:20:39 [xform_prim_view.py:141] DEBUG: Using Fabric for the XFormPrimView over '/World/envs/env_.*/Gate_3_bar_3' on device 'cuda:0'.
+2026-09-05 00:20:42 [articulation.py:1569] INFO: Articulation initialized at: /World/envs/env_.*/Robot with root '/World/envs/env_.*/Robot'.
+2026-09-05 00:20:42 [articulation.py:1570] INFO: Is fixed root: False
+2026-09-05 00:20:42 [articulation.py:1571] INFO: Number of bodies: 5
+2026-09-05 00:20:42 [articulation.py:1572] INFO: Body names: ['body', 'm1_prop', 'm2_prop', 'm3_prop', 'm4_prop']
+2026-09-05 00:20:42 [articulation.py:1573] INFO: Number of joints: 4
+2026-09-05 00:20:42 [articulation.py:1574] INFO: Joint names: ['m1_joint', 'm2_joint', 'm3_joint', 'm4_joint']
+2026-09-05 00:20:42 [articulation.py:1575] INFO: Number of fixed tendons: 0
+2026-09-05 00:20:42 [articulation.py:1753] INFO: Actuator collection: dummy with model 'ImplicitActuator' (type: implicit) and joint names: ['m1_joint', 'm2_joint', 'm3_joint', 'm4_joint'] [slice(None, None, None)].
+2026-09-05 00:20:42 [articulation.py:2028] INFO: Simulation parameters for joints in /World/envs/env_.*/Robot:
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                                                 Simulation Joint Information (Prim path: /World/envs/env_.*/Robot)                                                |
++-------+----------+-----------+---------+----------+-----------------+------------------+------------------+---------------------+-----------------+---------------+
+| Index | Name     | Stiffness | Damping | Armature | Static Friction | Dynamic Friction | Viscous Friction |   Position Limits   | Velocity Limits | Effort Limits |
++-------+----------+-----------+---------+----------+-----------------+------------------+------------------+---------------------+-----------------+---------------+
+|   0   | m1_joint |   0.000   |  0.000  |  0.000   |      0.000      |      0.000       |      0.000       | [-3.4e+38, 3.4e+38] |     5.9e+36     |     0.000     |
+|   1   | m2_joint |   0.000   |  0.000  |  0.000   |      0.000      |      0.000       |      0.000       | [-3.4e+38, 3.4e+38] |     5.9e+36     |     0.000     |
+|   2   | m3_joint |   0.000   |  0.000  |  0.000   |      0.000      |      0.000       |      0.000       | [-3.4e+38, 3.4e+38] |     5.9e+36     |     0.000     |
+|   3   | m4_joint |   0.000   |  0.000  |  0.000   |      0.000      |      0.000       |      0.000       | [-3.4e+38, 3.4e+38] |     5.9e+36     |     0.000     |
++-------+----------+-----------+---------+----------+-----------------+------------------+------------------+---------------------+-----------------+---------------+

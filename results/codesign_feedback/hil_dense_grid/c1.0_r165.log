@@ -1,0 +1,54 @@
+Loading user config located at: '/scratch2/agustin/miniforge3/envs/env_isaaclab/lib/python3.11/site-packages/isaacsim/kit/data/Kit/Isaac-Sim/5.1/user.config.json'
+[Info] [carb] Logging to file: /scratch2/agustin/miniforge3/envs/env_isaaclab/lib/python3.11/site-packages/isaacsim/kit/logs/Kit/Isaac-Sim/5.1/kit_20260905_002002.log
+2026-09-05T07:20:03Z [398ms] [Warning] [carb.windowing-glfw.plugin] GLFW initialization failed.
+2026-09-05T07:20:03Z [398ms] [Warning] [carb] Failed to startup plugin carb.windowing-glfw.plugin (interfaces: [carb::windowing::IGLContext v1.0],[carb::windowing::IWindowing v1.5]) (impl: carb.windowing-glfw.plugin)
+2026-09-05T07:20:03Z [435ms] [Warning] [omni.platforminfo.plugin] failed to open the default display.  Can't verify X Server version.
+
+|---------------------------------------------------------------------------------------------|
+| Driver Version: 560.35.05     | Graphics API: Vulkan
+|=============================================================================================|
+| GPU | Name                             | Active | LDA | GPU Memory | Vendor-ID | LUID       |
+|     |                                  |        |     |            | Device-ID | UUID       |
+|     |                                  |        |     |            | Bus-ID    |            |
+|---------------------------------------------------------------------------------------------|
+| 0   | NVIDIA TITAN RTX                 | Yes: 0 |     | 24822   MB | 10de      | 0          |
+|     |                                  |        |     |            | 1e02      | 61ac89bf.. |
+|     |                                  |        |     |            | 41        |            |
+|=============================================================================================|
+| OS: 24.04.4 LTS (Noble Numbat) ubuntu, Version: 24.04.4, Kernel: 6.8.0-138-generic
+| Processor: AMD Ryzen Threadripper PRO 5965WX 24-Cores
+| Cores: 24 | Logical Cores: 48
+|---------------------------------------------------------------------------------------------|
+| Total Memory (MB): 128634 | Free Memory: 90661
+| Total Page/Swap (MB): 8191 | Free Page/Swap: 0
+|---------------------------------------------------------------------------------------------|
+2026-09-05T07:20:04Z [1,402ms] [Warning] [gpu.foundation.plugin] IOMMU is enabled.
+2026-09-05T07:20:05Z [2,481ms] [Warning] [carb.windowing-glfw.plugin] GLFW initialization failed.
+2026-09-05T07:20:05Z [2,481ms] [Warning] [carb] Failed to startup plugin carb.windowing-glfw.plugin (interfaces: [carb::windowing::IGLContext v1.0],[carb::windowing::IWindowing v1.5]) (impl: carb.windowing-glfw.plugin)
+2026-09-05T07:20:05Z [2,503ms] [Warning] [carb.windowing-glfw.plugin] GLFW initialization failed.
+2026-09-05T07:20:05Z [2,503ms] [Warning] [carb] Failed to startup plugin carb.windowing-glfw.plugin (interfaces: [carb::windowing::IGLContext v1.0],[carb::windowing::IWindowing v1.5]) (impl: carb.windowing-glfw.plugin)
+2026-09-05T07:20:05Z [2,514ms] [Warning] [carb.windowing-glfw.plugin] GLFW initialization failed.
+2026-09-05T07:20:05Z [2,514ms] [Warning] [carb] Failed to startup plugin carb.windowing-glfw.plugin (interfaces: [carb::windowing::IGLContext v1.0],[carb::windowing::IWindowing v1.5]) (impl: carb.windowing-glfw.plugin)
+2026-09-05T07:20:05Z [2,534ms] [Warning] [carb.windowing-glfw.plugin] GLFW initialization failed.
+2026-09-05T07:20:05Z [2,534ms] [Warning] [carb] Failed to startup plugin carb.windowing-glfw.plugin (interfaces: [carb::windowing::IGLContext v1.0],[carb::windowing::IWindowing v1.5]) (impl: carb.windowing-glfw.plugin)
+2026-09-05T07:20:05Z [2,536ms] [Warning] [carb.windowing-glfw.plugin] GLFW initialization failed.
+2026-09-05T07:20:05Z [2,536ms] [Warning] [carb] Failed to startup plugin carb.windowing-glfw.plugin (interfaces: [carb::windowing::IGLContext v1.0],[carb::windowing::IWindowing v1.5]) (impl: carb.windowing-glfw.plugin)
+2026-09-05T07:20:05Z [2,538ms] [Warning] [carb.windowing-glfw.plugin] GLFW initialization failed.
+2026-09-05T07:20:05Z [2,538ms] [Warning] [carb] Failed to startup plugin carb.windowing-glfw.plugin (interfaces: [carb::windowing::IGLContext v1.0],[carb::windowing::IWindowing v1.5]) (impl: carb.windowing-glfw.plugin)
+2026-09-05T07:20:05Z [2,809ms] [Warning] [omni.log] Source: omni.hydra was already registered.
+2026-09-05T07:20:06Z [3,292ms] [Warning] [carb] Acquiring non optional plugin interface which is not listed as dependency: [omni::physx::IPhysxBenchmarks v1.0] (plugin: <default plugin>), by client: omni.physics.physx.plugin. Add it to CARB_PLUGIN_IMPL_DEPS() macro of a client.
+2026-09-05T07:20:06Z [3,309ms] [Warning] [omni.isaac.dynamic_control] omni.isaac.dynamic_control is deprecated as of Isaac Sim 4.5. No action is needed from end-users.
+2026-09-05T07:20:11Z [8,680ms] [Warning] [pxr.Semantics] pxr.Semantics is deprecated - please use Semantics instead
+2026-09-05T07:20:11Z [8,961ms] [Warning] [omni.graph.core.plugin] Found duplicate of category 'Replicator' - was 'Annotators', adding 'Fabric Reader'
+2026-09-05T07:20:11Z [8,961ms] [Warning] [omni.graph.core.plugin] Category 'Replicator' not accepted on node type 'omni.replicator.core.FabricReader' in extension 'omni.replicator.core'
+2026-09-05T07:20:11Z [8,962ms] [Warning] [omni.replicator.core.scripts.extension] No material configuration file, adding configuration to material settings directly.
+[INFO][AppLauncher]: Using device: cuda:0
+[INFO][AppLauncher]: Loading experience file: /scratch2/dima/IsaacLab/apps/isaaclab.python.headless.rendering.kit
+[sim] dt=0.001 decimation=6 -> control_dt=6.0 ms (167 Hz)
+[env] gym.make Isaac-Drone-Warehouse-Gates-Vision-Crazyflie-Play-WithSensors-Coll-v0
+
+[36m==============================================================================================================================================================[0m
+[36m[1m[INFO][IsaacLab]: Logging to file: /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/hil_dense_grid/tmp/isaaclab/logs/isaaclab_2026-09-05_00-20-25.log[0m
+[36m==============================================================================================================================================================[0m
+
+[33m00:20:25 [simulation_context.py] WARNING: The `enable_external_forces_every_iteration` parameter in the PhysxCfg is set to False. If you are experiencing noisy velocities, consider enabling this flag. You may need to slightly increase the number of velocity iterations (setting it to 1 or 2 rather than 0), together with this flag, to improve the accuracy of velocity updates.[0m
