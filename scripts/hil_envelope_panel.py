@@ -121,8 +121,18 @@ def draw_envelope(ax, csv_path=DEFAULT_CSV, compact=False, colorbar_ax=None, tit
     if title and not compact:                                    # compact embed drops its own title — the caption covers it
         ntot = sum(n for (_k, n) in (cell[c] for c in cell))     # total flights (data-driven, not hardcoded)
         nper = sum(cell[(s, rates[0])][1] for s in speeds)       # pooled n per rate
-        ax.set_title("Flight envelope — a control-rate floor gates success; above it, speed sets the limit\n"
-                     f"{ntot} flights · colour = cruise speed · Wilson 95% CI · black = pooled over speed (n={nper}/rate)",
+        # THE GAIN CAVEAT, STATED ON THE FIGURE. Every flight in this grid uses a FIXED
+        # moment_scale = 0.0055, and that value is calibrated for a 50 Hz closed loop
+        # (scripts/hil_dense_grid.sh:25-29). At 25 Hz the correct calibrated gain is 0.02, so
+        # the low-rate cells fly UNDER-AUTHORITY by ~4x and part of the apparent rate effect
+        # is a gain artifact rather than a rate effect. The gain-corrected grid that would
+        # separate them (results/codesign_feedback/hil_dense_grid/) returns 0/8 at EVERY rate
+        # including 100-165 Hz, so it settles nothing either. Say so rather than let a reader
+        # assume the separation has been done.
+        ax.set_title("Flight envelope — success rises with control rate, then speed sets the limit\n"
+                     f"{ntot} flights · colour = cruise speed · Wilson 95% CI · black = pooled over speed "
+                     f"(n={nper}/rate) · fixed gain (moment_scale 0.0055, calibrated at 50 Hz): "
+                     f"low-rate cells are under-authority, so rate and gain are not separated here",
                      fontsize=12.5 * fs, weight="bold", loc="left")
     # label the pooled trend inline near its first point (full-size only)
     if not compact:

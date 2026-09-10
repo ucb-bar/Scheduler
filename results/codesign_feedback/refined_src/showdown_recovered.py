@@ -134,7 +134,27 @@ def draw_topdown(ax, bg, K, cpos, cquat, xpu, ros, gates, people, tnorm, rot, fl
     ax.set_ylim(min(nH, vmax + pad), max(0, vmin - pad))
 
 
-def draw_combined_gantt(ax, xd, rd):
+
+def _chain_facts(sched_xpu, sched_ros):
+    """(xpu_e2e, ros_e2e, deadline) read from the schedules' own *_metrics.json sidecars.
+
+    DERIVED, NEVER TYPED -- see sims/scripts/showdown_gatecourse.py for the full note. The
+    short version: this panel used to set XPU-RT's WORST-RESPONSE against the baseline's
+    END-TO-END chain latency, two different quantities, which manufactured a 7.3x gap where
+    the like-for-like gap is 1.19x.
+    """
+    out = []
+    for p in (sched_xpu, sched_ros):
+        side = p.replace(".json", "_metrics.json")
+        if not os.path.exists(side):
+            return None
+        m = json.load(open(side))
+        if "end_to_end_latency_ms" not in m:
+            return None
+        out.append((float(m["end_to_end_latency_ms"]), float(m.get("end_to_end_deadline_ms", 0))))
+    return out[0][0], out[1][0], out[0][1]
+
+def draw_combined_gantt(ax, xd, rd, sched_xpu=None, sched_ros=None):
     xsp = max(float(v["start_time"])+float(v["duration"]) for v in xd.values())
     rsp = max(float(v["start_time"])+float(v["duration"]) for v in rd.values())
     T1 = xsp + 4.0; tail = 9.0; T2 = rsp - tail; GAP = 6.0                  # crop ROS's long middle with a "…"
@@ -217,8 +237,16 @@ def draw_combined_gantt(ax, xd, rd):
     xt = [t for t in (0, 10, 20, 30, 40) if t <= T1] + [T2 + tail]
     ax.set_xticks([xr(t) for t in xt]); ax.set_xticklabels([f"{t:.0f}" for t in xt], fontsize=12.5)
     ax.set_xlabel("onboard schedule time (ms) · K1 board", fontsize=15)
-    ax.set_title("Combined onboard K1 schedule — XPU-RT balances 8 cores and fits the frame; "
-                 "ROS pins 6 cores, serial YOLO overruns → backlog → crash", fontsize=16.5, weight="bold", loc="left")
+    _f = _chain_facts(sched_xpu, sched_ros) if (sched_xpu and sched_ros) else None
+    if _f:
+        _x, _r, _dl = _f
+        ax.set_title(f"Combined onboard K1 schedule — XPU-RT shards YOLO and closes the "
+                     f"camera→control chain in {_x:.1f} ms (meets {_dl:.1f} ms); static per-node "
+                     f"pinning runs it serially in {_r:.1f} ms (misses)",
+                     fontsize=16.5, weight="bold", loc="left")
+    else:
+        ax.set_title("Combined onboard K1 schedule — global scheduling vs static per-node pinning",
+                     fontsize=16.5, weight="bold", loc="left")
     for sp in ("top", "right"):
         ax.spines[sp].set_visible(False)
     ax.legend(handles=[Line2D([0], [0], color=C_CTRL, lw=8, label="CTRL (mlp) 100 Hz"),
@@ -238,8 +266,17 @@ def main():
     _repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     ap = argparse.ArgumentParser()
     ap.add_argument("--xpu-dir", required=True); ap.add_argument("--ros-dir", required=True)
-    ap.add_argument("--sched-xpu", default=os.path.join(_repo, "schedules/scheduled__flight_deployed_2frame_cpsat_profiled.json"))
-    ap.add_argument("--sched-ros", default=os.path.join(_repo, "schedules/scheduled_ros_partition_deployed.json"))
+    # THE COUPLED CHAIN, not _flight_deployed_2frame. The old pair was wrong twice over:
+    # (1) different horizons -- XPU-RT's last mlp_control release is at 30 ms (4 instances),
+    #     the ROS file's at 110 ms (12), so "ROS still going at 112 ms" was just a 3x longer
+    #     schedule; normalized they sit 11% apart, not 2.8x (scripts/verify_panel_i.py);
+    # (2) that workload has INDEPENDENT periodic tasks, so static pinning gives mlp_control
+    #     its own hart and a 0.08 ms control response against XPU-RT's worst of 7.47 ms --
+    #     on it the baseline is BETTER, and the panel's own story cannot exist.
+    # These two are matched: 1 instance each, 120 dispatches, 35.6 core-ms, one calibration,
+    # a real camera->YOLO->nav->control dependency chain, and an end-to-end deadline.
+    ap.add_argument("--sched-xpu", default=os.path.join(_repo, "schedules/cmp_coupled_cpsat_board.json"))
+    ap.add_argument("--sched-ros", default=os.path.join(_repo, "schedules/cmp_coupled_ros_board.json"))
     ap.add_argument("--rot", type=int, default=0); ap.add_argument("--flipx", action="store_true")
     ap.add_argument("--path-start", type=int, default=85)
     ap.add_argument("--out", default=os.path.join(_repo, "results/codesign_feedback/warehouse_showdown"))
@@ -315,7 +352,9 @@ def main():
 
     # D combined annotated Gantt
     axd = fig.add_subplot(outer[3])
-    draw_combined_gantt(axd, json.load(open(a.sched_xpu))["dispatches"], json.load(open(a.sched_ros))["dispatches"])
+    draw_combined_gantt(axd, json.load(open(a.sched_xpu))["dispatches"],
+                        json.load(open(a.sched_ros))["dispatches"],
+                        sched_xpu=a.sched_xpu, sched_ros=a.sched_ros)
 
     fig.savefig(a.out + ".png", dpi=150, bbox_inches="tight")
     fig.savefig(a.out + ".pdf", bbox_inches="tight")

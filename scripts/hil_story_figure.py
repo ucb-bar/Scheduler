@@ -58,8 +58,11 @@ def draw_generalization(ax, fs=1.0, compact=False):
             for i, t in enumerate(s):
                 ax.annotate(f"{t[0]}/{t[1]}", (x[i] + dx, hi[i]), textcoords="offset points",
                             xytext=(0, 5), ha="center", fontsize=8.2 * fs, weight="bold", color=col, zorder=7)
+    # p-values recomputed by scripts/audit_showdown_claims.py (two-sided Fisher exact):
+    # A 25->50 Hz = +36.7 pts, p = 2.7e-07;  B 25->50 Hz = +23.3 pts, p = 0.042.
+    # The B value was previously stated as p=0.02, which no test in the repo produces.
     box = ("floor holds on\nunseen gates\nA +37 / B +23 pts" if compact else
-           "floor reproduces on\nunseen gates\nA +37 pts (p<0.001)\nB +23 pts (p=0.02)")
+           "floor reproduces on\nunseen gates\nA +37 pts (p<0.001)\nB +23 pts (p=0.042)")
     ytop = 0.66 if compact else 1.20                          # compact: tighten range so the rise fills the panel
     ax.annotate(box, xy=(xb, 0.34), xytext=(0.30, 0.55 if compact else 0.87), fontsize=9 * fs, weight="bold",
                 color="#111", ha="center", va="center", zorder=9,

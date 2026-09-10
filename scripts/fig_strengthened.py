@@ -115,7 +115,7 @@ axL.set_xlabel("Effective control rate  (Hz)"); axL.set_ylabel("Gate-course succ
 axL.set_title("(a)  Control-rate floor generalizes across courses", loc="left", fontsize=11.8)
 axL.grid(True, which="both", color=GRID, lw=0.7, zorder=0); axL.set_axisbelow(True)
 axL.legend(loc="upper left", frameon=False, fontsize=9.3, handlelength=1.6)
-axL.annotate("floor $\\to$ 50 Hz:  A +37 pts (p<0.0001),  B +23 pts (p=0.02)",
+axL.annotate("floor $\\to$ 50 Hz:  A +37 pts (p<0.001),  B +23 pts (p=0.042)",
              (0.5, -0.20), xycoords="axes fraction", ha="center", fontsize=8.7, color=MUTE)
 
 # ---- (b) matched-progress energy ----------------------------------------------------------------

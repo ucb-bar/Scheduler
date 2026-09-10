@@ -171,7 +171,28 @@ def draw_topdown(ax, bg, K, cpos, cquat, xpu, ros, gates, people, tnorm, rot, fl
     ax.set_ylim(min(nH, vmax + pad), max(0, vmin - pad))
 
 
-def draw_combined_gantt(ax, xd, rd):
+
+def _chain_facts(sched_xpu, sched_ros):
+    """(xpu_e2e, ros_e2e, deadline) from the schedules' own *_metrics.json sidecars.
+
+    DERIVED, NEVER TYPED. The previous title carried "~45 Hz" and "~15 Hz" as literals; both
+    were wrong even for the schedules then plotted (which give 24.8 and 8.9 Hz), and nothing
+    would have moved them if the schedules changed. A caption that cannot disagree with its
+    data cannot be checked. Returns None if a sidecar is missing, and the caller falls back
+    to a title that states no numbers at all rather than stale ones.
+    """
+    out = []
+    for p in (sched_xpu, sched_ros):
+        side = p.replace(".json", "_metrics.json")
+        if not os.path.exists(side):
+            return None
+        m = json.load(open(side))
+        if "end_to_end_latency_ms" not in m:
+            return None
+        out.append((float(m["end_to_end_latency_ms"]), float(m.get("end_to_end_deadline_ms", 0))))
+    return out[0][0], out[1][0], out[0][1]
+
+def draw_combined_gantt(ax, xd, rd, sched_xpu=None, sched_ros=None):
     xsp = max(float(v["start_time"])+float(v["duration"]) for v in xd.values())
     rsp = max(float(v["start_time"])+float(v["duration"]) for v in rd.values())
     T1 = xsp + 4.0; tail = 9.0; T2 = rsp - tail; GAP = 6.0                  # crop ROS's long middle with a "…"
@@ -254,8 +275,21 @@ def draw_combined_gantt(ax, xd, rd):
     xt = [t for t in (0, 10, 20, 30, 40) if t <= T1] + [T2 + tail]
     ax.set_xticks([xr(t) for t in xt]); ax.set_xticklabels([f"{t:.0f}" for t in xt], fontsize=17)
     ax.set_xlabel("onboard schedule time (ms) · K1 board", fontsize=21)
-    ax.set_title("Onboard K1 schedule — XPU-RT shards YOLO across 8 cores (~45 Hz); "
-                 "ROS serial on 1 hart backs up (~15 Hz) → control starves", fontsize=19, weight="bold", loc="left")
+    _f = _chain_facts(sched_xpu, sched_ros) if (sched_xpu and sched_ros) else None
+    if _f:
+        _x, _r, _dl = _f
+        # ONE METRIC FOR BOTH ARMS: end-to-end camera->control latency on the same chain, the
+        # same 35.6 core-ms of work and the same board calibration. The figure previously set
+        # XPU-RT's WORST-RESPONSE (4.89 ms, a hard-coded literal) against the baseline's
+        # END-TO-END chain latency (35.58 ms) -- different quantities, which manufactured a
+        # 7.3x gap where the like-for-like gap is 1.19x.
+        ax.set_title(f"Onboard K1 schedule — XPU-RT shards YOLO across the harts and closes the "
+                     f"camera→control chain in {_x:.1f} ms (meets {_dl:.1f} ms); "
+                     f"static per-node pinning runs it serially in {_r:.1f} ms (misses)",
+                     fontsize=19, weight="bold", loc="left")
+    else:
+        ax.set_title("Onboard K1 schedule — global scheduling vs static per-node pinning",
+                     fontsize=19, weight="bold", loc="left")
     for sp in ("top", "right"):
         ax.spines[sp].set_visible(False)
     ax.legend(handles=[Line2D([0], [0], color=C_CTRL, lw=8, label="CTRL (mlp) 100 Hz"),
@@ -275,8 +309,17 @@ def main():
     _repo = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     ap = argparse.ArgumentParser()
     ap.add_argument("--xpu-dir", required=True); ap.add_argument("--ros-dir", required=True)
-    ap.add_argument("--sched-xpu", default=os.path.join(_repo, "schedules/scheduled__flight_deployed_2frame_cpsat_profiled.json"))
-    ap.add_argument("--sched-ros", default=os.path.join(_repo, "schedules/scheduled_ros_partition_deployed.json"))
+    # THE COUPLED CHAIN, not _flight_deployed_2frame. The old pair was wrong twice over:
+    # (1) different horizons -- XPU-RT's last mlp_control release is at 30 ms (4 instances),
+    #     the ROS file's at 110 ms (12), so "ROS still going at 112 ms" was just a 3x longer
+    #     schedule; normalized they sit 11% apart, not 2.8x (scripts/verify_panel_i.py);
+    # (2) that workload has INDEPENDENT periodic tasks, so static pinning gives mlp_control
+    #     its own hart and a 0.08 ms control response against XPU-RT's worst of 7.47 ms --
+    #     on it the baseline is BETTER, and the panel's own story cannot exist.
+    # These two are matched: 1 instance each, 120 dispatches, 35.6 core-ms, one calibration,
+    # a real camera->YOLO->nav->control dependency chain, and an end-to-end deadline.
+    ap.add_argument("--sched-xpu", default=os.path.join(_repo, "schedules/cmp_coupled_cpsat_board.json"))
+    ap.add_argument("--sched-ros", default=os.path.join(_repo, "schedules/cmp_coupled_ros_board.json"))
     ap.add_argument("--rot", type=int, default=0); ap.add_argument("--flipx", action="store_true")
     ap.add_argument("--path-start", type=int, default=85)
     ap.add_argument("--dpi", type=int, default=150, help="raster DPI for the .png (PDF is always vector)")
@@ -365,14 +408,21 @@ def main():
     _bump = dict(center=_step_near, sigma=a.cbump_sigma, amp=a.cbump_amp, sign=a.cbump_sign) if a.cbump_amp else None
     draw_topdown(axt, ov_bg, ovK, ovpos, ovquat, xxyz, rxyz, gates, people, tnorm, a.rot, a.flipx,
                  a.path_start, rxyz[-1], moments, ov_obj=X["ov_bg"], near_miss=near_miss, xpu_bump=_bump)
-    axt.legend(handles=[Line2D([0], [0], color=CMAP(0.6), lw=5, label="XPU-RT ✓ completes 3/6 (colour = time)"),
-                        Line2D([0], [0], color=C_ROS, lw=5, label="ROS ✗ crashes 0/6 (50 Hz control)"),
+    axt.legend(handles=[Line2D([0], [0], color=CMAP(0.6), lw=5, label="XPU-RT ✓ completes 3/6 (100 Hz control · colour = time)"),
+                        Line2D([0], [0], color=C_ROS, lw=5, label="static per-node pinning ✗ crashes 0/6 (25 Hz control)"),
                         Line2D([0], [0], marker="o", color=C_MOVER, mec="white", ls="none", ms=9, alpha=0.75, label="patrolling people"),
                         Line2D([0], [0], marker="o", mfc="none", mec="#ffd400", mew=3, ls="none", label="gate")],
                loc="upper left", fontsize=14.5, framealpha=0.93, ncol=4, handlelength=1.9)
     if use_env:
-        axt.set_title("Warehouse gate-course showdown\nXPU-RT (100 Hz control) clears all 4 gates · "
-                      "ROS (50 Hz) loses stability → crash", fontsize=17, weight="bold", loc="left")
+        # THE RATE THE FLIGHT ACTUALLY RAN AT. run_newshowdown.sh launched these two
+        # flights with --sched_latency_ms 4.89 (XPU-RT) and 35.58 (baseline); by the
+        # simulator's own rule, ceil(latency / 10 ms control step), those are 100 Hz and
+        # 25 Hz. The panel said "ROS (50 Hz)" -- a rate neither flight used, and the one
+        # rate where we measure NO effect at all (50 vs 100 Hz: -3.3 pts, p = 0.85 over
+        # 240 flights). 25 Hz is also what the coupled-chain schedule implies, so naming
+        # it correctly makes this panel agree with the Gantt instead of contradicting it.
+        axt.set_title("Warehouse gate-course showdown\nXPU-RT (100 Hz control) completes 3/6 · "
+                      "static per-node pinning (25 Hz) loses stability → 0/6", fontsize=17, weight="bold", loc="left")
         draw_envelope(axe, a.ablation_csv, compact=True, colorbar_ax=cax)
         if use_story:
             draw_generalization(axG, fs=1.45, compact=True)
@@ -382,8 +432,8 @@ def main():
             _sec(axG, "C", dx=-2, dy=34)                      # generalization (above its left-aligned title)
             _sec(axM, "D", dx=-2, dy=34)                      # mechanism (above its left-aligned title)
     else:
-        axt.set_title("Warehouse gate-course showdown — XPU-RT (100 Hz control) clears all 4 gates; "
-                      "ROS (50 Hz control) loses stability and crashes", fontsize=18, weight="bold", loc="left")
+        axt.set_title("Warehouse gate-course showdown — XPU-RT (100 Hz control) completes 3/6; "
+                      "static per-node pinning (25 Hz control) loses stability, 0/6", fontsize=18, weight="bold", loc="left")
 
     # B snapshots: 4 moments in a row, each a horizontal [chase | FPV+YOLO | ToF] — FPV/ToF given more room
     bgrid = outer[2].subgridspec(1, 4, wspace=0.09)
@@ -437,7 +487,9 @@ def main():
 
     # D combined annotated Gantt
     axd = fig.add_subplot(outer[6])
-    draw_combined_gantt(axd, json.load(open(a.sched_xpu))["dispatches"], json.load(open(a.sched_ros))["dispatches"])
+    draw_combined_gantt(axd, json.load(open(a.sched_xpu))["dispatches"],
+                        json.load(open(a.sched_ros))["dispatches"],
+                        sched_xpu=a.sched_xpu, sched_ros=a.sched_ros)
     if use_story:
         _sec(axd, "I", dx=-2, dy=36)                          # above the Gantt's long left title, clear of "Onboard"
 
