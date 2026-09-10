@@ -39,6 +39,12 @@ same reason a road can keep a Roman route: every reader already speaks it.
   `run_modelblaster_arm.py`, `run_board_round.py`, `loop_over_workloads.py`),
   which stages need the board, the environment recipe, and the traps. Start here
   if you are looking for "the automated script".
+* **[`docs/measurements_and_ablations.md`](docs/measurements_and_ablations.md)** — how to
+  CHECK the loop: reproducing the nine K1 board measurements, the ablation of the
+  experiments (which rungs are at stake and reachable, and why the earlier ones were
+  not), and the ablation of the feedback (the inner/outer 2x2, which grid is the one to
+  read, and what it actually found). Start here if you are looking for "does this hold
+  up".
 * **[`docs/environment.md`](docs/environment.md)** — recreating the
   environment. Two flows, two environments, and neither is merlin's `.venv`.
   (The working uv recipe, including the `highspy` pin that keeps cvxpy and

@@ -382,7 +382,7 @@ LADDER_SOLVABLE = {
         # (42.77, so widening genuinely fixes it rather than trading the miss elsewhere).
         # Every other net is sized to fit comfortably so the rung tests one decision.
         # 30 ms, and it is BRACKETED rather than argued: an empirical two-gate sweep
-        # (scratchpad gate_rung.py) solved the baseline and the fix at each candidate
+        # (scripts/gate_rung.py) solved the baseline and the fix at each candidate
         # window. At 35 ms and above the solved baseline already meets every deadline --
         # nothing at stake. At 26 ms and below not even shard:yolo + shard:ffn reaches
         # zero on measured board costs -- unreachable. 30 is the window where the
