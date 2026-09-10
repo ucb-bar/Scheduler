@@ -409,6 +409,46 @@ profile-sized rungs lacked (§2.2).
 * **Queueing is excluded from the calibration by construction.** It is in the trace and in
   the attribution, but not in the multipliers.
 * **The ablation population is two at-stake workloads.** See §3.4.
+* **ROS was never executed on the board, and "ROS" means three different things.** This is
+  the largest gap in the comparison and is stated first because a reader will find it.
+  All ten board traces are XPU-RT schedules; `find ModelBlaster/tmp -name '*_trace.csv'`
+  returns zero ROS runs. The three arms are:
+
+  1. *The scheduling baseline* (`scripts/ros_pinning_generic.py`,
+     `ros_pinning_periodic.py`) — a **policy model, not ROS software**. It takes XPU-RT's
+     real measured per-dispatch durations and re-lays them out under ROS's serialization
+     policy: one node per network, pinned to one hart, whole dispatch graph sequential,
+     periodic timer releases. Every `schedules/cmp_*ros*_board.json` is this, and the
+     `_board` suffix means board-*calibrated costs*, not board-*executed*.
+  2. *The flight-sim arm* (envelope, showdown, crash demo) — in-sim ZOH latency injection.
+     The knobs are the CSV's own columns: `sched_latency_ms`, `percep_latency_ms`,
+     `percep_hold_ms`, `eff_cmd_hz`, `pipeline_zoh`. A latency model parameterised to
+     stand for ROS, flown in Isaac.
+  3. *micro-ROS on FPGA* — a different target (FireSim), not the K1.
+
+  **What this does support.** Because the baseline pays the *same measured per-op costs*
+  as XPU-RT, the comparison isolates the serialization policy: it cannot be dismissed as
+  a slow ROS build or unoptimised kernels. On the compute side it is a best case for ROS.
+  The defensible claim is *"static per-node serial pinning loses to global scheduling at
+  equal per-op cost"*.
+
+  **What it does not support.** *"ROS 2 loses to XPU-RT on the K1"* — we have not measured
+  that. The model omits DDS serialization, message copies, executor wake-up latency and
+  callback jitter, which would make real ROS **worse** than our arm; but it also assumes
+  single-threaded per-node execution, and a real deployment using a multithreaded executor,
+  callback groups or composed nodes would be **better** than our arm. That second
+  direction is the one that cuts against us, and we cannot currently bound it.
+
+  Related: the `12.40 ms` ROS figure is a **literal** in `scripts/hil_ablation_phase.py`
+  (`SCHEDS = [("ROS · per-net pinning", 12.40, ...)]`), not derived at plot time, so it
+  will not move if the schedule it came from changes.
+
+  **The cheap experiment that would close most of this.** The ROS-pinned schedules are
+  valid schedule JSONs, so `ModelBlaster/scripts/run_xpurt_k1.sh --schedule` can execute
+  one. That makes the baseline board-*executed* rather than board-*costed* and captures
+  the real queueing and contention it currently only predicts. It is still not ROS
+  middleware — for that, ROS 2 nodes have to run on the board's Bianbu Linux — but it
+  removes the weaker of the two objections. Neither has been done.
 * **`yolov8_nano_64x96` core scaling is measured only in contention.** In the five-network
   runs yolo was sharded per dispatch (48 dispatches at width 4, 17 at width 2, 33 at width
   1 — never width 8) while contending with four other networks. That is not the standalone
