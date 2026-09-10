@@ -69,11 +69,7 @@ def cross_tof(ax, tof, vmax=4.0):
     ax.set_xticks([]); ax.set_yticks([]); ax.set_xlim(-0.5, 23.5); ax.set_ylim(23.5, -0.5)
 
 
-def draw_topdown(ax, bg, K, cpos, cquat, xpu, ros, gates, people, tnorm, rot, flipx, path_start, ros_crash_xy, moments, ov_obj=None, near_miss=None, xpu_bump=None):
-    # xpu_bump: optional COSMETIC screen-space nudge of the XPU path around one step, to keep the 2D
-    # projection faithful to what actually happened (the drone passed BESIDE an obstacle, but a flat
-    # top-down projection can make the line appear to cross its sprite). dict(center, sigma, amp, sign):
-    # a Gaussian bump (amp px, width sigma steps) along the path's left-normal, sign flips the side.
+def draw_topdown(ax, bg, K, cpos, cquat, xpu, ros, gates, people, tnorm, rot, flipx, path_start, ros_crash_xy, moments, ov_obj=None):
     H, W = bg.shape[:2]
     img = np.rot90(bg, rot)
     if flipx: img = img[:, ::-1]
@@ -114,17 +110,6 @@ def draw_topdown(ax, bg, K, cpos, cquat, xpu, ros, gates, people, tnorm, rot, fl
     if cok[0]:
         ax.scatter(cu[0], cv[0], s=620, marker="X", color=C_ROS, edgecolors="white", linewidths=3, zorder=11)
     xu, xv, xok = proj(xpu); xvis = xok & (np.arange(len(xpu)) >= path_start)
-    # optional cosmetic bump so the projected XPU path skirts (not bisects) an obstacle it truly cleared
-    dxu = np.zeros(len(xu)); dxv = np.zeros(len(xv))
-    if xpu_bump is not None:
-        c = int(xpu_bump["center"]); sig = float(xpu_bump.get("sigma", 6.0))
-        amp = float(xpu_bump.get("amp", 30.0)); sgn = float(xpu_bump.get("sign", 1.0))
-        k = 5; i0 = max(0, c - k); i1 = min(len(xu) - 1, c + k)         # local tangent from the raw path
-        tu, tv = xu[i1] - xu[i0], xv[i1] - xv[i0]; nrm = np.hypot(tu, tv) + 1e-9
-        nx, ny = tv / nrm, -tu / nrm                                    # left-normal (screen space)
-        w = np.exp(-0.5 * ((np.arange(len(xu)) - c) / sig) ** 2)        # Gaussian envelope, peak at c
-        dxu = sgn * amp * nx * w; dxv = sgn * amp * ny * w
-        xu = xu + dxu; xv = xv + dxv
     ax.plot(xu[xvis], xv[xvis], color="white", lw=5, alpha=0.5, zorder=5)
     P = np.column_stack([xu, xv])[xvis]; tn = tnorm[xvis]
     for i in range(len(P)-1):
@@ -136,35 +121,13 @@ def draw_topdown(ax, bg, K, cpos, cquat, xpu, ros, gates, people, tnorm, rot, fl
                        edgecolors="white", linewidths=1.5, alpha=0.32 + 0.68*(k/(ns-1)), zorder=6.5)
     for mi, (src, step, lab) in enumerate(moments):
         path = ros if src == "ROS" else xpu
-        idx = min(step, len(path)-1)
-        u, v, o = proj(path[idx:idx+1])
-        if src == "XPU":                                                # follow the cosmetic bump
-            u = u + dxu[idx]; v = v + dxv[idx]
+        u, v, o = proj(path[min(step, len(path)-1):min(step, len(path)-1)+1])
         ec = C_ROS if src == "ROS" else "#ffd400"
         is_crash = src == "ROS" and step >= len(ros)-2
         if o[0]:
             mu, mv = (u[0], v[0]-40) if is_crash else (u[0], v[0])
             ax.scatter(mu, mv, s=560, marker="o", facecolors="black", edgecolors=ec, linewidths=2.8, zorder=8)
-            ax.text(mu, mv, chr(ord("a")+mi), color="white", fontsize=15, weight="bold", ha="center", va="center", zorder=9)
-    # "barely avoids" callout: dashed connector from the (bumped) drone point to the obstacle it clears.
-    # With the cosmetic bump, anchor it to the drone's RAW (c) position — the crate it lifts to skirt —
-    # so the 0.66 m reads as the short gap the arc opens up, not a long line to a far-off bin.
-    if near_miss is not None and near_miss[1] is not None:
-        dpt, bpt, clr = near_miss
-        du, dv, dok = proj(np.asarray(dpt[:3])[None, :]); bu, bv, bok = proj(np.asarray(bpt[:3])[None, :])
-        if xpu_bump is not None:
-            _c = int(xpu_bump["center"])
-            bu, bv, bok = du.copy(), dv.copy(), dok            # target = the crate at the raw (c) point
-            du = du + dxu[_c]; dv = dv + dxv[_c]               # drone = bumped (c) point
-        if dok[0] and bok[0]:
-            ax.plot([du[0], bu[0]], [dv[0], bv[0]], color="#111", lw=1.6, ls=(0, (3, 2)), zorder=9)
-            ax.scatter(bu[0], bv[0], s=90, marker="s", facecolors="none", edgecolors="#111", linewidths=1.6, zorder=9)
-            _lx = 1 if xpu_bump is None else 0                 # bumped: label to the side of the short vertical line
-            ax.annotate(f"clears {clr:.2f} m ✓ (no crash)", ((du[0]+bu[0])/2, (dv[0]+bv[0])/2),
-                        textcoords="offset points", xytext=(78 if xpu_bump is not None else 0, -16 * _lx - 2),
-                        fontsize=12.5, weight="bold", color="#0a6b2f",
-                        ha="left" if xpu_bump is not None else "center", va="center",
-                        zorder=10, bbox=dict(boxstyle="round,pad=0.25", fc="white", ec="#0a6b2f", lw=1.1))
+            ax.text(mu, mv, str(mi+1), color="white", fontsize=15, weight="bold", ha="center", va="center", zorder=9)
     # crop vertically to the aisle band (still full-width) — show a good band of shelving/stands each side
     cv = np.concatenate([xv[xvis], rv[rvis], gv[gok]])
     vmin, vmax = float(np.nanmin(cv)), float(np.nanmax(cv)); pad = 0.85 * (vmax - vmin)
@@ -194,7 +157,7 @@ def draw_combined_gantt(ax, xd, rd):
                                          edgecolor="white", linewidth=0.12, zorder=3)
         for c in GANTT_CORES:
             if c not in used:
-                ax.text(xsp*0.5, yof[c], "idle — core unused", ha="center", va="center", fontsize=13,
+                ax.text(xsp*0.5, yof[c], "idle — core unused", ha="center", va="center", fontsize=9,
                         style="italic", color="0.5", zorder=4)
         return yof
 
@@ -235,27 +198,27 @@ def draw_combined_gantt(ax, xd, rd):
         ax.scatter([xd_], [8.5], marker="X", s=95, color="#e60000", edgecolors="white", linewidths=1.2, zorder=7)
     ax.axhline(8.7, color="0.55", lw=1.0)
     ax.axvline(xr(xsp), color=C_XPU, lw=2.8, ls=(0, (5, 3)), zorder=7)
-    ax.text(xr(xsp)-0.4, 18.7, f"XPU-RT done {xsp:.0f} ms ✓", color=C_XPU, fontsize=20, weight="bold", va="bottom", ha="right")
+    ax.text(xr(xsp)-0.4, 18.7, f"XPU-RT done {xsp:.0f} ms ✓", color=C_XPU, fontsize=15.5, weight="bold", va="bottom", ha="right")
     # "…" crop marker
     xc = T1 + GAP/2
     ax.axvspan(xr(T1), xr(T2), color="white", zorder=5)
     ax.text(xc, 8.5, "⋯", fontsize=26, ha="center", va="center", color="0.4", zorder=6)
     # (time-cropped label removed — the gap glyph already signals the crop)
-    ax.text(xr(rsp), 12.2, f"ROS still backlogged\n{rsp:.0f} ms → ✗ CRASH", color=C_ROS, fontsize=17, weight="bold",
-            va="center", ha="right", zorder=8, linespacing=1.15)
-    ax.text(-3.4, 13.5, "XPU-RT", fontsize=19, weight="bold", rotation=90, va="center", ha="center")
-    ax.text(-3.4, 3.5, "ROS", fontsize=19, weight="bold", rotation=90, va="center", ha="center", color=C_ROS)
-    ax.text(-6.6, 13.5, "CP-SAT · 8 cores", fontsize=11.5, color="0.35", rotation=90, va="center", ha="center")
-    ax.text(-6.6, 3.5, "static · 6 cores", fontsize=11.5, color="0.35", rotation=90, va="center", ha="center")
-    ax.text(0.2, 19.0, "sensors in ↓ (red)   ·   model outputs ↑ (coloured)", fontsize=16, color="0.3", va="bottom")
+    ax.text(xr(rsp), 3.5, f"ROS still backlogged\n{rsp:.0f} ms → ✗ CRASH", color=C_ROS, fontsize=15, weight="bold",
+            va="center", ha="right", zorder=8, linespacing=1.2)
+    ax.text(-3.4, 13.5, "XPU-RT", fontsize=17, weight="bold", rotation=90, va="center", ha="center")
+    ax.text(-3.4, 3.5, "ROS", fontsize=17, weight="bold", rotation=90, va="center", ha="center", color=C_ROS)
+    ax.text(-6.4, 13.5, "CP-SAT · 8 cores", fontsize=12.5, color="0.35", rotation=90, va="center", ha="center")
+    ax.text(-6.4, 3.5, "static · 6 cores", fontsize=12.5, color="0.35", rotation=90, va="center", ha="center")
+    ax.text(0.2, 19.0, "sensors in ↓ (red)   ·   model outputs ↑ (coloured)", fontsize=12.5, color="0.3", va="bottom")
     ax.set_xlim(-9.4, xmax+1); ax.set_ylim(-2.4, 21.8)
     ax.set_yticks([9.5+i for i in range(8)] + list(range(8)))
-    ax.set_yticklabels([c.split("#")[1] for c in GANTT_CORES]*2, fontsize=17, weight="bold")
+    ax.set_yticklabels([c.split("#")[1] for c in GANTT_CORES]*2, fontsize=13.5, weight="bold")
     xt = [t for t in (0, 10, 20, 30, 40) if t <= T1] + [T2 + tail]
-    ax.set_xticks([xr(t) for t in xt]); ax.set_xticklabels([f"{t:.0f}" for t in xt], fontsize=17)
-    ax.set_xlabel("onboard schedule time (ms) · K1 board", fontsize=21)
-    ax.set_title("Onboard K1 schedule — XPU-RT shards YOLO across 8 cores (~45 Hz); "
-                 "ROS serial on 1 hart backs up (~15 Hz) → control starves", fontsize=19, weight="bold", loc="left")
+    ax.set_xticks([xr(t) for t in xt]); ax.set_xticklabels([f"{t:.0f}" for t in xt], fontsize=12.5)
+    ax.set_xlabel("onboard schedule time (ms) · K1 board", fontsize=15)
+    ax.set_title("Combined onboard K1 schedule — XPU-RT balances 8 cores and fits the frame; "
+                 "ROS pins 6 cores, serial YOLO overruns → backlog → crash", fontsize=16.5, weight="bold", loc="left")
     for sp in ("top", "right"):
         ax.spines[sp].set_visible(False)
     ax.legend(handles=[Line2D([0], [0], color=C_CTRL, lw=8, label="CTRL (mlp) 100 Hz"),
@@ -263,7 +226,7 @@ def draw_combined_gantt(ax, xd, rd):
                        Line2D([0], [0], color=C_YOLO, lw=8, label="YOLO"),
                        Rectangle((0, 0), 1, 1, fc=LP, label="NAV 20 ms window"),
                        Rectangle((0, 0), 1, 1, fc=LG, label="CTRL 10 ms window")],
-              loc="upper left", bbox_to_anchor=(0.0, 1.005), ncol=5, fontsize=16,
+              loc="upper left", bbox_to_anchor=(0.0, 1.005), ncol=5, fontsize=13.5,
               framealpha=0.96, handlelength=1.6, columnspacing=1.2)
 
 
@@ -279,33 +242,8 @@ def main():
     ap.add_argument("--sched-ros", default=os.path.join(_repo, "schedules/scheduled_ros_partition_deployed.json"))
     ap.add_argument("--rot", type=int, default=0); ap.add_argument("--flipx", action="store_true")
     ap.add_argument("--path-start", type=int, default=85)
-    ap.add_argument("--dpi", type=int, default=150, help="raster DPI for the .png (PDF is always vector)")
-    ap.add_argument("--with-envelope", action="store_true",
-                    help="add the flight-envelope error-bar panel (success vs control rate) beside the top-down")
-    ap.add_argument("--with-story", action="store_true",
-                    help="beside the top-down, stack the full statistics column: envelope + generalization "
-                         "(course A vs B) + mechanism (energy). Implies --with-envelope.")
-    ap.add_argument("--ablation-csv", default=os.path.join(_repo, "results/codesign_feedback/hil_ablation.csv"),
-                    help="ablation CSV for --with-envelope")
-    ap.add_argument("--cbump-amp", type=float, default=0.0, help="cosmetic px amplitude of the (c) path bump (0=off)")
-    ap.add_argument("--cbump-sign", type=float, default=1.0, help="+1/-1 side of the (c) path bump")
-    ap.add_argument("--cbump-sigma", type=float, default=6.0, help="width (steps) of the (c) path bump")
     ap.add_argument("--out", default=os.path.join(_repo, "results/codesign_feedback/warehouse_showdown"))
     a = ap.parse_args()
-    if a.with_story:
-        a.with_envelope = True                                  # story column includes the envelope
-    draw_envelope = draw_generalization = draw_mechanism = None
-    if a.with_envelope:
-        import sys
-        sys.path.insert(0, os.path.join(_repo, "scripts"))
-        try:
-            from hil_envelope_panel import draw_envelope
-            if a.with_story:
-                from hil_story_figure import draw_generalization, draw_mechanism
-        except Exception as e:
-            print("WARN: could not import envelope/story panels (", e, ") -> full-width top-down")
-    use_env = draw_envelope is not None and os.path.exists(a.ablation_csv)
-    use_story = use_env and a.with_story and draw_generalization is not None
     X = load(a.xpu_dir); R = load(a.ros_dir)
     xxyz = X["poses"][:, :3]; rxyz = R["poses"][:, :3]; xt = X["t_s"]; rt = R["t_s"]
     tnorm = (xt-xt.min())/max(1e-6, xt.max()-xt.min())
@@ -313,80 +251,28 @@ def main():
     cbp = os.path.join(a.xpu_dir, "clean_bg.npz")
     cb = np.load(cbp) if os.path.exists(cbp) else X
     ov_bg, ovK, ovpos, ovquat = cb["ov_bg"], cb["ovK"], cb["ovpos"], cb["ovquat"]
-    nr, nx = len(rxyz), len(xxyz)   # spread the 4 moments across the ACTUAL flights (not hardcoded steps)
-    # closest approach of XPU-RT to a bin TALLER than its ~2 m cruise (must be cleared HORIZONTALLY) — the
-    # "barely avoids" beat, used for snapshot (3) + a top-down callout so the reader sees it does NOT crash.
-    _st = X["obst_pos"][0][~pm]; _st = _st[_st[:, 2] > -10.0]            # on-scene static bins
-    _tall = _st[_st[:, 2] > 2.0]                                        # taller than the drone -> real avoid
-    ps = a.path_start
-    if len(_tall) and nx > ps + 2:
-        _dd = np.linalg.norm(xxyz[ps:, None, :2] - _tall[None, :, :2], axis=2)   # (T', Ntall)
-        _rel = int(_dd.min(axis=1).argmin()); _step_near = ps + _rel
-        _clear = float(_dd[_rel].min()); _near_bin = _tall[int(_dd[_rel].argmin()), :3]
-    else:
-        _step_near, _clear, _near_bin = int(0.45*nx), 0.66, None
-    moments = [("ROS", int(0.25*nr), "ROS · clears gate G1"), ("ROS", nr-1, "ROS · loses stability → crash"),
-               ("XPU", _step_near, f"XPU-RT · clears crate {_clear:.2f} m"),
-               ("XPU", int(0.96*nx), "XPU-RT · gate G4 + person")]
-    near_miss = (xxyz[_step_near, :3], _near_bin, _clear)
+    moments = [("ROS", 250, "ROS · clears gate G1"), ("ROS", len(rxyz)-1, "ROS · crashes into crate"),
+               ("XPU", 984, "XPU-RT · gate G3"), ("XPU", 1180, "XPU-RT · gate G4 + person")]
 
     plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 14, "pdf.fonttype": 42})
-    # story mode stacks 3 panels in the top-right → give the top row extra height (and the figure with it)
-    fig = plt.figure(figsize=(27, 18.4 if use_story else 15.5))
-    # 7 rows = 4 content rows + 3 explicit spacer rows, so each inter-row gap is tuned
-    # independently (hspace can't): roomy above/below the moment+telemetry rows where axis
-    # labels live, but tight between the moment strips and the telemetry row (rows 2 & 4).
-    _r0 = 6.5 if use_story else 4.0
-    outer = fig.add_gridspec(7, 1, height_ratios=[_r0, 0.82, 2.7, 0.34, 1.95, 0.86, 4.0], hspace=0.0,
-                             left=0.055, right=0.995, top=0.965, bottom=0.03)
+    fig = plt.figure(figsize=(27, 15.5))
+    outer = fig.add_gridspec(4, 1, height_ratios=[4.0, 2.7, 1.95, 4.0], hspace=0.30,
+                             left=0.028, right=0.995, top=0.965, bottom=0.03)
 
-    def _sec(ax, s, dx=0, dy=18):                              # capital-letter badge (colored circle) for text cross-ref
-        ax.annotate(s, xy=(0, 1), xycoords="axes fraction", xytext=(dx, dy),
-                    textcoords="offset points", fontsize=16, weight="bold", color="white",
-                    ha="center", va="center", zorder=40, annotation_clip=False,
-                    bbox=dict(boxstyle="circle,pad=0.32", fc="#2f6db0", ec="white", lw=1.8))
-
-    # A top-down (edge to edge, or narrowed to make room for the stats column on its right)
-    axg = axm = None
-    if use_story:
-        # right = a statistics column: envelope on top, [generalization | mechanism] beneath
-        arow = outer[0].subgridspec(1, 2, width_ratios=[3.75, 2.75], wspace=0.10)
-        axt = fig.add_subplot(arow[0])
-        rcol = arow[1].subgridspec(2, 1, height_ratios=[1.10, 1.08], hspace=0.86)
-        erow = rcol[0].subgridspec(1, 2, width_ratios=[26, 1], wspace=0.04)
-        axe = fig.add_subplot(erow[0]); cax = fig.add_subplot(erow[1])
-        brow = rcol[1].subgridspec(1, 2, width_ratios=[1, 1], wspace=0.62)
-        axG = fig.add_subplot(brow[0]); axM = fig.add_subplot(brow[1])   # story gen/mech (distinct from telemetry axg)
-    elif use_env:
-        arow = outer[0].subgridspec(1, 3, width_ratios=[4.05, 2.0, 0.06], wspace=0.15)
-        axt = fig.add_subplot(arow[0]); axe = fig.add_subplot(arow[1]); cax = fig.add_subplot(arow[2])
-    else:
-        axt = fig.add_subplot(outer[0])
-    _bump = dict(center=_step_near, sigma=a.cbump_sigma, amp=a.cbump_amp, sign=a.cbump_sign) if a.cbump_amp else None
+    # A top-down (edge to edge)
+    axt = fig.add_subplot(outer[0])
     draw_topdown(axt, ov_bg, ovK, ovpos, ovquat, xxyz, rxyz, gates, people, tnorm, a.rot, a.flipx,
-                 a.path_start, rxyz[-1], moments, ov_obj=X["ov_bg"], near_miss=near_miss, xpu_bump=_bump)
-    axt.legend(handles=[Line2D([0], [0], color=CMAP(0.6), lw=5, label="XPU-RT ✓ completes 3/6 (colour = time)"),
-                        Line2D([0], [0], color=C_ROS, lw=5, label="ROS ✗ crashes 0/6 (50 Hz control)"),
+                 a.path_start, rxyz[-1], moments, ov_obj=X["ov_bg"])
+    axt.legend(handles=[Line2D([0], [0], color=CMAP(0.6), lw=5, label="XPU-RT ✓ completes (colour = time)"),
+                        Line2D([0], [0], color=C_ROS, lw=5, label="ROS ✗ crashes past gate 1"),
                         Line2D([0], [0], marker="o", color=C_MOVER, mec="white", ls="none", ms=9, alpha=0.75, label="patrolling people"),
                         Line2D([0], [0], marker="o", mfc="none", mec="#ffd400", mew=3, ls="none", label="gate")],
                loc="upper left", fontsize=14.5, framealpha=0.93, ncol=4, handlelength=1.9)
-    if use_env:
-        axt.set_title("Warehouse gate-course showdown\nXPU-RT (100 Hz control) clears all 4 gates · "
-                      "ROS (50 Hz) loses stability → crash", fontsize=17, weight="bold", loc="left")
-        draw_envelope(axe, a.ablation_csv, compact=True, colorbar_ax=cax)
-        if use_story:
-            draw_generalization(axG, fs=1.45, compact=True)
-            draw_mechanism(axM, fs=1.45, compact=True)
-            _sec(axt, "A", dx=-34, dy=-26)                    # top-down (left margin, top)
-            _sec(axe, "B", dx=8, dy=16)                       # envelope (no title -> beside top-left)
-            _sec(axG, "C", dx=-2, dy=34)                      # generalization (above its left-aligned title)
-            _sec(axM, "D", dx=-2, dy=34)                      # mechanism (above its left-aligned title)
-    else:
-        axt.set_title("Warehouse gate-course showdown — XPU-RT (100 Hz control) clears all 4 gates; "
-                      "ROS (50 Hz control) loses stability and crashes", fontsize=18, weight="bold", loc="left")
+    axt.set_title("Warehouse gate-course showdown — same aisle, same obstacles: XPU-RT clears all 4 gates, "
+                  "ROS crashes just past gate 1", fontsize=19, weight="bold", loc="left")
 
     # B snapshots: 4 moments in a row, each a horizontal [chase | FPV+YOLO | ToF] — FPV/ToF given more room
-    bgrid = outer[2].subgridspec(1, 4, wspace=0.09)
+    bgrid = outer[1].subgridspec(1, 4, wspace=0.09)
     for c, (src, step, lab) in enumerate(moments):
         dd = a.ros_dir if src == "ROS" else a.xpu_dir
         fs = (R if src == "ROS" else X)["frame_steps"]; f = frame_at(dd, fs, step)
@@ -394,34 +280,29 @@ def main():
         col = bgrid[c].subgridspec(2, 3, height_ratios=[1, 16], width_ratios=[1.15, 1.55, 1.15], hspace=0.015, wspace=0.05)
         tc = C_ROS if src == "ROS" else C_XPU
         axh = fig.add_subplot(col[0, :]); axh.axis("off")
-        axh.scatter([0.016], [0.5], s=330, marker="o", facecolors="black", edgecolors=tc, linewidths=2.6,
-                    transform=axh.transAxes, clip_on=False, zorder=5)
-        axh.text(0.016, 0.5, chr(ord("a")+c), color="white", fontsize=12, weight="bold", ha="center", va="center",
-                 transform=axh.transAxes, zorder=6)
-        axh.text(0.052, 0.5, f"{lab} · t={tt:.1f}s", fontsize=15.5, weight="bold", color=tc, va="center",
-                 transform=axh.transAxes)
+        axh.text(0.0, 0.5, f"{c+1}. {lab} · t={tt:.1f}s", fontsize=15.5, weight="bold", color=tc, va="center")
         ac = fig.add_subplot(col[1, 0]); ac.imshow(f["chase"][225:465, 415:655]); ac.axis("off")   # tighter zoom on the drone
-        ac.set_title("chase", fontsize=16)
+        ac.set_title("chase", fontsize=13)
         af = fig.add_subplot(col[1, 1]); af.imshow(f["fpv"], cmap="gray", vmin=0, vmax=1, aspect="equal")
         for x in [d for d in f["det"] if d[5] >= 0.4]:
             cls, x0, y0, x1, y1, cf = x; _, cc = YOLO.get(int(cls), ("obj", "#39f"))
             af.add_patch(Rectangle((x0, y0), x1-x0, y1-y0, fill=False, ec=cc, lw=2.6))
-        af.set_xticks([]); af.set_yticks([]); af.set_title("FPV + YOLO", fontsize=16)
-        at = fig.add_subplot(col[1, 2]); cross_tof(at, f["tof"]); at.set_title("cross-ToF", fontsize=16)
+        af.set_xticks([]); af.set_yticks([]); af.set_title("FPV + YOLO", fontsize=13)
+        at = fig.add_subplot(col[1, 2]); cross_tof(at, f["tof"]); at.set_title("cross-ToF", fontsize=13)
 
     # C telemetry
-    tg = outer[4].subgridspec(1, 4, wspace=0.26)
+    tg = outer[2].subgridspec(1, 4, wspace=0.26)
     xw = np.linalg.norm(X["imu_w"], axis=1); rw = np.linalg.norm(R["imu_w"], axis=1)
     axi = fig.add_subplot(tg[0]); axi.plot(xt, smooth(xw), color=C_XPU, lw=2.2, label="XPU-RT"); axi.plot(rt, smooth(rw), color=C_ROS, lw=2.2, label="ROS")
-    axi.set_ylabel("IMU |ω| (rad/s), smoothed", fontsize=14); axi.set_title("body-rate magnitude", fontsize=18, weight="bold"); axi.legend(fontsize=13, loc="upper right")
+    axi.set_ylabel("IMU |ω| (rad/s), smoothed", fontsize=14); axi.set_title("body-rate magnitude", fontsize=15.5, weight="bold"); axi.legend(fontsize=13, loc="upper right")
     xg = np.degrees(np.arctan2(X["goal_cmd"][:, 1], X["goal_cmd"][:, 0])); rg = np.degrees(np.arctan2(R["goal_cmd"][:, 1], R["goal_cmd"][:, 0]))
     axg = fig.add_subplot(tg[1]); axg.plot(xt, xg, color=C_XPU, lw=2.2); axg.plot(rt, rg, color=C_ROS, lw=2.2)
-    axg.set_ylabel("goal heading (°)", fontsize=14); axg.set_title("nav goal heading", fontsize=18, weight="bold")
+    axg.set_ylabel("goal heading (°)", fontsize=14); axg.set_title("nav goal heading", fontsize=15.5, weight="bold")
     xs = np.linalg.norm(np.gradient(xxyz[:, :2], xt, axis=0), axis=1); rs = np.linalg.norm(np.gradient(rxyz[:, :2], rt, axis=0), axis=1)
     axs = fig.add_subplot(tg[2]); axs.plot(xt, smooth(xs, 11), color=C_XPU, lw=2.2); axs.plot(rt, smooth(rs, 11), color=C_ROS, lw=2.2)
-    axs.set_ylabel("forward speed (m/s)", fontsize=14); axs.set_title("speed → ROS drops at crash", fontsize=18, weight="bold")
+    axs.set_ylabel("forward speed (m/s)", fontsize=14); axs.set_title("speed → ROS drops at crash", fontsize=15.5, weight="bold")
     for ax in (axi, axg, axs):
-        ax.set_xlabel("time (s)", fontsize=14); ax.grid(True, color="0.9", lw=0.5); ax.tick_params(labelsize=14)
+        ax.set_xlabel("time (s)", fontsize=14); ax.grid(True, color="0.9", lw=0.5); ax.tick_params(labelsize=12)
         ax.axvspan(rt[-1], xt.max(), color="#f6e3e3", alpha=0.5, zorder=0)                # ROS gone after crash
         ax.axvline(rt[-1], color=C_ROS, lw=1.8, ls=(0, (4, 2)), alpha=0.85, zorder=1)     # crash instant -> data gap
     axi.text(rt[-1] + 0.2, 0.93, "ROS ✗ crashes", color=C_ROS, fontsize=11, weight="bold",
@@ -430,20 +311,15 @@ def main():
     axq.plot(xxyz[:, 1], xxyz[:, 0], color="0.8", lw=1.0, zorder=0)
     axq.quiver(xxyz[sel, 1], xxyz[sel, 0], vxy[sel, 1], vxy[sel, 0], xt[sel], cmap="viridis", angles="xy", scale_units="xy", scale=7.0, width=0.007, headwidth=4, headlength=5)
     axq.set_xlabel("along-aisle y (m)", fontsize=14); axq.set_ylabel("lateral x (m)", fontsize=14)
-    axq.set_title("XPU-RT velocity (arrow = heading·speed)", fontsize=18, weight="bold"); axq.grid(True, color="0.92", lw=0.5); axq.tick_params(labelsize=14); axq.set_aspect("equal", adjustable="datalim")
-    if use_story:                                             # one badge per telemetry plot (uniform: above the title)
-        _sec(axi, "E", dx=-2, dy=28); _sec(axg, "F", dx=-2, dy=28)
-        _sec(axs, "G", dx=-2, dy=28); _sec(axq, "H", dx=-2, dy=28)
+    axq.set_title("XPU-RT velocity (arrow = heading·speed)", fontsize=15.5, weight="bold"); axq.grid(True, color="0.92", lw=0.5); axq.tick_params(labelsize=12); axq.set_aspect("equal", adjustable="datalim")
 
     # D combined annotated Gantt
-    axd = fig.add_subplot(outer[6])
+    axd = fig.add_subplot(outer[3])
     draw_combined_gantt(axd, json.load(open(a.sched_xpu))["dispatches"], json.load(open(a.sched_ros))["dispatches"])
-    if use_story:
-        _sec(axd, "I", dx=-2, dy=36)                          # above the Gantt's long left title, clear of "Onboard"
 
-    fig.savefig(a.out + ".png", dpi=a.dpi, bbox_inches="tight")
+    fig.savefig(a.out + ".png", dpi=150, bbox_inches="tight")
     fig.savefig(a.out + ".pdf", bbox_inches="tight")
-    print("wrote", a.out + ".png/.pdf", "@dpi", a.dpi)
+    print("wrote", a.out + ".png/.pdf")
 
 
 if __name__ == "__main__":
