@@ -1,0 +1,10 @@
+[sched] latency=12.4 ms, control_dt=10.0 ms -> refresh every 2 step(s) (50 Hz effective command rate)
+[ep00] seed=1000 outcome=crash     gates=3/4 steps=903 crash_type=clip
+[ep01] seed=1001 outcome=crash     gates=1/4 steps=764 crash_type=clip
+[ep02] seed=1002 outcome=timeout   gates=2/4 steps=1800 crash_type=-
+[ep03] seed=1003 outcome=crash     gates=1/4 steps=376 crash_type=clip
+[ep04] seed=1004 outcome=crash     gates=1/4 steps=903 crash_type=clip
+[ep05] seed=1005 outcome=timeout   gates=1/4 steps=1800 crash_type=-
+[SWEEP] ms=0.01 cruise=1.4 walk=0.0 hold=0.0 SUCCESS 0/6 clip=4 ground=0  s1000:cras(3/4,903,clip) s1001:cras(1/4,764,clip) s1002:time(2/4,1800,-) s1003:cras(1/4,376,clip) s1004:cras(1/4,903,clip) s1005:time(1/4,1800,-)
+[figure] wrote /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/crash_verify/new_ros50_figdata/figure_data.npz + 91 frame files  (T=903 steps, M=113 obstacles, 91 dense moments)
+ROS50_DONE 07:23:52

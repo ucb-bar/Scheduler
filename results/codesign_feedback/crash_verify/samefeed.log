@@ -1,0 +1,13 @@
+>>> s1004_xpu lat=4.89 gain=0.005 seed=1004 07:27:07
+[sched] latency=4.89 ms, control_dt=10.0 ms -> refresh every 1 step(s) (100 Hz effective command rate)
+[ep00] seed=1004 outcome=crash     gates=2/4 steps=658 crash_type=clip
+[SWEEP] ms=0.005 cruise=1.4 walk=0.0 hold=0.0 SUCCESS 0/1 clip=1 ground=0  s1004:cras(2/4,658,clip)
+[figure] wrote /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/crash_verify/s1004_xpu_figdata/figure_data.npz + 66 frame files  (T=658 steps, M=113 obstacles, 66 dense moments)
+s1004_xpu_DONE 07:28:45
+>>> s1004_ros lat=12.40 gain=0.01 seed=1004 07:28:45
+[sched] latency=12.4 ms, control_dt=10.0 ms -> refresh every 2 step(s) (50 Hz effective command rate)
+[ep00] seed=1004 outcome=success   gates=4/4 steps=1194 crash_type=-
+[SWEEP] ms=0.01 cruise=1.4 walk=0.0 hold=0.0 SUCCESS 1/1 clip=0 ground=0  s1004:succ(4/4,1194,-)
+[figure] wrote /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/crash_verify/s1004_ros_figdata/figure_data.npz + 120 frame files  (T=1194 steps, M=113 obstacles, 120 dense moments)
+s1004_ros_DONE 07:31:02
+ALL_S1004_DONE

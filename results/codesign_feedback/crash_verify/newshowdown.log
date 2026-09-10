@@ -1,0 +1,23 @@
+>>> new_xpu lat=4.89 gain=0.005 07:03:34
+[sched] latency=4.89 ms, control_dt=10.0 ms -> refresh every 1 step(s) (100 Hz effective command rate)
+[ep00] seed=1000 outcome=crash     gates=3/4 steps=814 crash_type=clip
+[ep01] seed=1001 outcome=success   gates=4/4 steps=1018 crash_type=-
+[ep02] seed=1002 outcome=crash     gates=1/4 steps=371 crash_type=clip
+[ep03] seed=1003 outcome=success   gates=4/4 steps=1055 crash_type=-
+[ep04] seed=1004 outcome=success   gates=4/4 steps=1053 crash_type=-
+[ep05] seed=1005 outcome=crash     gates=1/4 steps=858 crash_type=clip
+[SWEEP] ms=0.005 cruise=1.4 walk=0.0 hold=0.0 SUCCESS 3/6 clip=3 ground=0  s1000:cras(3/4,814,clip) s1001:succ(4/4,1018,-) s1002:cras(1/4,371,clip) s1003:succ(4/4,1055,-) s1004:succ(4/4,1053,-) s1005:cras(1/4,858,clip)
+[figure] wrote /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/crash_verify/new_xpu_figdata/figure_data.npz + 102 frame files  (T=1018 steps, M=113 obstacles, 102 dense moments)
+new_xpu_DONE 07:10:35
+>>> new_ros lat=35.58 gain=0.02 07:10:35
+[sched] latency=35.58 ms, control_dt=10.0 ms -> refresh every 4 step(s) (25 Hz effective command rate)
+[ep00] seed=1000 outcome=crash     gates=0/4 steps=156 crash_type=ground
+[ep01] seed=1001 outcome=crash     gates=0/4 steps=114 crash_type=ground
+[ep02] seed=1002 outcome=crash     gates=0/4 steps=154 crash_type=ground
+[ep03] seed=1003 outcome=crash     gates=0/4 steps=94 crash_type=ground
+[ep04] seed=1004 outcome=crash     gates=0/4 steps=89 crash_type=ground
+[ep05] seed=1005 outcome=crash     gates=0/4 steps=71 crash_type=ground
+[SWEEP] ms=0.02 cruise=1.4 walk=0.0 hold=0.0 SUCCESS 0/6 clip=0 ground=6  s1000:cras(0/4,156,ground) s1001:cras(0/4,114,ground) s1002:cras(0/4,154,ground) s1003:cras(0/4,94,ground) s1004:cras(0/4,89,ground) s1005:cras(0/4,71,ground)
+[figure] wrote /scratch/agustin/xpurt-dev-sync/results/codesign_feedback/crash_verify/new_ros_figdata/figure_data.npz + 16 frame files  (T=156 steps, M=113 obstacles, 16 dense moments)
+new_ros_DONE 07:12:16
+ALL_NEWSHOWDOWN_DONE
