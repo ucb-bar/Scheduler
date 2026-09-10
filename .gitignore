@@ -170,3 +170,17 @@ out/figures/
 /docs/merging_to_dev.md
 # large render artifacts — keep out of git (GitHub rejects >100MB)
 sims/out/*.mp4
+
+# Flight-rollout dumps from the HIL campaigns. One .npz per flight, holding the
+# full state/action/wrench trace; 1400+ of them, 3.4 GB. Everything the study
+# actually cites is the aggregate CSV next to them (hil_ablation*.csv,
+# flight_energy*.csv), which IS tracked -- these are the raw inputs it was
+# reduced from, regenerable by re-running the sweep driver.
+results/codesign_feedback/energy_runs/**/*.npz
+results/codesign_feedback/crash_verify/**/*.npz
+results/codesign_feedback/crash_demo/**/*.npz
+
+# Isaac/torch scratch. `tmp/tmpXXXXXXXX/_remote_module_non_scriptable.py` is a
+# file torch.distributed writes next to whatever TMPDIR points at; the sweeps
+# pointed TMPDIR into their own output dir, so it landed here. Not an artifact.
+results/**/tmp/tmp*/
