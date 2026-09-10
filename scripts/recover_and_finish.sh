@@ -5,8 +5,8 @@
 #   2) continue course B via the idempotent resume driver
 #   3) run the scheduled energy experiment (GPU now free)
 set -u
-WT=/scratch/agustin/xpurt-dev-sync
-export ISAAC_PY=/scratch2/agustin/miniforge3/envs/env_isaaclab/bin/python
+WT="${WT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"   # this repo, wherever it is checked out
+export ISAAC_PY="${ISAAC_PY:-/scratch2/agustin/miniforge3/envs/env_isaaclab/bin/python}"
 log(){ echo "=== $(date +%H:%M:%S) recover: $* ==="; }
 
 log "waiting for any orphaned flight to finish before relaunching (avoid GPU contention)..."

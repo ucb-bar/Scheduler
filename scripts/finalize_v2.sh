@@ -3,8 +3,8 @@
 # source, regenerate the figures + reproduce numbers + master CSV. Does NOT touch the paper repo or
 # push (caption-number update + push are done interactively after reviewing the printed numbers).
 set -eu
-WT=/scratch/agustin/xpurt-dev-sync; RES=$WT/results/codesign_feedback
-PY=/scratch2/agustin/miniforge3/envs/env_isaaclab/bin/python
+WT="${WT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"   # this repo, wherever it is checked out; RES=$WT/results/codesign_feedback
+PY="${ISAAC_PY:-/scratch2/agustin/miniforge3/envs/env_isaaclab/bin/python}"
 V2=$RES/hil_ablation_v2.csv
 cd "$WT"
 

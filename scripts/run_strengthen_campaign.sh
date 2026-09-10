@@ -6,8 +6,8 @@
 #   C course-B envelope @6/cell (~4h). Each stage logs per cell; NO figure regen/swap here (done
 #   after review). Re-runnable: showdown appends; the two grid CSVs are removed+rebuilt per launch.
 set -u
-CAN=/scratch/agustin/projects/DIMA/XPU-RT             # canonical repo = the real sim + course-B edit
-WT=/scratch/agustin/xpurt-dev-sync                    # paper worktree = committed results live here
+CAN="${CAN:-/scratch/agustin/projects/DIMA/XPU-RT}"             # canonical repo = the real sim + course-B edit
+WT="${WT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"   # this repo, wherever it is checked out                    # paper worktree = committed results live here
 RES=$WT/results/codesign_feedback; CV=$RES/crash_verify
 PY="${ISAAC_PY:-/scratch2/agustin/miniforge3/envs/env_isaaclab/bin/python}"
 W=$CAN/sims/models/warehouse/nav_fused_v12_cnn.pt

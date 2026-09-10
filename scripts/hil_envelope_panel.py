@@ -15,16 +15,17 @@ figure). Run directly to render the standalone figure.
 Data: results/codesign_feedback/hil_ablation.csv. NOTE: fixed controller gain (moment_scale=0.0055,
 tuned ~90 Hz), so the 25 Hz collapse is partly under-authority (a gain artifact), not pure Nyquist.
 """
-import argparse, csv, math
+import argparse, csv, math, os
 from collections import defaultdict
 import numpy as np, matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from matplotlib.lines import Line2D
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # repo root, so this runs from any checkout
 
 C_XPU = "#1f9e5a"; C_ROS = "#e2231a"; INK = "#22242a"
-DEFAULT_CSV = "/scratch/agustin/xpurt-dev-sync/results/codesign_feedback/hil_ablation.csv"
+DEFAULT_CSV = _REPO + "/results/codesign_feedback/hil_ablation.csv"
 
 
 def wilson(k, n, z=1.96):
@@ -138,7 +139,7 @@ def draw_envelope(ax, csv_path=DEFAULT_CSV, compact=False, colorbar_ax=None, tit
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--csv", default=DEFAULT_CSV)
-    ap.add_argument("--out", default="/scratch/agustin/xpurt-dev-sync/results/codesign_feedback/hil_envelope_combined")
+    ap.add_argument("--out", default=_REPO + "/results/codesign_feedback/hil_envelope_combined")
     ap.add_argument("--dpi", type=int, default=300)
     a = ap.parse_args()
     plt.rcParams.update({"font.family": "DejaVu Sans", "pdf.fonttype": 42, "ps.fonttype": 42,

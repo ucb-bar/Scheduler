@@ -16,8 +16,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.ticker import NullFormatter
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # repo root, so this runs from any checkout
 
-RES = "/scratch/agustin/xpurt-dev-sync/results/codesign_feedback"
+RES = _REPO + "/results/codesign_feedback"
 OUT = f"{RES}/fig_hil_strengthened.png"
 
 # ---- palette / type -------------------------------------------------------------------------

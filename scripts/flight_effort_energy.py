@@ -19,6 +19,7 @@ Usage: python scripts/flight_effort_energy.py [--glob '<dir>/**/figure_data.npz'
 """
 import argparse, csv, glob, os
 import numpy as np
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # repo root, so this runs from any checkout
 
 G = np.array([0.0, 0.0, -9.81])
 
@@ -39,8 +40,8 @@ def metrics(npz):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--glob", default="/scratch/agustin/xpurt-dev-sync/results/codesign_feedback/crash_verify/**/figure_data.npz")
-    ap.add_argument("--out", default="/scratch/agustin/xpurt-dev-sync/results/codesign_feedback/flight_effort_energy.csv")
+    ap.add_argument("--glob", default=_REPO + "/results/codesign_feedback/crash_verify/**/figure_data.npz")
+    ap.add_argument("--out", default=_REPO + "/results/codesign_feedback/flight_effort_energy.csv")
     a = ap.parse_args()
     files = sorted(glob.glob(a.glob, recursive=True))
     rows = []

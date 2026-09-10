@@ -3,9 +3,9 @@
 # flies ours-vs-baseline with wrench-logging (--dump_figure_data now carries the commanded wrench),
 # and computes modeled propulsive energy. Safe to launch now; it holds until the GPU is idle.
 set -u
-CAN=/scratch/agustin/projects/DIMA/XPU-RT
-WT=/scratch/agustin/xpurt-dev-sync; RES=$WT/results/codesign_feedback
-PY=/scratch2/agustin/miniforge3/envs/env_isaaclab/bin/python
+CAN="${CAN:-/scratch/agustin/projects/DIMA/XPU-RT}"
+WT="${WT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"   # this repo, wherever it is checked out; RES=$WT/results/codesign_feedback
+PY="${ISAAC_PY:-/scratch2/agustin/miniforge3/envs/env_isaaclab/bin/python}"
 W=$CAN/sims/models/warehouse/nav_fused_v12_cnn.pt
 ER=$RES/energy_runs; mkdir -p "$ER/tmp"; export TMPDIR="$ER/tmp"
 LOG=$ER/ENERGY.log; : > "$LOG"

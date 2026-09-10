@@ -6,12 +6,13 @@ rate CAP). So this shows ONE measured success(speed, rate) grid three times, eac
 given scheme cannot reach (ROS <=81 Hz, greedy <=125 Hz, shard <=204 Hz). Cells are the real measured
 grid (no interpolation): colour = gate-course success fraction, text = successes/flights.
 """
-import argparse, csv
+import argparse, csv, os
 from collections import defaultdict
 import numpy as np, matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # repo root, so this runs from any checkout
 
 SCHEMES = [("ROS",            81.0, "#e2231a"),
            ("XPU-RT greedy", 125.0, "#2f6fb0"),
@@ -20,8 +21,8 @@ INK = "#22242a"; GREY = "#d9d6cf"
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--csv", default="/scratch/agustin/xpurt-dev-sync/results/codesign_feedback/hil_dense.csv")
-    ap.add_argument("--out", default="/scratch/agustin/xpurt-dev-sync/results/codesign_feedback/hil_ablation_3panel")
+    ap.add_argument("--csv", default=_REPO + "/results/codesign_feedback/hil_dense.csv")
+    ap.add_argument("--out", default=_REPO + "/results/codesign_feedback/hil_ablation_3panel")
     a = ap.parse_args()
     rows = list(csv.DictReader(open(a.csv)))
     cell = defaultdict(lambda: [0, 0])            # (speed, rate) -> [successes, n]

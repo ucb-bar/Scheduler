@@ -23,8 +23,9 @@ from matplotlib.patches import Patch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from hil_envelope_panel import draw_envelope, wilson, C_XPU, C_ROS, INK   # reuse the exact envelope panel
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # repo root, so this runs from any checkout
 
-RES = "/scratch/agustin/xpurt-dev-sync/results/codesign_feedback"
+RES = _REPO + "/results/codesign_feedback"
 C_A, C_B = INK, "#7b3fa0"                                     # course A = black, course B = violet
 
 

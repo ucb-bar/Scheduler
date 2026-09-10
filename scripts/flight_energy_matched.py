@@ -16,8 +16,9 @@ import argparse, csv, glob, os, sys
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from flight_energy_model import rotor_thrusts
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # repo root, so this runs from any checkout
 
-RES = "/scratch/agustin/xpurt-dev-sync/results/codesign_feedback"
+RES = _REPO + "/results/codesign_feedback"
 
 
 def series(npz, arm, kappa):

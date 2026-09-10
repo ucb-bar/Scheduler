@@ -13,6 +13,7 @@ Usage: python scripts/flight_energy_model.py --glob '<dir>/**/figure_data.npz' [
 """
 import argparse, csv, glob, os
 import numpy as np
+_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # repo root, so this runs from any checkout
 
 
 def rotor_thrusts(wrench, arm, kappa):
@@ -49,10 +50,10 @@ def energy(npz, arm, kappa):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--glob", default="/scratch/agustin/xpurt-dev-sync/results/codesign_feedback/energy_runs/**/figure_data.npz")
+    ap.add_argument("--glob", default=_REPO + "/results/codesign_feedback/energy_runs/**/figure_data.npz")
     ap.add_argument("--arm", type=float, default=0.09, help="rotor arm length (m)")
     ap.add_argument("--kappa", type=float, default=0.016, help="yaw drag/thrust ratio (m)")
-    ap.add_argument("--out", default="/scratch/agustin/xpurt-dev-sync/results/codesign_feedback/flight_energy.csv")
+    ap.add_argument("--out", default=_REPO + "/results/codesign_feedback/flight_energy.csv")
     a = ap.parse_args()
     rows = []
     for f in sorted(glob.glob(a.glob, recursive=True)):
